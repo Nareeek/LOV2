@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-label="Original warm tavern interior">
+  <defs>
+    <linearGradient id="wall" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#33223f"/>
+      <stop offset=".46" stop-color="#4c2d35"/>
+      <stop offset="1" stop-color="#211b22"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#7d4736"/>
+      <stop offset="1" stop-color="#281a19"/>
+    </linearGradient>
+    <radialGradient id="fire" cx=".5" cy=".5" r=".6">
+      <stop offset="0" stop-color="#ffe6a0"/>
+      <stop offset=".45" stop-color="#e25a33" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#5e1b28" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1040" height="610" fill="url(#wall)"/>
+  <rect y="406" width="1040" height="204" fill="#21171b"/>
+  <g opacity=".28" stroke="#b57b48" stroke-width="3">
+    <path d="M0 430 H1040"/>
+    <path d="M20 500 H1020"/>
+    <path d="M70 406 L30 610M210 406 L178 610M350 406 L336 610M500 406 L508 610M660 406 L690 610M810 406 L860 610M952 406 L1025 610"/>
+  </g>
+  <g transform="translate(70 70)">
+    <rect x="0" y="0" width="258" height="260" rx="8" fill="#1f171b" stroke="#c89b59" stroke-width="8"/>
+    <path d="M18 216 C64 166 102 170 146 208 C184 158 224 156 242 214" fill="#35505c"/>
+    <path d="M34 36 H226 M34 82 H226 M34 128 H226" stroke="#7a4a34" stroke-width="10"/>
+    <g fill="#d7ba62">
+      <circle cx="62" cy="60" r="16"/>
+      <circle cx="134" cy="108" r="12"/>
+      <circle cx="202" cy="60" r="14"/>
+    </g>
+  </g>
+  <g transform="translate(650 72)">
+    <rect x="0" y="0" width="250" height="300" rx="8" fill="#25191d" stroke="#c89b59" stroke-width="8"/>
+    <rect x="24" y="34" width="202" height="224" rx="6" fill="#3b2525"/>
+    <g fill="#e9d38a">
+      <rect x="52" y="62" width="134" height="18" rx="4"/>
+      <rect x="52" y="104" width="158" height="18" rx="4"/>
+      <rect x="52" y="146" width="120" height="18" rx="4"/>
+      <rect x="52" y="188" width="148" height="18" rx="4"/>
+    </g>
+    <circle cx="204" cy="216" r="18" fill="#bf3440"/>
+  </g>
+  <g transform="translate(350 170)">
+    <ellipse cx="120" cy="286" rx="180" ry="32" fill="#120d0f" opacity=".7"/>
+    <rect x="-5" y="182" width="300" height="116" rx="8" fill="url(#wood)" stroke="#d0a05a" stroke-width="6"/>
+    <rect x="18" y="80" width="250" height="130" rx="8" fill="#452723"/>
+    <path d="M44 80 C54 10 190 12 204 80" fill="#2e2224"/>
+    <circle cx="128" cy="74" r="50" fill="#cf7651"/>
+    <path d="M82 70 C98 28 166 30 182 70 C164 54 102 54 82 70 Z" fill="#6d2f2e"/>
+    <path d="M80 108 C104 136 150 140 176 108" fill="none" stroke="#4b1d1d" stroke-width="8" stroke-linecap="round"/>
+    <rect x="82" y="128" width="94" height="84" rx="12" fill="#78503a"/>
+  </g>
+  <g transform="translate(490 392)">
+    <ellipse cx="145" cy="80" rx="210" ry="44" fill="#190f12" opacity=".72"/>
+    <path d="M0 42 C86 0 202 0 292 42 L260 132 L32 132 Z" fill="#43271f" stroke="#c79253" stroke-width="6"/>
+    <circle cx="142" cy="58" r="28" fill="url(#fire)"/>
+    <rect x="76" y="86" width="136" height="18" rx="9" fill="#95613d"/>
+  </g>
+  <g transform="translate(238 290)">
+    <rect x="0" y="0" width="92" height="86" rx="8" fill="#20191e" stroke="#b68b52" stroke-width="5"/>
+    <circle cx="46" cy="28" r="18" fill="#7ba2d1"/>
+    <path d="M22 72 C36 50 58 50 72 72" fill="#3b566d"/>
+  </g>
+  <circle cx="828" cy="112" r="82" fill="url(#fire)" opacity=".65"/>
+</svg>

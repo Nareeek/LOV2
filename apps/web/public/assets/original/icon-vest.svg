@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Original armor vest icon">
+  <rect width="96" height="96" rx="8" fill="#211b20"/>
+  <path d="M30 14 L42 24 H54 L66 14 L78 32 L68 82 H28 L18 32 Z" fill="#8aa0a2" stroke="#d2b66d" stroke-width="5"/>
+  <path d="M42 24 L34 76M54 24 L62 76" stroke="#42575b" stroke-width="5"/>
+  <path d="M34 48 H62" stroke="#d2b66d" stroke-width="5"/>
+  <circle cx="48" cy="58" r="9" fill="#8ee1d3" opacity=".85"/>
+</svg>

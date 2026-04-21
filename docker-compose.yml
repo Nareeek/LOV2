@@ -1,0 +1,169 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    command: sh -lc "CI=true pnpm install --frozen-lockfile --store-dir /pnpm/store && pnpm --filter @lov2/web dev --host 0.0.0.0"
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "${WEB_PORT:-5173}:5173"
+    volumes:
+      - .:/workspace
+      - web_node_modules:/workspace/node_modules
+      - web_app_node_modules:/workspace/apps/web/node_modules
+      - web_shared_node_modules:/workspace/packages/shared/node_modules
+      - web_game_data_node_modules:/workspace/packages/game-data/node_modules
+      - web_art_pipeline_node_modules:/workspace/packages/art-pipeline/node_modules
+      - pnpm_store:/pnpm/store
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: dev
+    command: sh -lc "CI=true pnpm install --frozen-lockfile --store-dir /pnpm/store && pnpm --filter @lov2/api prisma:generate && pnpm --filter @lov2/api prisma:deploy && pnpm --filter @lov2/api start:dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      API_PORT: ${API_PORT:-4000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://lov2:lov2_dev_password@postgres:5432/lov2?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-lov2_session}
+      CSRF_COOKIE_NAME: ${CSRF_COOKIE_NAME:-lov2_csrf}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret-change-me}
+    ports:
+      - "${API_PORT:-4000}:4000"
+    volumes:
+      - .:/workspace
+      - api_node_modules:/workspace/node_modules
+      - api_app_node_modules:/workspace/apps/api/node_modules
+      - api_shared_node_modules:/workspace/packages/shared/node_modules
+      - api_game_data_node_modules:/workspace/packages/game-data/node_modules
+      - api_art_pipeline_node_modules:/workspace/packages/art-pipeline/node_modules
+      - pnpm_store:/pnpm/store
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+      target: dev
+    command: sh -lc "CI=true pnpm install --frozen-lockfile --store-dir /pnpm/store && pnpm --filter @lov2/api prisma:generate && pnpm --filter @lov2/worker start:dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://lov2:lov2_dev_password@postgres:5432/lov2?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    volumes:
+      - .:/workspace
+      - worker_node_modules:/workspace/node_modules
+      - worker_app_node_modules:/workspace/apps/worker/node_modules
+      - worker_api_node_modules:/workspace/apps/api/node_modules
+      - worker_shared_node_modules:/workspace/packages/shared/node_modules
+      - worker_game_data_node_modules:/workspace/packages/game-data/node_modules
+      - worker_art_pipeline_node_modules:/workspace/packages/art-pipeline/node_modules
+      - pnpm_store:/pnpm/store
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.59.1-noble
+    profiles:
+      - test
+    working_dir: /workspace
+    command: sh -lc "corepack enable && CI=true pnpm install --frozen-lockfile --store-dir /pnpm/store && pnpm --filter @lov2/web test:e2e"
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      VITE_API_URL: http://api:4000
+    volumes:
+      - .:/workspace
+      - e2e_node_modules:/workspace/node_modules
+      - e2e_web_node_modules:/workspace/apps/web/node_modules
+      - e2e_shared_node_modules:/workspace/packages/shared/node_modules
+      - e2e_game_data_node_modules:/workspace/packages/game-data/node_modules
+      - e2e_art_pipeline_node_modules:/workspace/packages/art-pipeline/node_modules
+      - pnpm_store:/pnpm/store
+
+  postgres:
+    image: postgres:16-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lov2 -d lov2"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      POSTGRES_DB: lov2
+      POSTGRES_USER: lov2
+      POSTGRES_PASSWORD: lov2_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    profiles:
+      - optional
+    ports:
+      - "8025:8025"
+
+  stripe-cli:
+    image: stripe/stripe-cli:v1.25.0
+    profiles:
+      - optional
+    command: listen --forward-to api:4000/payments/webhook
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
+  pnpm_store:
+  web_node_modules:
+  web_app_node_modules:
+  web_shared_node_modules:
+  web_game_data_node_modules:
+  web_art_pipeline_node_modules:
+  api_node_modules:
+  api_app_node_modules:
+  api_shared_node_modules:
+  api_game_data_node_modules:
+  api_art_pipeline_node_modules:
+  worker_node_modules:
+  worker_app_node_modules:
+  worker_api_node_modules:
+  worker_shared_node_modules:
+  worker_game_data_node_modules:
+  worker_art_pipeline_node_modules:
+  e2e_node_modules:
+  e2e_web_node_modules:
+  e2e_shared_node_modules:
+  e2e_game_data_node_modules:
+  e2e_art_pipeline_node_modules:

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-label="Original character growth hall">
+  <defs>
+    <linearGradient id="hall" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#30244f"/>
+      <stop offset=".5" stop-color="#462a34"/>
+      <stop offset="1" stop-color="#17191a"/>
+    </linearGradient>
+    <radialGradient id="fire" cx=".5" cy=".5" r=".65">
+      <stop offset="0" stop-color="#fff0aa"/>
+      <stop offset=".38" stop-color="#e35a36" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#e35a36" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rune" cx=".5" cy=".5" r=".55">
+      <stop offset="0" stop-color="#7ff0cf" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#7ff0cf" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1040" height="610" fill="url(#hall)"/>
+  <path d="M0 426 H1040 V610 H0 Z" fill="#171318"/>
+  <g transform="translate(82 110)">
+    <rect width="344" height="350" rx="8" fill="#1e1c22" stroke="#c79a58" stroke-width="8"/>
+    <g fill="#2a2d34" stroke="#6c5842" stroke-width="4">
+      <rect x="34" y="42" width="276" height="52" rx="8"/>
+      <rect x="34" y="112" width="276" height="52" rx="8"/>
+      <rect x="34" y="182" width="276" height="52" rx="8"/>
+      <rect x="34" y="252" width="276" height="52" rx="8"/>
+    </g>
+    <g fill="url(#rune)">
+      <circle cx="284" cy="68" r="24"/>
+      <circle cx="284" cy="138" r="24"/>
+      <circle cx="284" cy="208" r="24"/>
+      <circle cx="284" cy="278" r="24"/>
+    </g>
+  </g>
+  <g transform="translate(664 138)">
+    <rect x="0" y="0" width="258" height="242" rx="8" fill="#1b171b" stroke="#c79a58" stroke-width="7"/>
+    <circle cx="130" cy="118" r="110" fill="url(#fire)" opacity=".75"/>
+    <path d="M58 192 C92 114 166 116 198 192" fill="#563428"/>
+    <path d="M96 192 C106 136 154 136 164 192" fill="#e75a31"/>
+  </g>
+  <g opacity=".4" fill="none" stroke="#dbbd72" stroke-width="6">
+    <path d="M480 168 C540 120 602 122 660 168"/>
+    <path d="M470 238 C540 198 606 198 674 238"/>
+    <path d="M452 318 C542 282 624 282 700 318"/>
+  </g>
+  <ellipse cx="552" cy="520" rx="150" ry="30" fill="#08090a" opacity=".6"/>
+</svg>

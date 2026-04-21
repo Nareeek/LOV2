@@ -1,0 +1,51 @@
+{
+  "name": "@lov2/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:dev": "tsx watch src/main.ts",
+    "start": "node dist/apps/api/src/main.js",
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/static": "^9.1.2",
+    "@lov2/game-data": "workspace:*",
+    "@lov2/shared": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-fastify": "^11.1.6",
+    "@nestjs/platform-socket.io": "^11.1.6",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/throttler": "^6.4.0",
+    "@nestjs/websockets": "^11.1.6",
+    "@prisma/client": "^6.18.0",
+    "argon2": "^0.44.0",
+    "bullmq": "^5.58.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "fastify": "^5.8.5",
+    "ioredis": "^5.8.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.1",
+    "stripe": "^18.5.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.18.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.4"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  }
+}

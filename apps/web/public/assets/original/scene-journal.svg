@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-label="Original fantasy journal desk">
+  <defs>
+    <linearGradient id="room" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#2f2448"/>
+      <stop offset=".45" stop-color="#3b333f"/>
+      <stop offset="1" stop-color="#181415"/>
+    </linearGradient>
+    <radialGradient id="seal" cx=".5" cy=".5" r=".55">
+      <stop offset="0" stop-color="#ffcd7d"/>
+      <stop offset=".48" stop-color="#b83946" stop-opacity=".86"/>
+      <stop offset="1" stop-color="#b83946" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1040" height="610" fill="url(#room)"/>
+  <path d="M0 410 H1040 V610 H0 Z" fill="#171113"/>
+  <g transform="translate(142 86)">
+    <rect width="520" height="418" rx="8" fill="#2a211b" stroke="#c99a55" stroke-width="8"/>
+    <rect x="34" y="32" width="452" height="354" rx="8" fill="#e5c48b"/>
+    <g fill="#4c3025" opacity=".72">
+      <rect x="76" y="72" width="300" height="20" rx="5"/>
+      <rect x="76" y="132" width="350" height="18" rx="5"/>
+      <rect x="76" y="188" width="312" height="18" rx="5"/>
+      <rect x="76" y="246" width="354" height="18" rx="5"/>
+      <rect x="76" y="304" width="280" height="18" rx="5"/>
+    </g>
+    <circle cx="414" cy="310" r="52" fill="url(#seal)"/>
+  </g>
+  <g transform="translate(720 144)" fill="#21191a" stroke="#c99a55" stroke-width="6">
+    <rect width="190" height="246" rx="8"/>
+    <circle cx="95" cy="66" r="42" fill="#3b4f5d"/>
+    <rect x="34" y="128" width="122" height="24" rx="5" fill="#7e5035"/>
+    <rect x="34" y="176" width="122" height="24" rx="5" fill="#7e5035"/>
+  </g>
+  <path d="M88 512 C240 468 428 486 604 500 C734 510 846 500 966 464" fill="none" stroke="#6d4934" stroke-width="24" opacity=".72"/>
+</svg>

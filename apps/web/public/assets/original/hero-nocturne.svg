@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="520" viewBox="0 0 320 520" role="img" aria-label="original nocturne hero">
+  <defs>
+    <linearGradient id="cloak" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#1b2422"/>
+      <stop offset="0.55" stop-color="#334640"/>
+      <stop offset="1" stop-color="#741f2a"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" x2="1">
+      <stop stop-color="#f4e7c2"/>
+      <stop offset="0.45" stop-color="#9fb5ae"/>
+      <stop offset="1" stop-color="#d8a64e"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="160" cy="494" rx="78" ry="18" fill="#101414" opacity=".45"/>
+  <path d="M97 176c-20 74-25 162-8 300h142c16-128 10-224-11-300-24 20-44 28-61 28-18 0-38-8-62-28z" fill="url(#cloak)" stroke="#d7aa5a" stroke-width="5"/>
+  <path d="M116 154h88l20 88c-43 26-88 26-128 0l20-88z" fill="#202927" stroke="#d7aa5a" stroke-width="5"/>
+  <path d="M128 166h64l14 76c-28 14-63 14-92 0l14-76z" fill="url(#metal)"/>
+  <path d="M118 102c0-36 20-62 43-62 24 0 43 26 43 62 0 41-19 63-43 63-23 0-43-22-43-63z" fill="#e8d7bf" stroke="#25201b" stroke-width="5"/>
+  <path d="M107 91c18-55 83-61 109-11-22-8-38-5-54 4-20-7-36-5-55 7z" fill="#202927"/>
+  <path d="M119 86l-24-46 48 26M201 86l25-46-50 26" fill="none" stroke="#d7aa5a" stroke-width="7" stroke-linecap="round"/>
+  <path d="M105 248l-50 118 25 14 56-110M216 248l51 118-26 14-56-110" fill="#283a35" stroke="#d7aa5a" stroke-width="5"/>
+  <path d="M74 374l-18 72h39l12-64M246 374l18 72h-39l-12-64" fill="#151b1a" stroke="#d7aa5a" stroke-width="5"/>
+  <circle cx="145" cy="111" r="5" fill="#7be0cb"/>
+  <circle cx="177" cy="111" r="5" fill="#7be0cb"/>
+  <path d="M141 136c13 8 27 8 39 0" fill="none" stroke="#741f2a" stroke-width="4" stroke-linecap="round"/>
+</svg>
+

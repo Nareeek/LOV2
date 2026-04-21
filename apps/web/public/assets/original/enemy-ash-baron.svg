@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="520" viewBox="0 0 340 520" role="img" aria-label="original ash baron enemy">
+  <defs>
+    <linearGradient id="armor" x1="0" x2="1">
+      <stop stop-color="#2b1d1a"/>
+      <stop offset=".5" stop-color="#9b2f32"/>
+      <stop offset="1" stop-color="#e0b35f"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="168" cy="496" rx="92" ry="18" fill="#101414" opacity=".5"/>
+  <path d="M93 190c-20 92-18 182 12 286h126c30-104 32-194 12-286-45 28-98 28-150 0z" fill="#211817" stroke="#e0b35f" stroke-width="5"/>
+  <path d="M102 190c38 32 93 34 134 0l-22 172H124L102 190z" fill="url(#armor)"/>
+  <path d="M116 108c0-42 22-72 54-72s54 30 54 72c0 43-23 74-54 74s-54-31-54-74z" fill="#c9b69a" stroke="#211817" stroke-width="6"/>
+  <path d="M112 88c9-49 42-79 58-80 17 1 52 31 59 80-44-22-76-21-117 0z" fill="#171313" stroke="#e0b35f" stroke-width="5"/>
+  <path d="M115 92L74 34M226 92l41-58" stroke="#e0b35f" stroke-width="9" stroke-linecap="round"/>
+  <path d="M94 254L34 344l25 29 74-85M245 254l61 90-25 29-74-85" fill="#3b211f" stroke="#e0b35f" stroke-width="5"/>
+  <path d="M124 376l-18 88h45l10-84M216 376l18 88h-45l-10-84" fill="#171313" stroke="#e0b35f" stroke-width="5"/>
+  <circle cx="151" cy="116" r="6" fill="#f05845"/>
+  <circle cx="189" cy="116" r="6" fill="#f05845"/>
+  <path d="M146 142c15 12 33 12 48 0" fill="none" stroke="#5b1118" stroke-width="5" stroke-linecap="round"/>
+</svg>
+

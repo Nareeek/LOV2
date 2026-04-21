@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lov2/shared": ["packages/shared/src/index.ts"],
+      "@lov2/game-data": ["packages/game-data/src/index.ts"],
+      "@lov2/art-pipeline": ["packages/art-pipeline/src/index.ts"]
+    }
+  }
+}
+

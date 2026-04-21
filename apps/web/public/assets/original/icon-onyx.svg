@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Original onyx amulet icon">
+  <rect width="96" height="96" rx="8" fill="#211b20"/>
+  <path d="M28 16 C38 30 58 30 68 16" fill="none" stroke="#d2b66d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M48 28 L70 48 L58 78 H38 L26 48 Z" fill="#16151c" stroke="#d2b66d" stroke-width="5"/>
+  <path d="M36 48 L48 34 L60 48 L54 68 H42 Z" fill="#5a3d73"/>
+  <circle cx="48" cy="52" r="8" fill="#8fe1ce" opacity=".75"/>
+</svg>

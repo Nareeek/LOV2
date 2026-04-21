@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-label="Original twilight fantasy courtyard">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#34225a"/>
+      <stop offset=".44" stop-color="#193d54"/>
+      <stop offset="1" stop-color="#13261f"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0" x2="1">
+      <stop offset="0" stop-color="#314250"/>
+      <stop offset=".5" stop-color="#46514e"/>
+      <stop offset="1" stop-color="#263a37"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx=".5" cy=".5" r=".65">
+      <stop offset="0" stop-color="#ffe195" stop-opacity=".95"/>
+      <stop offset=".45" stop-color="#e45d38" stop-opacity=".52"/>
+      <stop offset="1" stop-color="#e45d38" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="fountainGlow" cx=".5" cy=".5" r=".55">
+      <stop offset="0" stop-color="#a6f4ff" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#64b7d0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1040" height="610" fill="url(#sky)"/>
+  <circle cx="875" cy="78" r="50" fill="#f7edc3" opacity=".9"/>
+  <path d="M0 178 C190 92 270 176 382 126 C502 70 622 150 733 105 C872 49 940 115 1040 73 L1040 260 L0 260 Z" fill="#1b2a3c" opacity=".75"/>
+  <path d="M0 228 C130 190 220 220 320 190 C440 154 530 214 645 182 C805 137 920 190 1040 150 L1040 315 L0 315 Z" fill="#25354b" opacity=".88"/>
+  <path d="M84 365 C210 265 364 232 520 238 C703 245 858 297 1040 252 L1040 610 L0 610 L0 478 C22 430 52 392 84 365 Z" fill="url(#stone)"/>
+  <path d="M210 455 C392 393 639 392 832 453" fill="none" stroke="#71857d" stroke-width="48" stroke-linecap="round" opacity=".45"/>
+  <path d="M166 494 C356 432 656 427 868 491" fill="none" stroke="#2b3839" stroke-width="92" stroke-linecap="round" opacity=".55"/>
+  <g opacity=".32" fill="none" stroke="#8da09a" stroke-width="2">
+    <path d="M60 428 C215 392 370 395 538 410 C700 424 844 416 1000 374"/>
+    <path d="M74 474 C230 442 395 446 565 462 C730 478 858 468 1010 424"/>
+    <path d="M92 524 C244 493 410 500 592 518 C752 533 884 520 1016 485"/>
+    <path d="M180 392 L150 590M310 365 L286 610M452 350 L442 610M607 358 L620 610M742 384 L785 610M905 354 L946 610"/>
+  </g>
+  <g transform="translate(96 214)">
+    <path d="M0 66 L126 0 L254 70 L232 76 L232 210 L32 210 L32 76 Z" fill="#49362f"/>
+    <path d="M0 66 L126 0 L254 70 L218 70 L126 25 L34 70 Z" fill="#c23445"/>
+    <rect x="56" y="92" width="116" height="88" fill="#271b1b"/>
+    <circle cx="114" cy="136" r="34" fill="url(#lamp)"/>
+    <rect x="50" y="82" width="128" height="10" fill="#d2aa5e"/>
+  </g>
+  <g transform="translate(648 164)">
+    <path d="M24 118 L144 28 L268 120 L240 120 L240 282 L58 282 L58 120 Z" fill="#243535"/>
+    <path d="M24 118 L144 28 L268 120 L224 118 L144 70 L64 118 Z" fill="#ddc16c"/>
+    <rect x="88" y="142" width="108" height="96" fill="#172322"/>
+    <circle cx="142" cy="190" r="44" fill="url(#lamp)"/>
+    <path d="M80 260 C126 238 168 238 218 260" fill="none" stroke="#bb9c51" stroke-width="10"/>
+  </g>
+  <g transform="translate(384 246)">
+    <ellipse cx="136" cy="180" rx="136" ry="36" fill="#0d1718" opacity=".55"/>
+    <ellipse cx="136" cy="148" rx="118" ry="32" fill="#263c42"/>
+    <ellipse cx="136" cy="132" rx="96" ry="24" fill="#4f848d"/>
+    <ellipse cx="136" cy="128" rx="74" ry="15" fill="url(#fountainGlow)"/>
+    <path d="M112 118 C94 80 120 45 138 18 C153 48 183 84 160 118" fill="#83949a"/>
+    <path d="M136 44 C122 72 125 94 148 112" fill="none" stroke="#cff8ff" stroke-width="8" stroke-linecap="round" opacity=".65"/>
+    <path d="M90 150 C125 170 160 170 190 150" fill="none" stroke="#9eddea" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+  </g>
+  <g fill="#f7c263" opacity=".85">
+    <circle cx="645" cy="258" r="7"/>
+    <circle cx="894" cy="255" r="7"/>
+    <circle cx="208" cy="286" r="6"/>
+    <circle cx="124" cy="372" r="5"/>
+  </g>
+  <g fill="#f6a6c3" opacity=".9">
+    <circle cx="936" cy="182" r="12"/>
+    <circle cx="970" cy="205" r="9"/>
+    <circle cx="906" cy="210" r="8"/>
+    <circle cx="952" cy="236" r="7"/>
+  </g>
+</svg>

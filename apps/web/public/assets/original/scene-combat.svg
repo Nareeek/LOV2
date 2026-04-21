@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-label="Original ceremonial duel arena">
+  <defs>
+    <linearGradient id="hall" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#241a36"/>
+      <stop offset=".5" stop-color="#233c46"/>
+      <stop offset="1" stop-color="#201518"/>
+    </linearGradient>
+    <radialGradient id="flame" cx=".5" cy=".5" r=".6">
+      <stop offset="0" stop-color="#fff1a0"/>
+      <stop offset=".4" stop-color="#e84731" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#e84731" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1040" height="610" fill="url(#hall)"/>
+  <path d="M0 370 C260 306 770 306 1040 370 L1040 610 L0 610 Z" fill="#241a1a"/>
+  <ellipse cx="520" cy="434" rx="330" ry="98" fill="#4b1d25" stroke="#c99a55" stroke-width="10"/>
+  <ellipse cx="520" cy="434" rx="218" ry="58" fill="#2a2529" stroke="#8b6642" stroke-width="5"/>
+  <path d="M170 120 H870" stroke="#886b4a" stroke-width="12" opacity=".7"/>
+  <g fill="#1a161c" stroke="#9b7a4d" stroke-width="6">
+    <rect x="108" y="118" width="84" height="284"/>
+    <rect x="848" y="118" width="84" height="284"/>
+    <rect x="270" y="82" width="70" height="250"/>
+    <rect x="700" y="82" width="70" height="250"/>
+  </g>
+  <g fill="#2d2830" stroke="#c39150" stroke-width="5">
+    <path d="M116 108 L150 50 L186 108 Z"/>
+    <path d="M856 108 L890 50 L926 108 Z"/>
+    <path d="M278 72 L306 24 L334 72 Z"/>
+    <path d="M708 72 L736 24 L764 72 Z"/>
+  </g>
+  <g>
+    <circle cx="150" cy="262" r="74" fill="url(#flame)"/>
+    <circle cx="890" cy="262" r="74" fill="url(#flame)"/>
+    <path d="M132 298 C138 260 166 260 174 298" fill="#d54831"/>
+    <path d="M872 298 C878 260 906 260 914 298" fill="#d54831"/>
+  </g>
+  <g opacity=".38" fill="none" stroke="#e2c06a" stroke-width="8">
+    <path d="M344 408 C440 356 600 356 696 408"/>
+    <path d="M326 456 C438 504 604 504 714 456"/>
+  </g>
+  <path d="M410 206 C478 160 565 160 634 206" fill="none" stroke="#6ed1c4" stroke-width="8" opacity=".32"/>
+</svg>

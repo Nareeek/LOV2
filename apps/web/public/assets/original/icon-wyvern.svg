@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Original wyvern pet icon">
+  <rect width="96" height="96" rx="8" fill="#211b20"/>
+  <path d="M22 48 C34 18 62 18 74 48 L58 42 L48 26 L38 42 Z" fill="#b75238" stroke="#d2b66d" stroke-width="4"/>
+  <ellipse cx="48" cy="58" rx="24" ry="20" fill="#d78245" stroke="#6f322a" stroke-width="4"/>
+  <path d="M28 62 C12 58 14 40 32 42" fill="#79384c" stroke="#d2b66d" stroke-width="4"/>
+  <path d="M68 62 C84 58 82 40 64 42" fill="#79384c" stroke="#d2b66d" stroke-width="4"/>
+  <circle cx="40" cy="54" r="4" fill="#111"/>
+  <circle cx="56" cy="54" r="4" fill="#111"/>
+</svg>
