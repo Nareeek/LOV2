@@ -1,0 +1,20 @@
+{
+  "license": "original-generated-placeholder",
+  "assets": [
+    "scene-hub.svg",
+    "scene-tavern.svg",
+    "scene-map.svg",
+    "scene-combat.svg",
+    "scene-inventory.svg",
+    "scene-character.svg",
+    "scene-pets.svg",
+    "scene-journal.svg",
+    "hero-nocturne.svg",
+    "enemy-ash-baron.svg",
+    "pet-wyvern.svg",
+    "icon-rapier.svg",
+    "icon-vest.svg",
+    "icon-onyx.svg",
+    "icon-wyvern.svg"
+  ]
+}

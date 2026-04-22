@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="220" viewBox="0 0 260 220" role="img" aria-label="original ember wyvern pet">
+  <path d="M44 139C16 120 13 78 54 52c38-24 78-4 94 26 33-8 67 2 86 28-30-3-54 5-72 26 5 44-47 70-90 48-13-7-22-20-28-41z" fill="#24413b" stroke="#e0b35f" stroke-width="5"/>
+  <path d="M139 78c-10-42 19-62 56-68-12 25-14 49-3 72M82 76C69 34 31 25 10 20c24 28 31 54 23 84" fill="#7b2630" stroke="#e0b35f" stroke-width="5"/>
+  <circle cx="101" cy="105" r="7" fill="#83d3bf"/>
+  <path d="M124 119l32 8-31 11z" fill="#e0b35f"/>
+  <path d="M66 162l-22 42h35l11-32M150 168l26 36h34l-33-48" fill="#18201f" stroke="#e0b35f" stroke-width="4"/>
+</svg>
+

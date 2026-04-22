@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestStatus {
+  available
+  active
+  completed
+  claimed
+}
+
+enum TravelStatus {
+  traveling
+  arrived
+  claimed
+}
+
+enum CombatStatus {
+  pending
+  won
+  lost
+}
+
+enum PaymentStatus {
+  created
+  paid
+  failed
+  refunded
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  displayName  String
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  sessions     Session[]
+  characters   Character[]
+  payments     PaymentOrder[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Character {
+  id                String                @id @default(cuid())
+  userId            String
+  name              String
+  raceId            String
+  gender            String                @default("male")
+  classId           String                @default("swordsman")
+  level             Int                   @default(1)
+  experience        Int                   @default(0)
+  rebirths          Int                   @default(0)
+  health            Int
+  maxHealth         Int
+  unspentStatPoints Int                   @default(0)
+  stats             Json
+  gold              Int                   @default(120)
+  gems              Int                   @default(0)
+  energy            Int                   @default(30)
+  maxEnergy         Int                   @default(30)
+  energyUpdatedAt   DateTime              @default(now())
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inventory         InventoryStack[]
+  quests            QuestProgress[]
+  travels           TravelTask[]
+  combats           CombatEncounter[]
+  ledger            CurrencyLedgerEntry[]
+  events            GameEvent[]
+
+  @@unique([userId, name])
+}
+
+model InventoryStack {
+  id           String   @id @default(cuid())
+  characterId  String
+  itemId       String
+  quantity     Int      @default(1)
+  enhancementLevel Int  @default(0)
+  equippedSlot String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, itemId])
+}
+
+model QuestProgress {
+  id          String      @id @default(cuid())
+  characterId String
+  questId     String
+  status      QuestStatus @default(active)
+  progress    Int         @default(0)
+  target      Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  character   Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, questId])
+}
+
+model TravelTask {
+  id          String       @id @default(cuid())
+  characterId String
+  locationId  String
+  questId     String?
+  status      TravelStatus @default(traveling)
+  startedAt   DateTime     @default(now())
+  completesAt DateTime
+  character   Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model CombatEncounter {
+  id          String       @id @default(cuid())
+  characterId String
+  enemyId     String
+  questId     String?
+  status      CombatStatus @default(pending)
+  log         Json?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  character   Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model CurrencyLedgerEntry {
+  id          String    @id @default(cuid())
+  characterId String
+  currency    String
+  amount      Int
+  reason      String
+  createdAt   DateTime  @default(now())
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model PaymentOrder {
+  id              String        @id @default(cuid())
+  userId          String
+  stripeSessionId String?       @unique
+  status          PaymentStatus @default(created)
+  gems            Int
+  amountMinor     Int
+  currency        String        @default("usd")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PaymentWebhookEvent {
+  id             String   @id
+  type           String
+  processedAt    DateTime @default(now())
+  payloadSummary Json
+}
+
+model GameEvent {
+  id          String    @id @default(cuid())
+  characterId String?
+  type        String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}

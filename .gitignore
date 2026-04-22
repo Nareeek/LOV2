@@ -1,0 +1,14 @@
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+.turbo/
+.cache/
+.env
+.env.*
+!.env.example
+*.log
+playwright-report/
+test-results/
+apps/web/.vite/
+apps/api/prisma/migrations/dev.db*

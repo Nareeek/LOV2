@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 610" role="img" aria-label="Original moonlit travel map and harbor">
+  <defs>
+    <linearGradient id="night" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#18335f"/>
+      <stop offset=".42" stop-color="#20506a"/>
+      <stop offset="1" stop-color="#163329"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" x2="1">
+      <stop offset="0" stop-color="#164d68"/>
+      <stop offset=".55" stop-color="#2a7375"/>
+      <stop offset="1" stop-color="#173534"/>
+    </linearGradient>
+    <radialGradient id="beacon" cx=".5" cy=".5" r=".7">
+      <stop offset="0" stop-color="#b8ffda"/>
+      <stop offset=".4" stop-color="#36e0a0" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#36e0a0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1040" height="610" fill="url(#night)"/>
+  <circle cx="830" cy="78" r="58" fill="#f6edca" opacity=".92"/>
+  <path d="M0 225 C180 170 265 234 426 174 C578 118 666 198 790 142 C922 82 980 128 1040 100 L1040 300 L0 300 Z" fill="#1c2a43" opacity=".78"/>
+  <rect y="330" width="1040" height="280" fill="url(#sea)"/>
+  <g opacity=".35" stroke="#bde9ee" stroke-width="4" stroke-linecap="round">
+    <path d="M30 386 C160 366 310 390 458 368"/>
+    <path d="M520 420 C664 394 788 416 958 388"/>
+    <path d="M100 500 C250 470 418 496 570 464"/>
+    <path d="M650 548 C765 520 890 545 1010 510"/>
+  </g>
+  <path d="M0 410 L280 350 L504 382 L690 316 L1040 300 L1040 610 L0 610 Z" fill="#30453c"/>
+  <path d="M110 424 C260 370 420 424 560 376 C730 318 840 338 970 320" fill="none" stroke="#dcc06d" stroke-width="12" stroke-dasharray="26 22" opacity=".85"/>
+  <g transform="translate(108 300)">
+    <ellipse cx="95" cy="110" rx="98" ry="32" fill="#111b1c" opacity=".58"/>
+    <rect x="32" y="56" width="126" height="88" fill="#472f27" stroke="#caa05b" stroke-width="6"/>
+    <path d="M10 62 L96 8 L184 64 L150 64 L96 32 L42 64 Z" fill="#bd3949"/>
+    <circle cx="96" cy="96" r="28" fill="#f2c96d" opacity=".82"/>
+  </g>
+  <g transform="translate(440 230)">
+    <ellipse cx="108" cy="180" rx="150" ry="34" fill="#0c171a" opacity=".55"/>
+    <path d="M40 166 L176 166 L222 204 L0 204 Z" fill="#5b3d2a" stroke="#c99d5a" stroke-width="5"/>
+    <path d="M72 124 L144 124 L168 166 L52 166 Z" fill="#2d3d48"/>
+    <path d="M92 124 L106 44 L122 124" fill="#253347" stroke="#d9c37a" stroke-width="5"/>
+    <circle cx="112" cy="78" r="38" fill="url(#beacon)"/>
+  </g>
+  <g transform="translate(740 126)">
+    <ellipse cx="96" cy="214" rx="128" ry="34" fill="#0c171a" opacity=".55"/>
+    <path d="M34 210 L164 210 L188 252 L10 252 Z" fill="#49332d"/>
+    <rect x="60" y="96" width="76" height="118" fill="#302b35" stroke="#caa05b" stroke-width="5"/>
+    <path d="M36 100 L98 44 L162 100 L132 100 L98 70 L66 100 Z" fill="#ad2d48"/>
+    <path d="M50 44 L98 0 L148 44 Z" fill="#caa05b"/>
+    <circle cx="98" cy="150" r="26" fill="#d6463e" opacity=".8"/>
+  </g>
+  <g transform="translate(68 454)" fill="#34251c" stroke="#d1a35d" stroke-width="4">
+    <path d="M0 44 C62 12 128 12 194 44 L162 72 L32 72 Z"/>
+    <path d="M228 8 C294 0 344 18 392 54 L258 58 Z"/>
+  </g>
+</svg>
