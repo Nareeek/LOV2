@@ -6,13 +6,13 @@ describe('game flow helpers', () => {
   it('moves from task to travel to combat to reward', () => {
     const now = Date.now();
     const base = createState();
-    expect(deriveFlowStep(base, 'none', now)).toBe('taskAvailable');
+    expect(deriveFlowStep(base, { replayActive: false, rewardVisible: false }, now)).toBe('taskAvailable');
 
     const withQuest = {
       ...base,
-      questProgress: [{ id: 'qp1', characterId: 'c1', questId: 'quest-1', status: 'active', progress: 0, target: 1 }],
-    };
-    expect(deriveFlowStep(withQuest, 'none', now)).toBe('taskAccepted');
+      questProgress: [{ id: 'qp1', characterId: 'c1', questId: 'quest-1', status: 'active' as const, progress: 0, target: 1 }],
+    } satisfies BootstrapState;
+    expect(deriveFlowStep(withQuest, { replayActive: false, rewardVisible: false }, now)).toBe('taskAccepted');
 
     const withTravel = {
       ...withQuest,
@@ -22,23 +22,41 @@ describe('game flow helpers', () => {
           characterId: 'c1',
           locationId: 'loc-1',
           questId: 'quest-1',
-          status: 'traveling',
+          status: 'traveling' as const,
           startedAt: new Date(now - 5000).toISOString(),
           completesAt: new Date(now + 5000).toISOString(),
         },
       ],
-    };
-    expect(deriveFlowStep(withTravel, 'none', now)).toBe('traveling');
+    } satisfies BootstrapState;
+    expect(deriveFlowStep(withTravel, { replayActive: false, rewardVisible: false }, now)).toBe('traveling');
     expect(deriveRouteState(withTravel, 'quest-1', now)).toBe('traveling');
     expect(deriveRouteState(withTravel, 'quest-1', now + 6000)).toBe('ready');
 
     const withCombat = {
       ...withQuest,
-      combats: [{ id: 'combat-1', characterId: 'c1', enemyId: 'enemy-1', status: 'pending', createdAt: new Date(now).toISOString() }],
-    };
-    expect(deriveFlowStep(withCombat, 'none', now)).toBe('combatPending');
-    expect(deriveFlowStep(withCombat, 'combatReplay', now)).toBe('combatReplaying');
-    expect(deriveFlowStep(withCombat, 'reward', now)).toBe('rewardReady');
+      combats: [{ id: 'combat-1', characterId: 'c1', enemyId: 'enemy-1', status: 'pending' as const, createdAt: new Date(now).toISOString() }],
+    } satisfies BootstrapState;
+    expect(deriveFlowStep(withCombat, { replayActive: false, rewardVisible: false }, now)).toBe('combatPending');
+
+    const withResolvedCombat = {
+      ...withQuest,
+      combats: [
+        {
+          id: 'combat-1',
+          characterId: 'c1',
+          enemyId: 'enemy-1',
+          status: 'won' as const,
+          createdAt: new Date(now).toISOString(),
+          log: {
+            winner: 'character' as const,
+            turns: [{ turn: 1, actor: 'character' as const, damage: 30, critical: false, targetHealth: 0 }],
+            reward: { experience: 10, gold: 5, gems: 0, itemIds: [] },
+          },
+        },
+      ],
+    } satisfies BootstrapState;
+    expect(deriveFlowStep(withResolvedCombat, { replayActive: true, rewardVisible: false }, now)).toBe('combatReplaying');
+    expect(deriveFlowStep(withResolvedCombat, { replayActive: false, rewardVisible: true }, now)).toBe('rewardReady');
   });
 
   it('computes combat replay health snapshots from visible turns', () => {
@@ -86,6 +104,7 @@ function createState(): BootstrapState {
         nameRu: 'Враг',
         level: 1,
         health: 80,
+        armor: 2,
         boss: false,
         stats: { сила: 2, ловкость: 2, интуиция: 2, удача: 2 },
         reward: { experience: 10, gold: 5, gems: 0, itemIds: [] },

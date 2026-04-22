@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { sceneDefinitions } from '@lov2/game-data';
-import { experienceForLevel, type BootstrapState, type SceneAction, type SceneHotspot, type SceneId } from '@lov2/shared';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
+import {
+  experienceForLevel,
+  type BootstrapState,
+  type SceneAction,
+  type SceneDefinition,
+  type SceneHotspot,
+  type SceneId,
+  type ScenePanelId,
+} from '@lov2/shared';
 import { apiClient } from '../../lib/api.js';
 import {
-  deriveFlowStep,
   deriveRouteState,
   getActiveTravel,
   getCombatReplayFrame,
@@ -12,40 +19,44 @@ import {
   getQuestDefinition,
   isTravelReady,
 } from '../../game/flow.js';
-import type { ChromePreset, GameIntent, GameOverlayId, ScreenMode } from '../../game/types.js';
+import type {
+  GameIntent,
+  InfoWindowId,
+  MetaTab,
+  RouteState,
+  SheetTab,
+  StageMode,
+  WorldLocation,
+  WorldWindowId,
+} from '../../game/types.js';
 import { SceneViewport } from '../SceneViewport.js';
 import { ActionDock } from './ActionDock.js';
 import { BottomTray } from './BottomTray.js';
 import {
-  CharacterInfoPanel,
+  ArenaPreviewWindow,
+  BoatmanWindow,
   CharacterSheet,
-  CombatCommandWindow,
-  CombatHud,
+  CombatStage,
   EnemyInfoPanel,
-  InventorySheet,
+  ExerciseDetailWindow,
+  ForgeWindow,
+  FountainWindow,
+  HeroInfoPanel,
   ItemInfoPanel,
-  JournalSheet,
-  MapStatusWindow,
-  NpcDialogScreen,
-  panelTitle,
+  JournalWindow,
   PetInfoPanel,
-  PetSheet,
-  RewardScreen,
-  StoreSheet,
+  RewardWindow,
+  SettingsWindow,
+  StoreWindow,
+  TavernWindow,
+  TowerWindow,
+  TravelStage,
 } from './GamePanels.js';
 import { HudFrame } from './HudFrame.js';
 import { OverlayLayer } from './OverlayLayer.js';
 import { TaskRail } from './TaskRail.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
-
-const META_RAIL_ENTRIES: Array<{ id: string; label: string; symbol: string; sceneId: SceneId }> = [
-  { id: 'hub', label: 'Двор', symbol: 'H', sceneId: 'hub' },
-  { id: 'character', label: 'Герой', symbol: 'G', sceneId: 'character' },
-  { id: 'inventory', label: 'Сумка', symbol: 'I', sceneId: 'inventory' },
-  { id: 'pets', label: 'Питомец', symbol: 'P', sceneId: 'pets' },
-  { id: 'journal', label: 'Летопись', symbol: 'J', sceneId: 'journal' },
-];
 
 export function GameShell({
   state,
@@ -56,17 +67,29 @@ export function GameShell({
   onBootstrap: (state: BootstrapState) => void;
   onLogout: () => Promise<void> | void;
 }) {
-  const [sceneId, setSceneId] = useState<SceneId>('hub');
-  const [returnSceneId, setReturnSceneId] = useState<SceneId>('hub');
-  const [screenMode, setScreenMode] = useState<ScreenMode>('hub');
-  const [overlay, setOverlay] = useState<GameOverlayId>('none');
+  const [worldLocation, setWorldLocation] = useState<WorldLocation>('courtyard');
+  const [baseStage, setBaseStage] = useState<'world' | 'sheet' | 'travel' | 'combat'>(() =>
+    initialStageFromState(state),
+  );
+  const [sheetReturnStage, setSheetReturnStage] = useState<'world' | 'travel'>('world');
+  const [worldWindow, setWorldWindow] = useState<WorldWindowId>('none');
+  const [infoWindow, setInfoWindow] = useState<InfoWindowId>('none');
+  const [sheetTab, setSheetTab] = useState<SheetTab>('character');
+  const [metaTab, setMetaTab] = useState<MetaTab>('news');
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(state.quests[0]?.id ?? null);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(exerciseDefinitions[0]?.id ?? null);
+  const [selectedItemStackId, setSelectedItemStackId] = useState<string | null>(null);
+  const [selectedStoreItemId, setSelectedStoreItemId] = useState<string | null>(null);
+  const [selectedForgeStackId, setSelectedForgeStackId] = useState<string | null>(null);
+  const [selectedArenaEnemyId, setSelectedArenaEnemyId] = useState<string | null>(state.enemies[0]?.id ?? null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('Добро пожаловать в ночной двор.');
   const [clock, setClock] = useState(() => Date.now());
   const [petAssistArmed, setPetAssistArmed] = useState(false);
   const [replayTurnCount, setReplayTurnCount] = useState(0);
+  const [replayActive, setReplayActive] = useState(false);
+  const [rewardVisible, setRewardVisible] = useState(false);
+  const [returnLocation, setReturnLocation] = useState<WorldLocation>('courtyard');
 
   useEffect(() => {
     const id = window.setInterval(() => setClock(Date.now()), 1000);
@@ -80,36 +103,64 @@ export function GameShell({
     setSelectedQuestId(state.quests[0]?.id ?? null);
   }, [selectedQuestId, state.quests]);
 
+  useEffect(() => {
+    if (selectedExerciseId && exerciseDefinitions.some((exercise) => exercise.id === selectedExerciseId)) {
+      return;
+    }
+    setSelectedExerciseId(exerciseDefinitions[0]?.id ?? null);
+  }, [selectedExerciseId]);
+
+  useEffect(() => {
+    if (selectedArenaEnemyId && state.enemies.some((enemy) => enemy.id === selectedArenaEnemyId)) {
+      return;
+    }
+    setSelectedArenaEnemyId(state.enemies[0]?.id ?? null);
+  }, [selectedArenaEnemyId, state.enemies]);
+
+  useEffect(() => {
+    if (selectedItemStackId && state.inventory.some((stack) => stack.id === selectedItemStackId)) {
+      return;
+    }
+    setSelectedItemStackId(null);
+  }, [selectedItemStackId, state.inventory]);
+
+  useEffect(() => {
+    if (selectedForgeStackId && state.inventory.some((stack) => stack.id === selectedForgeStackId)) {
+      return;
+    }
+    setSelectedForgeStackId(null);
+  }, [selectedForgeStackId, state.inventory]);
+
   const scenes = state.scenes.length ? state.scenes : sceneDefinitions;
   const sceneById = useMemo(() => new Map(scenes.map((scene) => [scene.id, scene])), [scenes]);
+  const sceneId: SceneId = worldLocation === 'courtyard' ? 'hub' : 'map';
   const activeScene = sceneById.get(sceneId) ?? fallbackHub;
   const activeTravel = getActiveTravel(state);
   const activeTravelReady = activeTravel ? isTravelReady(activeTravel, clock) : false;
   const pendingCombat = getPendingCombat(state);
   const latestResolvedCombat = getLatestResolvedCombat(state);
-  const latestCombat = pendingCombat ?? latestResolvedCombat ?? state.combats[0];
-  const selectedEnemy = state.enemies.find((enemy) => enemy.id === latestCombat?.enemyId);
+  const arenaEnemy = state.enemies.find((enemy) => enemy.id === selectedArenaEnemyId) ?? state.enemies[0];
+  const combatEnemyId = pendingCombat?.enemyId ?? latestResolvedCombat?.enemyId ?? arenaEnemy?.id;
+  const combatEnemy = state.enemies.find((enemy) => enemy.id === combatEnemyId) ?? arenaEnemy;
   const selectedQuest = selectedQuestId ? getQuestDefinition(state, selectedQuestId) : state.quests[0];
-  const selectedItemStack = selectedItemId ? state.inventory.find((stack) => stack.id === selectedItemId) : undefined;
+  const selectedStoreItem = selectedStoreItemId ? state.items.find((item) => item.id === selectedStoreItemId) : undefined;
+  const selectedItemStack = selectedItemStackId ? state.inventory.find((stack) => stack.id === selectedItemStackId) : undefined;
   const selectedItem = selectedItemStack ? state.items.find((item) => item.id === selectedItemStack.itemId) : undefined;
-  const equippedPetStack = state.inventory.find((stack) => stack.equippedSlot === 'pet');
-  const equippedPetItem = equippedPetStack ? state.items.find((item) => item.id === equippedPetStack.itemId) : undefined;
+  const selectedForgeStack = selectedForgeStackId ? state.inventory.find((stack) => stack.id === selectedForgeStackId) : undefined;
   const raceName = state.character
     ? (state.races.find((race) => race.id === state.character?.raceId)?.nameRu ?? state.character.raceId)
     : '';
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
-  const flowStep = deriveFlowStep(state, overlay, clock);
-  const chromePreset = chromePresetForScreen(screenMode);
-  const activeWorldScene = worldSceneForScreen(screenMode, returnSceneId, sceneId);
+  const stageMode: StageMode = baseStage === 'world' && worldWindow !== 'none' ? 'worldWindow' : baseStage;
 
   const routeStates = useMemo(
     () => Object.fromEntries(state.quests.map((quest) => [quest.id, deriveRouteState(state, quest.id, clock)])),
     [clock, state],
-  );
+  ) as Record<string, RouteState>;
 
   useEffect(() => {
-    if (overlay !== 'combatReplay' || !latestResolvedCombat?.log) {
+    if (!replayActive || !latestResolvedCombat?.log) {
       return;
     }
 
@@ -121,85 +172,49 @@ export function GameShell({
       if (turnIndex >= latestResolvedCombat.log!.turns.length) {
         window.clearInterval(interval);
         window.setTimeout(() => {
-          setScreenMode('reward');
-          setOverlay('reward');
-        }, 550);
+          setReplayActive(false);
+          setRewardVisible(true);
+        }, 350);
       }
     }, 650);
 
     return () => window.clearInterval(interval);
-  }, [latestResolvedCombat, overlay]);
+  }, [latestResolvedCombat, replayActive]);
 
   const visibleReplayTurns =
-    overlay === 'combatReplay'
+    replayActive
       ? latestResolvedCombat?.log?.turns.slice(0, replayTurnCount) ?? []
       : latestResolvedCombat?.log?.turns ?? [];
+
   const replayFrame = getCombatReplayFrame(
     latestResolvedCombat?.log,
-    selectedEnemy?.health ?? 1,
+    combatEnemy?.health ?? 1,
     state.character?.maxHealth ?? 1,
-    overlay === 'combatReplay' ? replayTurnCount : visibleReplayTurns.length,
+    replayActive ? replayTurnCount : visibleReplayTurns.length,
   );
-
-  const disabledHotspotIds = useMemo(() => {
-    const ids: string[] = [];
-    for (const hotspot of activeScene.hotspots) {
-      if (hotspot.action.type === 'travelNode' && hotspot.action.questId) {
-        const routeState = routeStates[hotspot.action.questId];
-        if (routeState === 'locked') {
-          ids.push(hotspot.id);
-        }
-      }
-      if (hotspot.id === 'combat-result' && !latestResolvedCombat) {
-        ids.push(hotspot.id);
-      }
-    }
-    return ids;
-  }, [activeScene.hotspots, latestResolvedCombat, routeStates]);
 
   const hotspotBadges = useMemo(() => {
     const badges: Record<string, string> = {};
-    for (const hotspot of activeScene.hotspots) {
-      if (hotspot.action.type === 'travelNode' && hotspot.action.questId) {
-        const routeState = routeStates[hotspot.action.questId];
-        badges[hotspot.id] =
-          routeState === 'ready'
-            ? 'готово'
-            : routeState === 'traveling'
-              ? 'в пути'
-              : routeState === 'available'
-                ? 'доступно'
-                : 'закрыто';
-      }
-      if (hotspot.id === 'tavern-board') {
-        const activeCount = state.questProgress.filter((quest) => quest.status === 'active').length;
-        badges[hotspot.id] = activeCount > 0 ? `${activeCount}` : 'новое';
-      }
-      if (hotspot.id === 'combat-enemy' && pendingCombat) {
-        badges[hotspot.id] = 'бой';
-      }
-      if (hotspot.id === 'combat-result' && latestResolvedCombat) {
-        badges[hotspot.id] = 'награда';
+    if (sceneId === 'hub') {
+      const activeCount = state.questProgress.filter((quest) => quest.status === 'active').length;
+      if (activeCount > 0) {
+        badges['hub-tavern'] = `${activeCount}`;
       }
     }
     return badges;
-  }, [activeScene.hotspots, latestResolvedCombat, pendingCombat, routeStates, state.questProgress]);
+  }, [sceneId, state.questProgress]);
 
   const hotspotToneById = useMemo(() => {
     const tones: Record<string, 'neutral' | 'available' | 'traveling' | 'ready' | 'locked' | 'active'> = {};
     for (const hotspot of activeScene.hotspots) {
-      if (hotspot.action.type === 'travelNode' && hotspot.action.questId) {
-        tones[hotspot.id] = routeStates[hotspot.action.questId];
-      } else if (hotspot.id === 'tavern-board' || hotspot.id === 'tavern-keeper') {
-        tones[hotspot.id] = flowStep === 'taskAccepted' ? 'active' : 'available';
-      } else if (hotspot.id === 'combat-enemy' && pendingCombat) {
+      if (hotspot.id === 'hub-tavern' && state.questProgress.some((quest) => quest.status === 'active')) {
         tones[hotspot.id] = 'active';
       } else {
-        tones[hotspot.id] = 'neutral';
+        tones[hotspot.id] = 'available';
       }
     }
     return tones;
-  }, [activeScene.hotspots, flowStep, pendingCombat, routeStates]);
+  }, [activeScene.hotspots, state.questProgress]);
 
   const run = useCallback(
     async <T,>(action: () => Promise<T>, success: string) => {
@@ -222,252 +237,295 @@ export function GameShell({
     [onBootstrap],
   );
 
-  const goToScene = useCallback(
-    (nextSceneId: SceneId, nextOverlay: GameOverlayId = 'none') => {
-      setSceneId(nextSceneId);
-      setScreenMode(screenModeForScene(nextSceneId, nextOverlay));
-      setOverlay(nextOverlay);
-      if (isWorldScene(nextSceneId)) {
-        setReturnSceneId(nextSceneId);
-      }
-    },
-    [],
-  );
+  const openLocation = useCallback((location: WorldLocation) => {
+    setWorldLocation(location);
+    setBaseStage('world');
+    setWorldWindow('none');
+    setInfoWindow('none');
+    setRewardVisible(false);
+    setReplayActive(false);
+    setPetAssistArmed(false);
+  }, []);
 
-  const returnToWorld = useCallback(() => {
-    const nextOverlay = baseOverlayForScene(returnSceneId, {
-      pendingCombat: Boolean(pendingCombat),
-      activeTravel: Boolean(activeTravel),
-    });
-    setSceneId(returnSceneId);
-    setScreenMode(screenModeForScene(returnSceneId, nextOverlay));
-    setOverlay(nextOverlay);
-  }, [activeTravel, pendingCombat, returnSceneId]);
+  const openWorldWindow = useCallback((windowId: Exclude<WorldWindowId, 'none'>) => {
+    setWorldWindow(windowId);
+    setInfoWindow('none');
+  }, []);
 
-  const closeAuxiliarySurface = useCallback(() => {
-    if (overlay === 'characterInfo' || overlay === 'enemyInfo' || overlay === 'itemInfo' || overlay === 'petInfo') {
-      setOverlay('none');
-      return;
-    }
+  const closeWorldWindow = useCallback(() => {
+    setWorldWindow('none');
+  }, []);
 
-    if (screenMode === 'npcDialog' && overlay === 'taskDetail') {
-      setOverlay('taskList');
-      return;
-    }
+  const openSheet = useCallback((tab: SheetTab) => {
+    setSheetReturnStage(baseStage === 'travel' ? 'travel' : 'world');
+    setBaseStage('sheet');
+    setSheetTab(tab);
+    setWorldWindow('none');
+    setInfoWindow('none');
+  }, [baseStage]);
 
-    if (screenMode === 'reward') {
-      returnToWorld();
-      return;
-    }
+  const closeSheet = useCallback(() => {
+    setBaseStage(sheetReturnStage);
+    setInfoWindow('none');
+  }, [sheetReturnStage]);
 
-    if (screenMode === 'storeSheet' || chromePreset === 'sheet') {
-      returnToWorld();
-      return;
-    }
-
-    if (overlay === 'travel') {
-      setOverlay('none');
-      return;
-    }
-
-    if (overlay === 'combatReplay') {
-      if (latestResolvedCombat?.log) {
-        setScreenMode('reward');
-        setOverlay('reward');
-      } else {
-        setOverlay('combatReady');
-      }
-      return;
-    }
-
-    setOverlay('none');
-  }, [chromePreset, latestResolvedCombat, overlay, returnToWorld, screenMode]);
+  const closeReward = useCallback(() => {
+    setRewardVisible(false);
+    setReplayActive(false);
+    setPetAssistArmed(false);
+    setWorldWindow('none');
+    setInfoWindow('none');
+    setBaseStage('world');
+    setWorldLocation(returnLocation);
+  }, [returnLocation]);
 
   const handleIntent = useCallback(
     async (intent: GameIntent) => {
       switch (intent.type) {
-        case 'openScene': {
-          const nextOverlay = baseOverlayForScene(intent.sceneId, {
-            pendingCombat: Boolean(pendingCombat),
-            activeTravel: Boolean(activeTravel),
-          });
-          goToScene(intent.sceneId, nextOverlay);
+        case 'openLocation':
+          openLocation(intent.location);
           return;
-        }
-        case 'openOverlay':
-          if (intent.overlay === 'store') {
-            setScreenMode('storeSheet');
-            setOverlay('store');
-            return;
-          }
-          setOverlay(intent.overlay);
+        case 'openWindow':
+          openWorldWindow(intent.windowId);
           return;
-        case 'closeOverlay':
-          closeAuxiliarySurface();
+        case 'closeWindow':
+          closeWorldWindow();
           return;
-        case 'openTaskList':
-          goToScene('tavern', 'taskList');
+        case 'openSheet':
+          openSheet(intent.tab);
+          return;
+        case 'closeSheet':
+          closeSheet();
+          return;
+        case 'setSheetTab':
+          setSheetTab(intent.tab);
+          return;
+        case 'openInfo':
+          setInfoWindow(intent.windowId);
+          return;
+        case 'closeInfo':
+          setInfoWindow('none');
           return;
         case 'selectTask':
           setSelectedQuestId(intent.questId);
-          goToScene('tavern', 'taskDetail');
+          setWorldWindow('tavern');
           return;
+        case 'selectExercise':
+          setSelectedExerciseId(intent.exerciseId);
+          setWorldWindow('exerciseDetail');
+          return;
+        case 'selectArenaEnemy': {
+          const currentIndex = state.enemies.findIndex((enemy) => enemy.id === (intent.enemyId || selectedArenaEnemyId));
+          const nextEnemy = state.enemies[(currentIndex + 1 + state.enemies.length) % state.enemies.length] ?? state.enemies[0];
+          setSelectedArenaEnemyId(nextEnemy?.id ?? null);
+          setWorldWindow('arenaPreview');
+          return;
+        }
         case 'acceptTask':
           await run(() => apiClient.acceptQuest(intent.questId), 'Контракт принят.');
           setSelectedQuestId(intent.questId);
-          goToScene('tavern', 'taskDetail');
+          setWorldWindow('tavern');
           return;
-        case 'startTravel':
+        case 'startTravel': {
+          setReturnLocation(worldLocation);
+          const questProgress = state.questProgress.find((quest) => quest.questId === intent.questId);
+          if (!questProgress || questProgress.status !== 'active') {
+            const accepted = await run(() => apiClient.acceptQuest(intent.questId), 'Контракт принят.');
+            if (!accepted) {
+              return;
+            }
+          }
           await run(
             () => apiClient.startTravel({ locationId: intent.locationId, questId: intent.questId }),
             'Путь начался.',
           );
-          goToScene('map', 'travel');
+          setWorldWindow('none');
+          setInfoWindow('none');
+          setRewardVisible(false);
+          setReplayActive(false);
+          setPetAssistArmed(false);
+          setBaseStage('travel');
           return;
+        }
         case 'claimTravel':
           await run(() => apiClient.claimTravel(intent.travelId), 'Вы добрались до места.');
-          goToScene('combat', 'combatReady');
+          setWorldWindow('none');
+          setInfoWindow('none');
+          setRewardVisible(false);
+          setReplayActive(false);
+          setPetAssistArmed(false);
+          setBaseStage('combat');
           return;
-        case 'openCombat':
-          goToScene('combat', pendingCombat ? 'combatReady' : latestResolvedCombat ? 'reward' : 'none');
-          if (!pendingCombat && latestResolvedCombat) {
-            setScreenMode('reward');
-          }
+        case 'startArena':
+          setReturnLocation(worldLocation);
+          await run(() => apiClient.startArena({ enemyId: intent.enemyId }), 'Соперник вызван.');
+          setWorldWindow('none');
+          setInfoWindow('none');
+          setRewardVisible(false);
+          setReplayActive(false);
+          setPetAssistArmed(false);
+          setBaseStage('combat');
           return;
         case 'resolveCombat':
           await run(() => apiClient.resolveCombat(intent.combatId), 'Дуэль завершена.');
-          goToScene('combat', 'combatReplay');
-          return;
-        case 'showReward':
-          setSceneId('combat');
-          setReturnSceneId('combat');
-          setScreenMode('reward');
-          setOverlay('reward');
+          setReplayTurnCount(0);
+          setReplayActive(true);
+          setRewardVisible(false);
+          setPetAssistArmed(false);
+          setBaseStage('combat');
           return;
         case 'togglePetAssist':
           setPetAssistArmed((value) => !value);
-          setMessage('Питомец готов к помощи в следующем ударе.');
+          return;
+        case 'showReward':
+          setReplayActive(false);
+          setRewardVisible(true);
+          return;
+        case 'closeReward':
+          closeReward();
           return;
         case 'openItemInfo':
-          setSelectedItemId(intent.inventoryStackId);
-          setOverlay('itemInfo');
+          setSelectedItemStackId(intent.inventoryStackId);
+          setInfoWindow('itemInfo');
           return;
         case 'openPetInfo':
-          setOverlay('petInfo');
+          setInfoWindow('petInfo');
           return;
         case 'equipItem':
           await run(() => apiClient.equipItem(intent.inventoryStackId), 'Предмет экипирован.');
-          setOverlay('itemInfo');
+          setSelectedItemStackId(intent.inventoryStackId);
+          setInfoWindow('itemInfo');
+          return;
+        case 'unequipItem':
+          await run(() => apiClient.unequipItem(intent.inventoryStackId), 'Предмет снят.');
+          setSelectedItemStackId(intent.inventoryStackId);
+          if (baseStage !== 'sheet') {
+            setInfoWindow('itemInfo');
+          }
+          return;
+        case 'purchaseItem':
+          setSelectedStoreItemId(intent.itemId);
+          await run(() => apiClient.purchaseItem({ itemId: intent.itemId }), 'Покупка добавлена в рюкзак.');
+          setWorldWindow('store');
+          return;
+        case 'selectForgeItem':
+          setSelectedForgeStackId(intent.inventoryStackId);
+          return;
+        case 'upgradeItem':
+          await run(() => apiClient.upgradeItem({ inventoryStackId: intent.inventoryStackId }), 'Предмет усилен.');
+          setSelectedForgeStackId(intent.inventoryStackId);
+          setWorldWindow('forge');
           return;
         case 'allocateStat':
           await run(() => apiClient.allocateStats({ stat: intent.stat, points: 1 }), `+1 к ${intent.stat}`);
-          goToScene('character');
+          setBaseStage('sheet');
+          setSheetTab('character');
           return;
         case 'refillEnergy':
-          await run(() => apiClient.refillEnergy({ mode: 'gems' }), 'Энергия пополнена.');
-          setScreenMode('storeSheet');
-          setOverlay('store');
+          await run(() => apiClient.refillEnergy({ mode: intent.mode }), 'Энергия пополнена.');
+          setWorldWindow('tavern');
+          return;
+        default:
           return;
       }
     },
-    [activeTravel, closeAuxiliarySurface, goToScene, latestResolvedCombat, pendingCombat, run],
+    [
+      baseStage,
+      closeReward,
+      closeSheet,
+      closeWorldWindow,
+      openLocation,
+      openSheet,
+      openWorldWindow,
+      run,
+      selectedArenaEnemyId,
+      state.enemies,
+      state.questProgress,
+      worldLocation,
+    ],
   );
+
+  const handleIntentRef = useRef(handleIntent);
+  handleIntentRef.current = handleIntent;
 
   const handleHotspotClick = useCallback(
     async (action: SceneAction, hotspot: SceneHotspot) => {
       setMessage(hotspot.descriptionRu);
+
       if (action.type === 'openScene') {
-        await handleIntent({ type: 'openScene', sceneId: action.sceneId });
+        await handleIntent({
+          type: 'openLocation',
+          location: action.sceneId === 'map' ? 'harbor' : 'courtyard',
+        });
         return;
       }
 
       if (action.type === 'openPanel') {
-        switch (action.panelId) {
-          case 'contracts':
-            await handleIntent({ type: 'openTaskList' });
-            return;
-          case 'travel':
-            goToScene('map', 'travel');
-            return;
-          case 'reward':
-            await handleIntent({ type: 'showReward' });
-            return;
-          case 'inventory':
-            goToScene('inventory');
-            return;
-          case 'character':
-            goToScene('character');
-            return;
-          case 'pets':
-            goToScene('pets');
-            return;
-          case 'journal':
-            goToScene('journal');
-            return;
-          case 'combat':
-            await handleIntent({ type: 'openCombat' });
-            return;
+        const windowId = windowForPanel(action.panelId);
+        if (windowId) {
+          await handleIntent({ type: 'openWindow', windowId });
         }
-      }
-
-      if (action.type === 'equipFirst') {
-        const firstEquipCandidate = state.inventory.find((stack) => {
-          const item = state.items.find((entry) => entry.id === stack.itemId);
-          return item?.slot && !stack.equippedSlot;
-        });
-        if (!firstEquipCandidate) {
-          setMessage('В сумке пока нет нового предмета для экипировки.');
-          return;
-        }
-        await handleIntent({ type: 'equipItem', inventoryStackId: firstEquipCandidate.id });
         return;
       }
 
-      if (action.type === 'combatNode') {
-        if (pendingCombat) {
-          await handleIntent({ type: 'openCombat' });
-          return;
-        }
-        if (latestResolvedCombat) {
-          await handleIntent({ type: 'showReward' });
-          return;
-        }
-        setMessage('Сначала примите задание и завершите путь.');
-        return;
-      }
-
-      if (action.type === 'travelNode' && action.questId) {
-        const routeState = routeStates[action.questId];
-        if (activeTravel?.questId === action.questId && activeTravelReady) {
+      if (action.type === 'travelNode') {
+        if (activeTravel && activeTravel.questId === action.questId && activeTravelReady) {
           await handleIntent({ type: 'claimTravel', travelId: activeTravel.id });
           return;
         }
-        if (routeState === 'traveling') {
-          goToScene('map', 'travel');
-          return;
+        if (action.questId) {
+          setSelectedQuestId(action.questId);
         }
-        if (routeState === 'available') {
-          await handleIntent({ type: 'startTravel', questId: action.questId, locationId: action.locationId });
-          return;
-        }
-        await handleIntent({ type: 'selectTask', questId: action.questId });
+        setWorldWindow('tavern');
+        return;
+      }
+
+      if (action.type === 'combatNode' && pendingCombat) {
+        setBaseStage('combat');
       }
     },
-    [activeTravel, activeTravelReady, goToScene, handleIntent, latestResolvedCombat, pendingCombat, routeStates, state.inventory, state.items],
+    [activeTravel, activeTravelReady, handleIntent, pendingCombat],
   );
 
-  const infoOverlay =
-    overlay === 'characterInfo' || overlay === 'enemyInfo' || overlay === 'itemInfo' || overlay === 'petInfo';
+  const worldWindowContent = renderWorldWindow({
+    worldWindow,
+    state,
+    selectedQuest,
+    routeStates,
+    selectedStoreItem,
+    selectedItemStackId,
+    selectedForgeStack,
+    selectedArenaEnemy: arenaEnemy,
+    selectedExerciseId,
+    metaTab,
+    busy,
+    onClose: () => handleIntentRef.current({ type: 'closeWindow' }),
+    onIntent: handleIntentRef.current,
+  });
+
+  const infoWindowContent = renderInfoWindow({
+    infoWindow,
+    state,
+    combatEnemy,
+    selectedItem,
+    selectedItemStack,
+    onIntent: handleIntentRef.current,
+  });
+
+  const showTopbar = baseStage === 'world' || baseStage === 'travel';
+  const showActionDock = baseStage === 'world' || baseStage === 'travel';
+  const showBottomTray = baseStage === 'world';
+  const handleMetaTabSelect = useCallback((tab: MetaTab) => {
+    setMetaTab(tab);
+    setWorldWindow('journal');
+    setInfoWindow('none');
+  }, []);
 
   return (
     <main className="game-shell unified-shell" data-testid="game-shell">
       <section className="stage-frame-wrap">
-        <section
-          className={`stage-frame chrome-${chromePreset} screen-${screenMode}`}
-          data-testid="world-stage"
-          data-screen-mode={screenMode}
-        >
-          {state.character && (
+        <section className={`stage-frame shell-reset-stage stage-mode-${stageMode}`} data-testid="world-stage">
+          {showTopbar && state.character ? (
             <HudFrame
               character={state.character}
               raceName={raceName}
@@ -476,247 +534,258 @@ export function GameShell({
               onIntent={handleIntent}
               onLogout={() => void onLogout()}
               busy={busy}
-              message={message}
             />
+          ) : null}
+
+          {(baseStage === 'world' || baseStage === 'travel') && (
+            <section className={`stage-playfield ${baseStage === 'travel' ? 'travel-layout' : ''}`}>
+                {baseStage === 'world' ? (
+                  <aside className="stage-left-stack">
+                    <TaskRail activeExerciseId={selectedExerciseId} onIntent={handleIntent} />
+                  </aside>
+                ) : null}
+
+              <section className="stage-main">
+                {baseStage === 'world' ? (
+                  <SceneViewport
+                    scene={activeScene}
+                    hotspotBadges={hotspotBadges}
+                    hotspotToneById={hotspotToneById}
+                    onHotspotClick={handleHotspotClick}
+                  />
+                ) : (
+                  <TravelStage
+                    state={state}
+                    activeTravel={activeTravel}
+                    activeTravelReady={activeTravelReady}
+                    clock={clock}
+                    onIntent={handleIntent}
+                  />
+                )}
+              </section>
+
+              {showActionDock ? (
+                <aside className="stage-right-rail">
+                  <ActionDock onIntent={handleIntent} />
+                </aside>
+              ) : null}
+            </section>
           )}
 
-          <aside className="stage-left-rail" data-testid="left-rail">
-            {chromePreset !== 'sheet' && chromePreset !== 'reward' && (
-              <TaskRail state={state} now={clock} onIntent={handleIntent} />
-            )}
-            <nav className="left-meta-rail" data-testid="left-meta-rail" aria-label="Листы и разделы героя">
-              {META_RAIL_ENTRIES.map((entry) => (
-                <button
-                  key={entry.id}
-                  data-testid={`meta-${entry.id}`}
-                  className={`meta-rail-button ${sceneId === entry.sceneId ? 'active' : ''}`}
-                  onClick={() => handleIntent({ type: 'openScene', sceneId: entry.sceneId })}
-                >
-                  <span aria-hidden="true">{entry.symbol}</span>
-                  <small>{entry.label}</small>
-                </button>
-              ))}
-            </nav>
-          </aside>
-
-          <section className="stage-main" data-testid="stage-main">
-            <SceneViewport
-              scene={activeScene}
-              enemyName={selectedEnemy?.nameRu}
-              equippedPetName={equippedPetItem?.nameRu}
-              combatLog={latestResolvedCombat?.log}
-              replayTurnsVisible={overlay === 'combatReplay' ? replayTurnCount : undefined}
-              hotspotBadges={hotspotBadges}
-              hotspotToneById={hotspotToneById}
-              disabledHotspotIds={disabledHotspotIds}
-              onHotspotClick={handleHotspotClick}
-            />
-
-            {(screenMode === 'npcDialog' ||
-              screenMode === 'characterSheet' ||
-              screenMode === 'inventorySheet' ||
-              screenMode === 'petSheet' ||
-              screenMode === 'journalSheet' ||
-              screenMode === 'storeSheet' ||
-              screenMode === 'reward') && <div className="stage-surface-scrim" aria-hidden="true" />}
-
-            {screenMode === 'npcDialog' && (
-              <div className="stage-surface-layer">
-                <NpcDialogScreen
+          {baseStage === 'sheet' ? (
+            <section className="stage-playfield single-column">
+              <section className="stage-main sheet-main">
+                <CharacterSheet
                   state={state}
-                  overlay={overlay}
-                  routeStates={routeStates}
-                  selectedQuest={selectedQuest}
-                  activeTravel={activeTravel}
-                  activeTravelReady={activeTravelReady}
-                  clock={clock}
-                  busy={busy}
+                  activeTab={sheetTab}
+                  selectedItemStackId={selectedItemStackId}
                   onIntent={handleIntent}
                 />
-              </div>
-            )}
+              </section>
+            </section>
+          ) : null}
 
-            {screenMode === 'map' && (
-              <div className="stage-inset-layer map">
-                <MapStatusWindow
-                  state={state}
-                  activeTravel={activeTravel}
-                  activeTravelReady={activeTravelReady}
-                  clock={clock}
-                  routeStates={routeStates}
-                  busy={busy}
+          {baseStage === 'combat' && state.character ? (
+            <section className="stage-playfield single-column">
+              <section className="stage-main combat-main">
+                <CombatStage
+                  combatId={pendingCombat?.id}
+                  character={state.character}
+                  enemy={combatEnemy}
+                  characterHealth={replayFrame.characterCurrent}
+                  characterMaxHealth={replayFrame.characterStart}
+                  enemyHealth={replayFrame.enemyCurrent}
+                  enemyMaxHealth={replayFrame.enemyStart}
+                  petAssistArmed={petAssistArmed}
+                  replayTurns={visibleReplayTurns}
+                  replayActive={replayActive}
+                  rewardVisible={rewardVisible}
                   onIntent={handleIntent}
                 />
+              </section>
+            </section>
+          ) : null}
+
+          {showBottomTray ? <BottomTray activeTab={metaTab} onSelectTab={handleMetaTabSelect} /> : null}
+
+          {worldWindowContent ? (
+            <div className="shell-reset-modal-layer" data-testid="world-window-layer">
+              <div className="shell-reset-scrim" aria-hidden="true" />
+              <div className="shell-reset-modal-card">{worldWindowContent}</div>
+            </div>
+          ) : null}
+
+          {rewardVisible ? (
+            <div className="shell-reset-modal-layer reward">
+              <div className="shell-reset-scrim" aria-hidden="true" />
+              <div className="shell-reset-modal-card">
+                <RewardWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
               </div>
-            )}
+            </div>
+          ) : null}
 
-            {screenMode === 'combat' && (
-              <>
-                <div className="stage-inset-layer combat">
-                  <CombatCommandWindow
-                    pendingCombat={pendingCombat}
-                    latestResolvedCombat={latestResolvedCombat}
-                    selectedEnemy={selectedEnemy}
-                    busy={busy}
-                    visibleTurns={visibleReplayTurns}
-                    onIntent={handleIntent}
-                  />
-                </div>
-                {state.character && (
-                  <CombatHud
-                    character={state.character}
-                    enemy={selectedEnemy}
-                    characterCurrent={replayFrame.characterCurrent}
-                    characterStart={replayFrame.characterStart}
-                    enemyCurrent={replayFrame.enemyCurrent}
-                    enemyStart={replayFrame.enemyStart}
-                    petName={equippedPetItem?.nameRu}
-                    petAssistArmed={petAssistArmed}
-                    canSkip={overlay === 'combatReplay'}
-                    onIntent={handleIntent}
-                  />
-                )}
-              </>
-            )}
+          {infoWindowContent ? (
+            <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
+              {infoWindowContent}
+            </OverlayLayer>
+          ) : null}
 
-            {screenMode === 'characterSheet' && (
-              <div className="stage-surface-layer">
-                <CharacterSheet state={state} busy={busy} onIntent={handleIntent} />
-              </div>
-            )}
-
-            {screenMode === 'inventorySheet' && (
-              <div className="stage-surface-layer">
-                <InventorySheet state={state} onIntent={handleIntent} />
-              </div>
-            )}
-
-            {screenMode === 'petSheet' && (
-              <div className="stage-surface-layer">
-                <PetSheet state={state} onIntent={handleIntent} />
-              </div>
-            )}
-
-            {screenMode === 'journalSheet' && (
-              <div className="stage-surface-layer">
-                <JournalSheet state={state} />
-              </div>
-            )}
-
-            {screenMode === 'storeSheet' && (
-              <div className="stage-surface-layer">
-                <StoreSheet
-                  state={state}
-                  busy={busy}
-                  onIntent={handleIntent}
-                  onCheckout={() =>
-                    void run(async () => {
-                      await apiClient.checkout();
-                      return state;
-                    }, 'Stripe sandbox заказ создан.')
-                  }
-                />
-              </div>
-            )}
-
-            {screenMode === 'reward' && (
-              <div className="stage-surface-layer centered">
-                <RewardScreen latestResolvedCombat={latestResolvedCombat} state={state} onContinue={returnToWorld} />
-              </div>
-            )}
-
-            {infoOverlay && (
-              <OverlayLayer title={panelTitle(overlay)} placement="info" onClose={closeAuxiliarySurface}>
-                {overlay === 'characterInfo' && <CharacterInfoPanel state={state} />}
-                {overlay === 'enemyInfo' && <EnemyInfoPanel enemy={selectedEnemy} />}
-                {overlay === 'itemInfo' && (
-                  <ItemInfoPanel stack={selectedItemStack} item={selectedItem} busy={busy} onIntent={handleIntent} />
-                )}
-                {overlay === 'petInfo' && <PetInfoPanel state={state} />}
-              </OverlayLayer>
-            )}
-          </section>
-
-          <ActionDock
-            activeScene={activeWorldScene}
-            flowStep={flowStep}
-            hasPendingCombat={Boolean(pendingCombat)}
-            hasReadyTravel={Boolean(activeTravelReady)}
-            onIntent={handleIntent}
-          />
-
-          <BottomTray state={state} screenMode={screenMode} onIntent={handleIntent} />
+          {message ? <p className="hud-message shell-reset-message">{message}</p> : null}
         </section>
       </section>
     </main>
   );
 }
 
+function renderWorldWindow({
+  worldWindow,
+  state,
+  selectedQuest,
+  routeStates,
+  selectedStoreItem,
+  selectedItemStackId,
+  selectedForgeStack,
+  selectedArenaEnemy,
+  selectedExerciseId,
+  metaTab,
+  busy,
+  onClose,
+  onIntent,
+}: {
+  worldWindow: WorldWindowId;
+  state: BootstrapState;
+  selectedQuest: BootstrapState['quests'][number] | undefined;
+  routeStates: Record<string, RouteState>;
+  selectedStoreItem: BootstrapState['items'][number] | undefined;
+  selectedItemStackId: string | null;
+  selectedForgeStack: BootstrapState['inventory'][number] | undefined;
+  selectedArenaEnemy: BootstrapState['enemies'][number] | undefined;
+  selectedExerciseId: string | null;
+  metaTab: MetaTab;
+  busy: boolean;
+  onClose: () => void;
+  onIntent: (intent: GameIntent) => void;
+}) {
+  switch (worldWindow) {
+    case 'tavern':
+      return (
+        <TavernWindow
+          state={state}
+          selectedQuest={selectedQuest}
+          routeStates={routeStates}
+          busy={busy}
+          onClose={onClose}
+          onIntent={onIntent}
+        />
+      );
+    case 'arenaPreview':
+      return <ArenaPreviewWindow enemy={selectedArenaEnemy} onClose={onClose} onIntent={onIntent} />;
+    case 'store':
+      return (
+        <StoreWindow
+          state={state}
+          selectedStoreItem={selectedStoreItem}
+          selectedItemStackId={selectedItemStackId}
+          onClose={onClose}
+          onIntent={onIntent}
+        />
+      );
+    case 'forge':
+      return <ForgeWindow state={state} selectedForgeStack={selectedForgeStack} onClose={onClose} onIntent={onIntent} />;
+    case 'tower':
+      return <TowerWindow state={state} onClose={onClose} />;
+    case 'boatman':
+      return <BoatmanWindow onClose={onClose} />;
+    case 'fountain':
+      return <FountainWindow onClose={onClose} />;
+    case 'exerciseDetail':
+      return <ExerciseDetailWindow exerciseId={selectedExerciseId} onClose={onClose} />;
+    case 'journal':
+      return <JournalWindow activeTab={metaTab} onClose={onClose} />;
+    case 'settings':
+      return <SettingsWindow onClose={onClose} />;
+    default:
+      return null;
+  }
+}
+
+function renderInfoWindow({
+  infoWindow,
+  state,
+  combatEnemy,
+  selectedItem,
+  selectedItemStack,
+  onIntent,
+}: {
+  infoWindow: InfoWindowId;
+  state: BootstrapState;
+  combatEnemy: BootstrapState['enemies'][number] | undefined;
+  selectedItem: BootstrapState['items'][number] | undefined;
+  selectedItemStack: BootstrapState['inventory'][number] | undefined;
+  onIntent: (intent: GameIntent) => void;
+}) {
+  switch (infoWindow) {
+    case 'heroInfo':
+      return <HeroInfoPanel state={state} />;
+    case 'enemyInfo':
+      return <EnemyInfoPanel enemy={combatEnemy} />;
+    case 'itemInfo':
+      return <ItemInfoPanel stack={selectedItemStack} item={selectedItem} onIntent={onIntent} />;
+    case 'petInfo':
+      return <PetInfoPanel />;
+    default:
+      return null;
+  }
+}
+
 function isBootstrap(value: unknown): value is BootstrapState {
   return typeof value === 'object' && value !== null && 'races' in value && 'quests' in value;
 }
 
-function isWorldScene(sceneId: SceneId) {
-  return sceneId === 'hub' || sceneId === 'tavern' || sceneId === 'map' || sceneId === 'combat';
-}
-
-function screenModeForScene(sceneId: SceneId, overlay: GameOverlayId = 'none'): ScreenMode {
-  if (overlay === 'store') return 'storeSheet';
-  if (overlay === 'reward') return 'reward';
-
-  switch (sceneId) {
-    case 'tavern':
-      return 'npcDialog';
-    case 'map':
-      return 'map';
-    case 'combat':
-      return 'combat';
-    case 'character':
-      return 'characterSheet';
-    case 'inventory':
-      return 'inventorySheet';
-    case 'pets':
-      return 'petSheet';
+function windowForPanel(panelId: ScenePanelId): Exclude<WorldWindowId, 'none'> | null {
+  switch (panelId) {
+    case 'contracts':
+      return 'tavern';
+    case 'arena':
+      return 'arenaPreview';
+    case 'store':
+      return 'store';
+    case 'forge':
+      return 'forge';
+    case 'tower':
+      return 'tower';
+    case 'boatman':
+      return 'boatman';
+    case 'fountain':
+      return 'fountain';
     case 'journal':
-      return 'journalSheet';
+      return 'journal';
     default:
-      return 'hub';
+      return null;
   }
 }
 
-function chromePresetForScreen(screenMode: ScreenMode): ChromePreset {
-  switch (screenMode) {
-    case 'characterSheet':
-    case 'inventorySheet':
-    case 'petSheet':
-    case 'journalSheet':
-    case 'storeSheet':
-      return 'sheet';
-    case 'combat':
-      return 'combat';
-    case 'reward':
-      return 'reward';
+function infoWindowTitle(infoWindow: InfoWindowId) {
+  switch (infoWindow) {
+    case 'heroInfo':
+      return 'Сведения о герое';
+    case 'enemyInfo':
+      return 'Сведения о противнике';
+    case 'itemInfo':
+      return 'Сведения о предмете';
+    case 'petInfo':
+      return 'Сведения о питомце';
     default:
-      return 'world';
+      return 'Сведения';
   }
 }
 
-function worldSceneForScreen(screenMode: ScreenMode, returnSceneId: SceneId, sceneId: SceneId): SceneId {
-  if (screenMode === 'npcDialog') return 'tavern';
-  if (screenMode === 'map') return 'map';
-  if (screenMode === 'combat' || screenMode === 'reward') return 'combat';
-  return isWorldScene(sceneId) ? sceneId : returnSceneId;
-}
-
-function baseOverlayForScene(
-  sceneId: SceneId,
-  options: {
-    pendingCombat: boolean;
-    activeTravel: boolean;
-  },
-): GameOverlayId {
-  if (sceneId === 'tavern') return 'taskList';
-  if (sceneId === 'map' && options.activeTravel) return 'travel';
-  if (sceneId === 'combat' && options.pendingCombat) return 'combatReady';
-  return 'none';
+function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'combat' {
+  if (getPendingCombat(state)) {
+    return 'combat';
+  }
+  if (getActiveTravel(state)) {
+    return 'travel';
+  }
+  return 'world';
 }

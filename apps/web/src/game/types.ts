@@ -1,32 +1,29 @@
-import type { SceneId, StatKey } from '@lov2/shared';
+import type { EquipmentSlot, StatKey } from '@lov2/shared';
 
-export type ScreenMode =
-  | 'hub'
-  | 'npcDialog'
-  | 'map'
-  | 'combat'
-  | 'characterSheet'
-  | 'inventorySheet'
-  | 'petSheet'
-  | 'journalSheet'
-  | 'storeSheet'
-  | 'reward';
+export type StageMode = 'world' | 'worldWindow' | 'sheet' | 'travel' | 'combat';
 
-export type ChromePreset = 'world' | 'sheet' | 'combat' | 'reward';
+export type WorldLocation = 'courtyard' | 'harbor';
 
-export type GameOverlayId =
+export type WorldWindowId =
   | 'none'
-  | 'characterInfo'
-  | 'enemyInfo'
-  | 'taskList'
-  | 'taskDetail'
-  | 'travel'
-  | 'combatReady'
-  | 'combatReplay'
-  | 'reward'
-  | 'itemInfo'
-  | 'petInfo'
-  | 'store';
+  | 'tavern'
+  | 'store'
+  | 'forge'
+  | 'tower'
+  | 'boatman'
+  | 'fountain'
+  | 'exerciseDetail'
+  | 'arenaPreview'
+  | 'journal'
+  | 'settings';
+
+export type InfoWindowId = 'none' | 'heroInfo' | 'enemyInfo' | 'itemInfo' | 'petInfo';
+
+export type SheetTab = 'inventory' | 'character' | 'achievements' | 'pets' | 'profile' | 'appearance';
+
+export type MetaTab = 'news' | 'faq' | 'fanclub' | 'help';
+
+export type RouteState = 'locked' | 'available' | 'traveling' | 'ready';
 
 export type GameFlowStep =
   | 'idle'
@@ -38,23 +35,42 @@ export type GameFlowStep =
   | 'combatReplaying'
   | 'rewardReady';
 
-export type RouteState = 'locked' | 'available' | 'traveling' | 'ready';
+export interface ExerciseDefinition {
+  id: string;
+  titleRu: string;
+  subtitleRu: string;
+  descriptionRu: string;
+  locationHintRu: string;
+  recommendedLevelRu: string;
+  tone: 'gold' | 'mint' | 'ember';
+}
 
 export type GameIntent =
-  | { type: 'openScene'; sceneId: SceneId }
-  | { type: 'openOverlay'; overlay: Exclude<GameOverlayId, 'none'> }
-  | { type: 'closeOverlay' }
-  | { type: 'openTaskList' }
+  | { type: 'openLocation'; location: WorldLocation }
+  | { type: 'openWindow'; windowId: Exclude<WorldWindowId, 'none'> }
+  | { type: 'closeWindow' }
+  | { type: 'openSheet'; tab: SheetTab }
+  | { type: 'closeSheet' }
+  | { type: 'setSheetTab'; tab: SheetTab }
+  | { type: 'openInfo'; windowId: Exclude<InfoWindowId, 'none'> }
+  | { type: 'closeInfo' }
   | { type: 'selectTask'; questId: string }
+  | { type: 'selectExercise'; exerciseId: string }
+  | { type: 'selectArenaEnemy'; enemyId: string }
   | { type: 'acceptTask'; questId: string }
   | { type: 'startTravel'; questId: string; locationId: string }
   | { type: 'claimTravel'; travelId: string }
-  | { type: 'openCombat' }
+  | { type: 'startArena'; enemyId: string }
   | { type: 'resolveCombat'; combatId: string }
-  | { type: 'showReward' }
   | { type: 'togglePetAssist' }
-  | { type: 'openItemInfo'; inventoryStackId: string }
+  | { type: 'showReward' }
+  | { type: 'closeReward' }
+  | { type: 'openItemInfo'; inventoryStackId: string; slot?: EquipmentSlot }
   | { type: 'openPetInfo' }
   | { type: 'equipItem'; inventoryStackId: string }
+  | { type: 'unequipItem'; inventoryStackId: string }
+  | { type: 'purchaseItem'; itemId: string }
+  | { type: 'selectForgeItem'; inventoryStackId: string | null }
+  | { type: 'upgradeItem'; inventoryStackId: string }
   | { type: 'allocateStat'; stat: StatKey }
-  | { type: 'refillEnergy' };
+  | { type: 'refillEnergy'; mode: 'cup' | 'bundle' };

@@ -71,7 +71,7 @@ export const apiClient = {
     api<{ user: unknown }>('/auth/login', { method: 'POST', body: JSON.stringify(input) }),
   logout: () => api<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
   bootstrap: () => api<BootstrapState>('/game/bootstrap'),
-  createCharacter: (input: { name: string; raceId: string }) =>
+  createCharacter: (input: { name: string; raceId: string; gender: 'male' | 'female'; classId: 'swordsman' | 'ranger' | 'mage' }) =>
     api<BootstrapState>('/characters', { method: 'POST', body: JSON.stringify(input) }),
   acceptQuest: (questId: string) =>
     api<BootstrapState>(`/quests/${questId}/accept`, { method: 'POST' }),
@@ -83,11 +83,19 @@ export const apiClient = {
     api<BootstrapState>(`/combat/${combatId}/resolve`, { method: 'POST' }),
   equipItem: (inventoryStackId: string) =>
     api<BootstrapState>(`/inventory/${inventoryStackId}/equip`, { method: 'POST' }),
+  unequipItem: (inventoryStackId: string) =>
+    api<BootstrapState>(`/inventory/${inventoryStackId}/unequip`, { method: 'POST' }),
   allocateStats: (input: { stat: string; points: number }) =>
     api<BootstrapState>('/stats/allocate', { method: 'POST', body: JSON.stringify(input) }),
   startRebirth: () => api<BootstrapState>('/rebirth/start', { method: 'POST' }),
-  refillEnergy: (input: { mode: 'gems' }) =>
+  refillEnergy: (input: { mode: 'cup' | 'bundle' }) =>
     api<BootstrapState>('/energy/refill', { method: 'POST', body: JSON.stringify(input) }),
+  purchaseItem: (input: { itemId: string }) =>
+    api<BootstrapState>('/shop/purchase', { method: 'POST', body: JSON.stringify(input) }),
+  upgradeItem: (input: { inventoryStackId: string }) =>
+    api<BootstrapState>('/forge/upgrade', { method: 'POST', body: JSON.stringify(input) }),
+  startArena: (input: { enemyId: string }) =>
+    api<BootstrapState>('/arena/start', { method: 'POST', body: JSON.stringify(input) }),
   checkout: () =>
     api<{ checkoutUrl: string; mode: string; orderId: string }>('/payments/checkout-session', {
       method: 'POST',

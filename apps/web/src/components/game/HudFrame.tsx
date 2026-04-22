@@ -1,6 +1,6 @@
 import type { Character } from '@lov2/shared';
 import type { GameIntent } from '../../game/types.js';
-import { Meter } from './ui.js';
+import { Meter, UiIcon } from './ui.js';
 
 export function HudFrame({
   character,
@@ -10,7 +10,6 @@ export function HudFrame({
   onIntent,
   onLogout,
   busy,
-  message,
 }: {
   character: Character;
   raceName: string;
@@ -19,68 +18,110 @@ export function HudFrame({
   onIntent: (intent: GameIntent) => void;
   onLogout: () => void;
   busy: boolean;
-  message: string;
 }) {
+  const gloryLevel = Math.min(12, Math.max(1, character.level));
+  const gloryCurrent = Math.min(20, 6 + character.rebirths * 2 + Math.floor(character.level / 2));
+
   return (
-    <header className="stage-topbar" data-testid="game-topbar">
-      <section className="hud-portrait-cluster" data-testid="character-cluster" aria-label="Герой">
-        <button
-          className="character-orb"
-          data-testid="character-portrait"
-          aria-label="Открыть героя и экипировку"
-          onClick={() => onIntent({ type: 'openScene', sceneId: 'character' })}
-        >
-          {character.name.slice(0, 1)}
-        </button>
-        <span className="level-badge" data-testid="level-badge">
-          {character.level}
-        </span>
-        <button
-          className="portrait-info-button"
-          data-testid="character-info-button"
-          aria-label="Информация о герое"
-          onClick={() => onIntent({ type: 'openOverlay', overlay: 'characterInfo' })}
-        >
-          i
-        </button>
+    <header className="shell-reset-topbar lov-topbar" data-testid="game-topbar">
+      <section className="lov-topbar-left">
+        <div className="shell-reset-hero-cluster lov-topbar-portrait" data-testid="character-cluster">
+          <button
+            className="shell-reset-portrait"
+            data-testid="character-portrait"
+            aria-label="Открыть профиль героя"
+            onClick={() => onIntent({ type: 'openSheet', tab: 'profile' })}
+          >
+            {character.name.slice(0, 1)}
+          </button>
+          <span className="shell-reset-level" data-testid="level-badge">
+            {character.level}
+          </span>
+          <button
+            className="shell-reset-info lov-topbar-badge"
+            data-testid="character-info-button"
+            aria-label="Сведения о герое"
+            onClick={() => onIntent({ type: 'openSheet', tab: 'profile' })}
+          >
+            <UiIcon name="info" />
+          </button>
+        </div>
+
+        <div className="shell-reset-progress lov-xp-strip" data-testid="hud-xp">
+          <Meter
+            label="XP"
+            value={character.experience}
+            max={xpTarget}
+            tone="xp"
+            percent={xpPercent}
+            displayValue={`${character.experience}/${xpTarget}`}
+          />
+        </div>
+
+        <div className="lov-glory-strip" data-testid="hud-glory-strip">
+          <span>{gloryLevel}</span>
+          <strong>{gloryCurrent}/20</strong>
+          <i>✦</i>
+        </div>
       </section>
 
-      <section className="hud-title-strip">
-        <strong>{character.name}</strong>
-        <span>{raceName}</span>
-      </section>
-
-      <section className="hud-xp-strip" data-testid="hud-xp" aria-label="Показатели героя">
-        <Meter label="XP" value={character.experience} max={xpTarget} tone="xp" percent={xpPercent} />
-        <Meter label="HP" value={character.health} max={character.maxHealth} tone="health" />
-      </section>
-
-      <section className="hud-resource-strip" data-testid="hud-resource-strip" aria-label="Ресурсы">
-        <span data-testid="hud-gold">Золото {character.gold}</span>
-        <span data-testid="hud-gems">Жемчужины {character.gems}</span>
+      <section className="shell-reset-resource-strip lov-resource-strip" data-testid="hud-resource-strip">
+        <div className="lov-resource-pill" data-testid="hud-gold">
+          <i>◌</i>
+          <span>{character.gold}</span>
+        </div>
+        <div className="lov-resource-pill" data-testid="hud-gems">
+          <i>◍</i>
+          <span>{character.gems}</span>
+        </div>
         <button
-          className="add-currency"
+          className="shell-reset-add lov-add-button"
           data-testid="add-currency-button"
-          onClick={() => onIntent({ type: 'openOverlay', overlay: 'store' })}
+          onClick={() => onIntent({ type: 'openWindow', windowId: 'store' })}
         >
           Добавить
         </button>
-        <span data-testid="hud-energy">Энергия {character.energy}/{character.maxEnergy}</span>
       </section>
 
-      <nav className="hud-utility-icons" aria-label="Служебные кнопки">
-        <button className="utility-orb" type="button" aria-label="Лавка" onClick={() => onIntent({ type: 'openOverlay', overlay: 'store' })}>
-          +
+      <section className="shell-reset-meta-icons lov-topbar-actions">
+        <button
+          className="shell-reset-meta-button"
+          aria-label="Профиль"
+          title={`${character.name} · ${raceName}`}
+          onClick={() => onIntent({ type: 'openSheet', tab: 'profile' })}
+        >
+          <UiIcon name="hero" />
         </button>
-        <button className="utility-orb" type="button" aria-label="Журнал" onClick={() => onIntent({ type: 'openScene', sceneId: 'journal' })}>
-          J
+        <button
+          className="shell-reset-meta-button"
+          aria-label="Внешность"
+          onClick={() => onIntent({ type: 'openSheet', tab: 'appearance' })}
+        >
+          <UiIcon name="journal" />
         </button>
-        <button className="utility-orb secondary" type="button" aria-label="Выйти" disabled={busy} onClick={onLogout}>
-          x
+        <button
+          className="shell-reset-meta-button"
+          aria-label="Питомцы"
+          onClick={() => onIntent({ type: 'openSheet', tab: 'pets' })}
+        >
+          <UiIcon name="pets" />
         </button>
-      </nav>
-
-      <p className="hud-message">{message || 'Добро пожаловать в ночной двор.'}</p>
+        <button
+          className="shell-reset-meta-button"
+          aria-label="Журнал"
+          onClick={() => onIntent({ type: 'openWindow', windowId: 'journal' })}
+        >
+          <UiIcon name="gift" />
+        </button>
+        <button
+          className="shell-reset-meta-button secondary"
+          aria-label="Выйти"
+          disabled={busy}
+          onClick={onLogout}
+        >
+          <UiIcon name="logout" />
+        </button>
+      </section>
     </header>
   );
 }

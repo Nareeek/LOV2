@@ -1,70 +1,33 @@
-import type { BootstrapState } from '@lov2/shared';
-import { deriveRouteState, getQuestProgress } from '../../game/flow.js';
+import { exerciseDefinitions } from '@lov2/game-data';
 import type { GameIntent } from '../../game/types.js';
 
 export function TaskRail({
-  state,
-  now,
+  activeExerciseId,
   onIntent,
 }: {
-  state: BootstrapState;
-  now: number;
+  activeExerciseId: string | null;
   onIntent: (intent: GameIntent) => void;
 }) {
-  const quests = [...state.quests].sort((left, right) => {
-    const leftActive = getQuestProgress(state, left.id)?.status === 'active' ? 1 : 0;
-    const rightActive = getQuestProgress(state, right.id)?.status === 'active' ? 1 : 0;
-    return rightActive - leftActive;
-  });
-
   return (
-    <section className="task-rail" data-testid="quest-ribbons">
-      {quests.slice(0, 3).map((quest) => {
-        const progress = getQuestProgress(state, quest.id);
-        const routeState = deriveRouteState(state, quest.id, now);
+    <aside className="shell-reset-exercise-feed" data-testid="exercise-feed">
+      {exerciseDefinitions.map((exercise, index) => {
+        const toneClass = exercise.tone === 'mint' ? 'tone-mint' : exercise.tone === 'ember' ? 'tone-ember' : 'tone-gold';
         return (
           <button
-            key={quest.id}
-            className={`quest-ribbon ${routeState}`}
-            data-testid={`task-ribbon-${quest.id}`}
-            onClick={() => onIntent({ type: 'selectTask', questId: quest.id })}
+            key={exercise.id}
+            className={`shell-reset-exercise-card ${toneClass} ${activeExerciseId === exercise.id ? 'active' : ''}`}
+            data-testid={`exercise-card-${exercise.id}`}
+            type="button"
+            onClick={() => onIntent({ type: 'selectExercise', exerciseId: exercise.id })}
           >
+            <span>{exercise.subtitleRu}</span>
+            <strong>{exercise.titleRu}</strong>
             <small>
-              {labelQuestStatus(progress?.status) ?? 'новое'} | энергия {quest.energyCost}
+              {exercise.locationHintRu} · {exercise.recommendedLevelRu}
             </small>
-            <span>{quest.titleRu}</span>
-            <strong>{labelRouteState(routeState)}</strong>
           </button>
         );
       })}
-    </section>
+    </aside>
   );
-}
-
-function labelRouteState(routeState: ReturnType<typeof deriveRouteState>) {
-  switch (routeState) {
-    case 'ready':
-      return 'готово';
-    case 'traveling':
-      return 'в пути';
-    case 'available':
-      return 'доступно';
-    default:
-      return 'закрыто';
-  }
-}
-
-function labelQuestStatus(status: NonNullable<ReturnType<typeof getQuestProgress>>['status'] | undefined) {
-  switch (status) {
-    case 'active':
-      return 'активно';
-    case 'completed':
-      return 'завершено';
-    case 'claimed':
-      return 'получено';
-    case 'available':
-      return 'доступно';
-    default:
-      return null;
-  }
 }

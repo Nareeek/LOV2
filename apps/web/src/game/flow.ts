@@ -1,5 +1,5 @@
-import type { BootstrapState, CombatEncounter, CombatLog, QuestDefinition, SceneId, TravelTask } from '@lov2/shared';
-import type { GameFlowStep, GameOverlayId, RouteState } from './types.js';
+import type { BootstrapState, CombatEncounter, CombatLog, QuestDefinition, TravelTask } from '@lov2/shared';
+import type { GameFlowStep, RouteState } from './types.js';
 
 export function getActiveTravel(state: BootstrapState): TravelTask | undefined {
   return state.travels.find((travel) => travel.status !== 'claimed');
@@ -27,13 +27,13 @@ export function getQuestProgress(state: BootstrapState, questId: string) {
 
 export function deriveFlowStep(
   state: BootstrapState,
-  overlay: GameOverlayId,
+  options: { replayActive: boolean; rewardVisible: boolean },
   now: number,
 ): GameFlowStep {
-  if (overlay === 'combatReplay') {
+  if (options.replayActive && getLatestResolvedCombat(state)?.log) {
     return 'combatReplaying';
   }
-  if (overlay === 'reward') {
+  if (options.rewardVisible) {
     return 'rewardReady';
   }
 
@@ -68,13 +68,7 @@ export function deriveRouteState(
   }
 
   const progress = getQuestProgress(state, questId);
-  return progress?.status === 'active' ? 'available' : 'locked';
-}
-
-export function defaultOverlayForScene(sceneId: SceneId): GameOverlayId {
-  if (sceneId === 'tavern') return 'taskList';
-  if (sceneId === 'combat') return 'combatReady';
-  return 'none';
+  return progress?.status === 'active' || progress?.status === 'completed' ? 'available' : 'locked';
 }
 
 export function getCombatReplayFrame(
