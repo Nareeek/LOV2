@@ -83,7 +83,7 @@ export function GameShell({
   const [selectedForgeStackId, setSelectedForgeStackId] = useState<string | null>(null);
   const [selectedArenaEnemyId, setSelectedArenaEnemyId] = useState<string | null>(state.enemies[0]?.id ?? null);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('Добро пожаловать в ночной двор.');
+  const [, setMessage] = useState('Добро пожаловать в ночной двор.');
   const [clock, setClock] = useState(() => Date.now());
   const [petAssistArmed, setPetAssistArmed] = useState(false);
   const [replayTurnCount, setReplayTurnCount] = useState(0);
@@ -147,9 +147,6 @@ export function GameShell({
   const selectedItemStack = selectedItemStackId ? state.inventory.find((stack) => stack.id === selectedItemStackId) : undefined;
   const selectedItem = selectedItemStack ? state.items.find((item) => item.id === selectedItemStack.itemId) : undefined;
   const selectedForgeStack = selectedForgeStackId ? state.inventory.find((stack) => stack.id === selectedForgeStackId) : undefined;
-  const raceName = state.character
-    ? (state.races.find((race) => race.id === state.character?.raceId)?.nameRu ?? state.character.raceId)
-    : '';
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
   const stageMode: StageMode = baseStage === 'world' && worldWindow !== 'none' ? 'worldWindow' : baseStage;
@@ -446,7 +443,26 @@ export function GameShell({
   );
 
   const handleIntentRef = useRef(handleIntent);
+  const autoResolvedCombatIdRef = useRef<string | null>(null);
   handleIntentRef.current = handleIntent;
+
+  useEffect(() => {
+    if (baseStage !== 'combat' || !pendingCombat || replayActive || rewardVisible) {
+      return;
+    }
+    if (autoResolvedCombatIdRef.current === pendingCombat.id) {
+      return;
+    }
+
+    autoResolvedCombatIdRef.current = pendingCombat.id;
+    void handleIntent({ type: 'resolveCombat', combatId: pendingCombat.id });
+  }, [baseStage, handleIntent, pendingCombat, replayActive, rewardVisible]);
+
+  useEffect(() => {
+    if (!pendingCombat) {
+      autoResolvedCombatIdRef.current = null;
+    }
+  }, [pendingCombat]);
 
   const handleHotspotClick = useCallback(
     async (action: SceneAction, hotspot: SceneHotspot) => {
@@ -514,7 +530,7 @@ export function GameShell({
 
   const showTopbar = baseStage === 'world' || baseStage === 'travel';
   const showActionDock = baseStage === 'world' || baseStage === 'travel';
-  const showBottomTray = baseStage === 'world';
+  const showBottomTray = baseStage === 'world' || baseStage === 'combat';
   const handleMetaTabSelect = useCallback((tab: MetaTab) => {
     setMetaTab(tab);
     setWorldWindow('journal');
@@ -528,12 +544,9 @@ export function GameShell({
           {showTopbar && state.character ? (
             <HudFrame
               character={state.character}
-              raceName={raceName}
               xpTarget={xpTarget}
               xpPercent={xpPercent}
               onIntent={handleIntent}
-              onLogout={() => void onLogout()}
-              busy={busy}
             />
           ) : null}
 
@@ -562,6 +575,19 @@ export function GameShell({
                     onIntent={handleIntent}
                   />
                 )}
+
+                {worldWindowContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
+                  </div>
+                ) : null}
+
+                {infoWindowContent ? (
+                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
+                    {infoWindowContent}
+                  </OverlayLayer>
+                ) : null}
               </section>
 
               {showActionDock ? (
@@ -581,6 +607,19 @@ export function GameShell({
                   selectedItemStackId={selectedItemStackId}
                   onIntent={handleIntent}
                 />
+
+                {worldWindowContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
+                  </div>
+                ) : null}
+
+                {infoWindow !== 'heroInfo' && infoWindowContent ? (
+                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
+                    {infoWindowContent}
+                  </OverlayLayer>
+                ) : null}
               </section>
             </section>
           ) : null}
@@ -589,7 +628,6 @@ export function GameShell({
             <section className="stage-playfield single-column">
               <section className="stage-main combat-main">
                 <CombatStage
-                  combatId={pendingCombat?.id}
                   character={state.character}
                   enemy={combatEnemy}
                   characterHealth={replayFrame.characterCurrent}
@@ -598,39 +636,35 @@ export function GameShell({
                   enemyMaxHealth={replayFrame.enemyStart}
                   petAssistArmed={petAssistArmed}
                   replayTurns={visibleReplayTurns}
-                  replayActive={replayActive}
-                  rewardVisible={rewardVisible}
                   onIntent={handleIntent}
                 />
+
+                {worldWindowContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
+                  </div>
+                ) : null}
+
+                {rewardVisible ? (
+                  <div className="shell-reset-modal-layer reward">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">
+                      <RewardWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
+                    </div>
+                  </div>
+                ) : null}
+
+                {infoWindowContent ? (
+                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
+                    {infoWindowContent}
+                  </OverlayLayer>
+                ) : null}
               </section>
             </section>
           ) : null}
 
           {showBottomTray ? <BottomTray activeTab={metaTab} onSelectTab={handleMetaTabSelect} /> : null}
-
-          {worldWindowContent ? (
-            <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-              <div className="shell-reset-scrim" aria-hidden="true" />
-              <div className="shell-reset-modal-card">{worldWindowContent}</div>
-            </div>
-          ) : null}
-
-          {rewardVisible ? (
-            <div className="shell-reset-modal-layer reward">
-              <div className="shell-reset-scrim" aria-hidden="true" />
-              <div className="shell-reset-modal-card">
-                <RewardWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
-              </div>
-            </div>
-          ) : null}
-
-          {infoWindowContent ? (
-            <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-              {infoWindowContent}
-            </OverlayLayer>
-          ) : null}
-
-          {message ? <p className="hud-message shell-reset-message">{message}</p> : null}
         </section>
       </section>
     </main>

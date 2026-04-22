@@ -1,0 +1,407 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { gameData } from '@lov2/game-data';
+import type { BootstrapState, CombatEncounter, CombatLog } from '@lov2/shared';
+
+const NOW = '2026-04-22T12:00:00.000Z';
+
+for (const viewport of [
+  { width: 1366, height: 768, label: '1366x768' },
+  { width: 1600, height: 900, label: '1600x900' },
+]) {
+  test(`world chrome and compact exercise rail fit the desktop viewport at ${viewport.label}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await openGame(page, createBootstrapState());
+
+    const topbar = page.getByTestId('game-topbar');
+    const bottomTray = page.getByTestId('bottom-tray');
+    const exercise = page.getByTestId('exercise-card-courtyard-lanterns');
+    const actionDockButton = page.getByTestId('action-journal');
+    const infoButton = page.getByTestId('character-info-button');
+    const heroCluster = page.getByTestId('character-cluster');
+    const xpStrip = page.getByTestId('hud-xp');
+
+    await expect(topbar).toBeVisible();
+    await expect(bottomTray).toBeVisible();
+    await expect(exercise).toBeVisible();
+    await expect(actionDockButton).toBeVisible();
+    await expectNoDocumentScroll(page);
+    await expect(page.locator('.lov-topbar-actions')).toHaveCount(0);
+
+    const exerciseBox = await exercise.boundingBox();
+    const actionBox = await actionDockButton.boundingBox();
+
+    expect(exerciseBox).not.toBeNull();
+    expect(actionBox).not.toBeNull();
+    expect(exerciseBox!.width).toBeLessThanOrEqual(actionBox!.width + 14);
+    expect(exerciseBox!.height).toBeLessThanOrEqual(actionBox!.height + 18);
+
+    await expectBelow(exercise, infoButton, 6);
+    await expectNoOverlap(heroCluster, xpStrip);
+    await expectNoOverlap(page.locator('.lov-topbar-left'), page.getByTestId('hud-resource-strip'));
+    await expectSameRow(page.locator('.lov-friend-card'));
+
+    await infoButton.click();
+    await expect(page.getByTestId('profile-sheet')).toBeVisible();
+    await expect(page.getByTestId('character-info-popup')).toHaveCount(0);
+    await page.getByTestId('sheet-close-button').click();
+  });
+}
+
+test('world windows stay inside the playfield on a narrow desktop viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 576 });
+  await openGame(page, createBootstrapState());
+
+  const playfield = page.locator('.stage-main').first();
+
+  await expectTavernAndArenaWindows(page, playfield);
+
+  await page.getByTestId('hotspot-hub-store').click();
+  const storeWindow = page.getByTestId('store-sheet');
+  await expect(storeWindow).toBeVisible();
+  await expectContained(storeWindow, playfield);
+  await expect(page.getByTestId('store-item-duelist-rapier')).toBeVisible();
+  await storeWindow.getByTestId('world-window-close-button').click();
+
+  await page.getByTestId('hotspot-hub-sign').click();
+  await page.getByTestId('hotspot-map-forge').click();
+  const forgeWindow = page.getByTestId('forge-window');
+  await expect(forgeWindow).toBeVisible();
+  await expectContained(forgeWindow, playfield);
+  await expect(page.locator('[data-testid="forge-inventory-panel"] > *')).toHaveCount(24);
+  await expect(forgeWindow.getByRole('button', { name: 'Улучшить' })).toBeVisible();
+  await forgeWindow.getByTestId('world-window-close-button').click();
+
+  await page.getByTestId('hotspot-map-tower').click();
+  const towerWindow = page.getByTestId('tower-window');
+  await expect(towerWindow).toBeVisible();
+  await expectContained(towerWindow, playfield);
+  await expect(page.locator('.lov-tower-card')).toHaveCount(6);
+  await expect(page.locator('.lov-tower-card').last()).toBeVisible();
+  await towerWindow.getByTestId('world-window-close-button').click();
+
+  await page.getByTestId('exercise-card-courtyard-lanterns').click();
+  const exerciseWindow = page.getByTestId('exercise-detail-window');
+  await expect(exerciseWindow).toBeVisible();
+  await expectContained(exerciseWindow, playfield);
+  await expect(exerciseWindow.getByTestId('world-window-close-button')).toBeVisible();
+
+  await expectNoDocumentScroll(page);
+});
+
+test('tavern quests and arena actions stay visible on a wide desktop viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(page, createBootstrapState());
+
+  const playfield = page.locator('.stage-main').first();
+
+  await expectTavernAndArenaWindows(page, playfield);
+});
+
+test('sheet close control and bag slot count stay reachable on a narrow desktop viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 576 });
+  await openGame(page, createBootstrapState());
+
+  await page.getByTestId('character-portrait').click();
+
+  const playfield = page.locator('.stage-main').first();
+  const sheet = page.locator('.lov-sheet');
+
+  await expect(sheet).toBeVisible();
+  await expectContained(sheet, playfield);
+  await expect(page.getByTestId('sheet-close-button')).toBeVisible();
+  await expect(page.getByTestId('character-tab-profile')).toBeHidden();
+  await expect(page.getByTestId('game-topbar')).toHaveCount(0);
+  await expect(page.getByTestId('bottom-tray')).toHaveCount(0);
+
+  await page.getByTestId('character-tab-equipment').click();
+  await expect(page.locator('[data-testid="inventory-panel"] > *')).toHaveCount(24);
+
+  await page.getByTestId('sheet-close-button').click();
+  await expect(page.locator('.lov-sheet')).toHaveCount(0);
+  await expectNoDocumentScroll(page);
+});
+
+test('combat and reward stay inside the battlefield shell', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(page, createCombatState());
+
+  const playfield = page.locator('.stage-main').first();
+
+  await expect(page.getByTestId('combat-screen')).toBeVisible();
+  await expect(page.getByTestId('combat-skip-button')).toBeVisible();
+  await expect(page.getByTestId('pet-assist-button')).toBeVisible();
+  await expect(page.locator('.lov-fighter.hero')).toBeVisible();
+  await expect(page.locator('.lov-fighter.enemy')).toBeVisible();
+  await expect(page.getByTestId('bottom-tray')).toBeVisible();
+
+  await page.getByTestId('combat-skip-button').click();
+  const rewardWindow = page.getByTestId('reward-screen');
+  await expect(rewardWindow).toBeVisible();
+  await expectContained(rewardWindow, playfield);
+  await expect(page.getByTestId('reward-continue-button')).toBeVisible();
+});
+
+async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
+  await page.getByTestId('hotspot-hub-tavern').click();
+  const tavernWindow = page.getByTestId('tavern-window');
+  const tavernTasks = tavernWindow.locator('[data-testid^="task-ribbon-"]');
+  await expect(tavernWindow).toBeVisible();
+  await expectContained(tavernWindow, playfield);
+  await expect(tavernTasks).toHaveCount(3);
+  await expect(tavernTasks.nth(0)).toBeVisible();
+  await expect(tavernTasks.nth(1)).toBeVisible();
+  await expect(tavernTasks.nth(2)).toBeVisible();
+  await tavernWindow.getByTestId('world-window-close-button').click();
+
+  await page.getByTestId('hotspot-hub-arena').click();
+  const arenaWindow = page.getByTestId('arena-window');
+  await expect(arenaWindow).toBeVisible();
+  await expectContained(arenaWindow, playfield);
+  await expect(arenaWindow.getByTestId('arena-switch-button')).toBeVisible();
+  await expect(arenaWindow.getByTestId('arena-start-button')).toBeVisible();
+  await arenaWindow.getByTestId('world-window-close-button').click();
+}
+
+async function openGame(page: Page, state: BootstrapState) {
+  await mockApi(page, state);
+  await page.goto('/');
+  await expect(page.getByTestId('game-shell')).toBeVisible();
+}
+
+async function mockApi(page: Page, state: BootstrapState) {
+  await page.route('**/*', async (route) => {
+    const url = new URL(route.request().url());
+
+    if (
+      !['localhost', '127.0.0.1', 'api'].includes(url.hostname)
+      || url.port !== '4000'
+    ) {
+      await route.continue();
+      return;
+    }
+
+    const { pathname } = url;
+
+    if (pathname === '/auth/csrf') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ csrfToken: 'test-csrf-token' }),
+      });
+      return;
+    }
+
+    if (pathname === '/auth/logout') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(state),
+    });
+  });
+}
+
+function createBootstrapState(overrides: Partial<BootstrapState> = {}): BootstrapState {
+  const userId = 'user-1';
+  const characterId = 'character-1';
+
+  return {
+    user: {
+      id: userId,
+      email: 'tester@example.com',
+      displayName: 'Тестер',
+      createdAt: NOW,
+    },
+    character: {
+      id: characterId,
+      userId,
+      name: 'Даррид',
+      raceId: gameData.races[0]!.id,
+      gender: 'male',
+      classId: 'swordsman',
+      level: 24,
+      experience: 39533,
+      rebirths: 1,
+      health: 42062,
+      maxHealth: 42062,
+      unspentStatPoints: 2,
+      stats: { сила: 24, ловкость: 19, интуиция: 15, удача: 13 },
+      gold: 6152,
+      gems: 5,
+      energy: 25,
+      maxEnergy: 25,
+      energyUpdatedAt: NOW,
+      createdAt: NOW,
+    },
+    races: gameData.races,
+    items: gameData.items,
+    quests: gameData.quests,
+    locations: gameData.locations,
+    enemies: gameData.enemies,
+    scenes: gameData.scenes,
+    inventory: [
+      {
+        id: 'stack-weapon-equipped',
+        characterId,
+        itemId: 'duelist-rapier',
+        quantity: 1,
+        enhancementLevel: 2,
+        equippedSlot: 'weapon',
+      },
+      {
+        id: 'stack-armor-equipped',
+        characterId,
+        itemId: 'moon-vest',
+        quantity: 1,
+        enhancementLevel: 1,
+        equippedSlot: 'armor',
+      },
+      {
+        id: 'stack-amulet-equipped',
+        characterId,
+        itemId: 'lucky-onyx',
+        quantity: 1,
+        enhancementLevel: 1,
+        equippedSlot: 'amulet',
+      },
+      {
+        id: 'stack-pet-equipped',
+        characterId,
+        itemId: 'ember-whelp',
+        quantity: 1,
+        equippedSlot: 'pet',
+      },
+      {
+        id: 'stack-weapon-backpack',
+        characterId,
+        itemId: 'duelist-rapier',
+        quantity: 1,
+      },
+      {
+        id: 'stack-armor-backpack',
+        characterId,
+        itemId: 'moon-vest',
+        quantity: 1,
+      },
+      {
+        id: 'stack-onyx-backpack',
+        characterId,
+        itemId: 'lucky-onyx',
+        quantity: 2,
+      },
+    ],
+    questProgress: [
+      {
+        id: 'quest-progress-1',
+        characterId,
+        questId: gameData.quests[0]!.id,
+        status: 'active',
+        progress: 0,
+        target: 1,
+      },
+    ],
+    travels: [],
+    combats: [],
+    ...overrides,
+  };
+}
+
+function createCombatState() {
+  const reward = gameData.quests[2]!.reward;
+  const combatLog: CombatLog = {
+    winner: 'character',
+    turns: [
+      { turn: 1, actor: 'character', damage: 320, critical: false, targetHealth: 1480 },
+      { turn: 2, actor: 'enemy', damage: 110, critical: false, targetHealth: 41952 },
+      { turn: 3, actor: 'character', damage: 1480, critical: true, targetHealth: 0 },
+    ],
+    reward,
+  };
+  const combats: CombatEncounter[] = [
+    {
+      id: 'combat-won',
+      characterId: 'character-1',
+      enemyId: gameData.enemies[2]!.id,
+      status: 'won',
+      createdAt: '2026-04-22T11:58:00.000Z',
+      log: combatLog,
+    },
+    {
+      id: 'combat-pending',
+      characterId: 'character-1',
+      enemyId: gameData.enemies[2]!.id,
+      status: 'pending',
+      createdAt: NOW,
+    },
+  ];
+
+  return createBootstrapState({ combats });
+}
+
+async function expectContained(locator: Locator, container: Locator) {
+  const [box, containerBox] = await Promise.all([locator.boundingBox(), container.boundingBox()]);
+
+  expect(box).not.toBeNull();
+  expect(containerBox).not.toBeNull();
+
+  expect(box!.x).toBeGreaterThanOrEqual(containerBox!.x - 4);
+  expect(box!.y).toBeGreaterThanOrEqual(containerBox!.y - 4);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(containerBox!.x + containerBox!.width + 4);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(containerBox!.y + containerBox!.height + 4);
+}
+
+async function expectBelow(locator: Locator, anchor: Locator, minGap = 0) {
+  const [box, anchorBox] = await Promise.all([locator.boundingBox(), anchor.boundingBox()]);
+
+  expect(box).not.toBeNull();
+  expect(anchorBox).not.toBeNull();
+  expect(box!.y).toBeGreaterThanOrEqual(anchorBox!.y + anchorBox!.height + minGap);
+}
+
+async function expectNoOverlap(first: Locator, second: Locator) {
+  const [firstBox, secondBox] = await Promise.all([first.boundingBox(), second.boundingBox()]);
+
+  expect(firstBox).not.toBeNull();
+  expect(secondBox).not.toBeNull();
+
+  const intersects =
+    firstBox!.x < secondBox!.x + secondBox!.width &&
+    firstBox!.x + firstBox!.width > secondBox!.x &&
+    firstBox!.y < secondBox!.y + secondBox!.height &&
+    firstBox!.y + firstBox!.height > secondBox!.y;
+
+  expect(intersects).toBe(false);
+}
+
+async function expectSameRow(items: Locator) {
+  const boxes = await items.evaluateAll((elements) =>
+    elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: rect.top, height: rect.height };
+    }),
+  );
+
+  expect(boxes.length).toBeGreaterThan(1);
+
+  const baseline = boxes[0]!.top;
+  for (const box of boxes) {
+    expect(Math.abs(box.top - baseline)).toBeLessThanOrEqual(4);
+    expect(box.height).toBeGreaterThan(0);
+  }
+}
+
+async function expectNoDocumentScroll(page: Page) {
+  const hasScroll = await page.evaluate(() => {
+    const root = document.scrollingElement ?? document.documentElement;
+    return root.scrollHeight > root.clientHeight || root.scrollWidth > root.clientWidth;
+  });
+
+  expect(hasScroll).toBe(false);
+}

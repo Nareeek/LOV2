@@ -8240,3 +8240,2152 @@ p {
     width: min(220px, calc(100vw - 40px));
   }
 }
+
+/* Original-style screen fit pass */
+
+.game-shell.unified-shell {
+  min-height: 100vh;
+  height: 100vh;
+  grid-template-rows: minmax(0, 1fr);
+  justify-items: center;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+}
+
+.stage-frame-wrap {
+  height: min(calc(100vh - 20px), calc((100vw - 20px) * 9 / 16));
+}
+
+.stage-frame.shell-reset-stage {
+  --stage-topbar-height: 86px;
+  --stage-bottom-height: 148px;
+  --stage-left-rail-size: clamp(62px, 5vw, 74px);
+  --stage-right-rail-size: clamp(60px, 4.6vw, 72px);
+  --stage-modal-padding: clamp(10px, 2.3vw, 24px);
+  --stage-sheet-padding: clamp(12px, 2vw, 20px);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world {
+  grid-template-rows: var(--stage-topbar-height) minmax(0, 1fr) var(--stage-bottom-height);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-travel {
+  grid-template-rows: var(--stage-topbar-height) minmax(0, 1fr);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-sheet {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat {
+  grid-template-rows: minmax(0, 1fr) var(--stage-bottom-height);
+}
+
+.stage-mode-sheet .stage-playfield,
+.stage-mode-combat .stage-playfield {
+  grid-row: 1;
+}
+
+.stage-mode-combat .lov-bottom-strip {
+  grid-row: 2;
+}
+
+.stage-playfield {
+  grid-template-columns: var(--stage-left-rail-size) minmax(0, 1fr) var(--stage-right-rail-size);
+  gap: 10px;
+}
+
+.stage-playfield.travel-layout {
+  grid-template-columns: minmax(0, 1fr) var(--stage-right-rail-size);
+}
+
+.stage-left-stack,
+.stage-right-rail {
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.stage-left-stack {
+  padding-top: clamp(26px, calc(var(--stage-topbar-height) * 0.42), 38px);
+}
+
+.stage-right-rail {
+  padding-top: 6px;
+}
+
+.stage-main {
+  display: grid;
+  align-items: stretch;
+}
+
+.stage-main.sheet-main {
+  padding: var(--stage-sheet-padding);
+  justify-items: center;
+  align-items: stretch;
+  background:
+    linear-gradient(180deg, rgba(29, 22, 24, 0.96), rgba(18, 18, 21, 0.95)),
+    #16171b;
+}
+
+.stage-main.sheet-main,
+.stage-main.combat-main {
+  overflow: hidden;
+}
+
+.stage-main > .shell-reset-modal-layer {
+  position: absolute;
+  inset: var(--stage-modal-padding);
+  width: auto;
+  place-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.stage-main > .shell-reset-modal-layer.reward {
+  inset: clamp(16px, 3vw, 34px);
+}
+
+.stage-main > .shell-reset-modal-layer .shell-reset-scrim {
+  border-radius: 22px;
+}
+
+.stage-main > .shell-reset-modal-layer .shell-reset-modal-card {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.lov-topbar {
+  grid-template-columns: minmax(440px, 1fr) auto;
+  padding: 8px 16px;
+  gap: 16px;
+  align-items: center;
+}
+
+.lov-topbar-left {
+  min-width: 0;
+  grid-template-columns: 104px minmax(260px, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.lov-topbar-portrait {
+  width: 96px;
+  height: 82px;
+}
+
+.lov-resource-pill,
+.lov-add-button,
+.lov-topbar-actions .shell-reset-meta-button {
+  min-height: 40px;
+}
+
+.lov-resource-pill,
+.lov-add-button {
+  font-size: 1rem;
+}
+
+.lov-topbar-portrait .shell-reset-level {
+  top: 0;
+  right: 4px;
+}
+
+.lov-topbar-badge {
+  left: 2px;
+  bottom: 2px;
+}
+
+.lov-xp-strip {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.lov-xp-strip .meter {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  gap: 10px;
+}
+
+.lov-xp-strip .meter > span:first-child {
+  display: none;
+}
+
+.lov-xp-strip .meter div {
+  min-width: 0;
+}
+
+.lov-xp-strip .meter strong {
+  min-width: 120px;
+  text-align: right;
+  justify-self: end;
+}
+
+.lov-resource-strip {
+  min-width: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.lov-resource-pill {
+  padding: 0 14px;
+}
+
+.lov-add-button {
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.lov-glory-strip {
+  display: none;
+}
+
+.lov-bottom-strip {
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 6px 10px 10px;
+  overflow: hidden;
+}
+
+.lov-friends-band {
+  grid-template-columns: 32px minmax(0, 1fr) 32px 114px;
+  gap: 8px;
+  min-height: 0;
+}
+
+.lov-friends-nav {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  min-height: 0;
+}
+
+.lov-friends-nav button {
+  min-height: 0;
+  max-height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.lov-friends-cards-viewport {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.lov-friends-cards-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.lov-friends-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 88px;
+  grid-template-columns: none;
+  gap: 6px;
+  min-width: max-content;
+}
+
+.lov-friend-card,
+.lov-invite-card {
+  min-height: 68px;
+  padding: 6px 8px;
+}
+
+.lov-friend-card small,
+.lov-invite-card span {
+  font-size: 0.7rem;
+  line-height: 1.05;
+}
+
+.lov-friend-portrait {
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+}
+
+.lov-friend-card {
+  width: 88px;
+}
+
+.lov-friend-card strong {
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+  line-height: 1.05;
+}
+
+.lov-invite-card {
+  width: 114px;
+  align-content: center;
+}
+
+.lov-invite-card i {
+  width: 36px;
+  min-height: 36px;
+  font-size: 1.25rem;
+}
+
+.lov-footer-tabs {
+  gap: 6px;
+}
+
+.lov-footer-tabs .shell-reset-news-tab {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 0.88rem;
+}
+
+.shell-reset-window {
+  --window-width: 920px;
+  --window-height: 690px;
+  width: min(100%, var(--window-width));
+  height: min(100%, var(--window-height));
+  max-height: 100%;
+}
+
+.shell-reset-window.size-compact {
+  --window-width: 560px;
+  --window-height: 420px;
+}
+
+.shell-reset-window.size-standard {
+  --window-width: 920px;
+  --window-height: 690px;
+}
+
+.shell-reset-window.size-wide {
+  --window-width: 1040px;
+  --window-height: 720px;
+}
+
+.shell-reset-window.scroll-body .shell-reset-window-body {
+  overflow: auto;
+}
+
+.shell-reset-window.scroll-none .shell-reset-window-body,
+.shell-reset-window.scroll-sections .shell-reset-window-body {
+  overflow: hidden;
+}
+
+.shell-reset-window.scroll-sections .shell-reset-window-body > *,
+.shell-reset-window.scroll-none .shell-reset-window-body > * {
+  min-height: 0;
+}
+
+.lov-window-shell {
+  border-radius: 22px;
+}
+
+.lov-window-header {
+  padding: 12px 18px 10px;
+}
+
+.lov-window-header h2 {
+  font-size: clamp(1.5rem, 2.2vw, 1.82rem);
+}
+
+.lov-window-close {
+  width: 46px;
+  min-height: 46px;
+}
+
+.lov-window-body {
+  min-height: 0;
+}
+
+.lov-window-footer {
+  padding: 10px 16px 14px;
+}
+
+.lov-close-button {
+  min-width: 154px;
+  min-height: 46px;
+  font-size: 1rem;
+}
+
+.shell-reset-exercise-feed {
+  justify-items: center;
+  gap: 8px;
+  padding-top: 0;
+}
+
+.shell-reset-exercise-card {
+  width: clamp(46px, 4.2vw, 52px);
+  min-height: clamp(46px, 4.2vw, 52px);
+  aspect-ratio: 1;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  padding: 4px;
+  border-width: 1px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 243, 221, 0.08);
+}
+
+.shell-reset-exercise-glyph {
+  width: 24px;
+  min-height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 225, 183, 0.68);
+  border-radius: 50%;
+  color: #fff1cd;
+  background: radial-gradient(circle at 30% 26%, rgba(255, 241, 205, 0.22), rgba(28, 22, 24, 0.08));
+  font-family: Georgia, serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.shell-reset-exercise-card small {
+  color: #f4e2bf;
+  font-size: 0.56rem;
+  line-height: 1;
+}
+
+.shell-reset-exercise-card.active {
+  transform: translateY(-1px);
+}
+
+.hotspot-label {
+  width: min(170px, calc(100% + 48px));
+  padding: 8px 10px;
+  border-radius: 12px;
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.24);
+}
+
+.hotspot-label.side-top {
+  bottom: calc(100% + 8px);
+}
+
+.hotspot-label.side-bottom {
+  top: calc(100% + 8px);
+}
+
+.hotspot-label strong {
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.hotspot-label small {
+  margin-top: 3px;
+  font-size: 0.72rem;
+  line-height: 1.18;
+}
+
+.lov-tavern-shell .lov-window-body,
+.lov-store-shell .lov-window-body,
+.lov-forge-shell .lov-window-body,
+.lov-arena-shell .lov-window-body,
+.lov-tower-shell .lov-window-body,
+.lov-quest-shell .lov-window-body,
+.lov-boatman-shell .lov-window-body,
+.lov-fountain-shell .lov-window-body {
+  display: grid;
+}
+
+.lov-window-split,
+.lov-store-layout,
+.lov-work-layout,
+.lov-contracts-layout,
+.lov-arena-layout,
+.lov-tower-grid {
+  min-height: 0;
+  height: 100%;
+}
+
+.lov-window-split {
+  grid-template-columns: minmax(0, 0.94fr) minmax(300px, 0.86fr);
+}
+
+.lov-tavern-layout {
+  min-height: 0;
+  grid-template-columns: minmax(0, 0.96fr) minmax(320px, 0.88fr);
+}
+
+.lov-tavern-illustration {
+  position: relative;
+  overflow: hidden;
+}
+
+.lov-tavern-right {
+  position: relative;
+  gap: 10px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+  padding: 16px 18px 18px;
+}
+
+.lov-tavern-preview-card {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  width: auto;
+  max-width: 360px;
+  gap: 6px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.lov-tavern-preview-card p {
+  margin: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.lov-energy-block {
+  gap: 8px;
+}
+
+.lov-tavern-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.lov-tavern-copy p,
+.lov-energy-block p {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.15;
+}
+
+.lov-energy-button {
+  min-height: 60px;
+}
+
+.lov-energy-button strong {
+  font-size: 1.35rem;
+}
+
+.lov-quest-stack {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  min-height: 0;
+  gap: 10px;
+  overflow: hidden;
+  padding-right: 4px;
+}
+
+.lov-quest-row-title,
+.lov-contract-top {
+  padding: 10px 14px;
+}
+
+.lov-quest-row-title strong,
+.lov-contract-top strong {
+  font-size: 1.12rem;
+}
+
+.lov-quest-row-title span,
+.lov-contract-top span,
+.lov-quest-row-reward,
+.lov-contract-bottom {
+  font-size: 0.92rem;
+}
+
+.lov-quest-row-reward,
+.lov-contract-bottom {
+  padding: 8px 12px;
+}
+
+.lov-quest-hover-card {
+  width: auto;
+  justify-self: stretch;
+  padding: 12px 14px;
+}
+
+.lov-quest-hover-card h3 {
+  font-size: 1.28rem;
+}
+
+.lov-store-tabs {
+  grid-template-columns: repeat(3, max-content) 1fr;
+  gap: 10px;
+  padding: 12px 16px 0;
+}
+
+.lov-store-tabs button {
+  min-height: 46px;
+  padding: 0 18px;
+  font-size: 1rem;
+}
+
+.lov-store-currency,
+.lov-forge-currency {
+  gap: 8px;
+}
+
+.lov-store-currency span,
+.lov-forge-currency span {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 1rem;
+}
+
+.lov-store-layout {
+  grid-template-columns: minmax(250px, 0.9fr) minmax(0, 1.1fr);
+  gap: 14px;
+  padding: 14px 16px 16px;
+}
+
+.lov-bag-panel,
+.lov-merchant-panel,
+.lov-forge-panel {
+  display: grid;
+  min-height: 0;
+  overflow: hidden;
+  padding: 14px;
+}
+
+.lov-bag-panel {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.lov-bag-panel h3 {
+  margin-bottom: 10px;
+  font-size: 1.45rem;
+}
+
+.lov-merchant-panel,
+.lov-forge-panel {
+  gap: 10px;
+  align-content: stretch;
+}
+
+.lov-merchant-illustration,
+.lov-forge-illustration {
+  min-height: 138px;
+  max-height: 148px;
+}
+
+.lov-refresh-button,
+.lov-dice-button,
+.lov-donation-button,
+.lov-skip-button,
+.lov-skip-battle,
+.lov-toggle-chip,
+.lov-work-card button,
+.lov-danger-button {
+  min-height: 46px;
+  font-size: 1rem;
+}
+
+.lov-merchant-grid,
+.lov-inventory-grid {
+  align-content: start;
+}
+
+.lov-bag-panel .lov-inventory-grid,
+.lov-bag-screen .lov-inventory-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-height: 0;
+  overflow: auto;
+}
+
+.lov-grid-item,
+.lov-grid-empty {
+  min-height: 72px;
+}
+
+.lov-merchant-grid {
+  min-height: 0;
+  overflow: auto;
+  gap: 8px;
+}
+
+.lov-merchant-item {
+  min-height: 72px;
+}
+
+.lov-store-hover,
+.lov-forge-instruction,
+.lov-overlay-card {
+  padding: 12px 14px;
+}
+
+.lov-store-hover h4,
+.lov-overlay-card h3,
+.lov-forge-instruction strong {
+  font-size: 1.1rem;
+}
+
+.lov-work-layout,
+.lov-contracts-layout {
+  overflow: auto;
+  gap: 14px;
+  padding: 14px 16px 16px;
+}
+
+.lov-work-banner p,
+.lov-contracts-layout p {
+  font-size: 1rem;
+}
+
+.lov-bonus-strip {
+  grid-template-columns: repeat(6, minmax(0, 1fr)) minmax(140px, 1.3fr);
+}
+
+.lov-bonus-strip span,
+.lov-bonus-strip strong {
+  min-height: 44px;
+  font-size: 0.9rem;
+}
+
+.lov-friends-bonus {
+  min-height: 42px;
+  font-size: 1rem;
+}
+
+.lov-work-main {
+  min-height: 0;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr);
+  gap: 14px;
+}
+
+.lov-work-card {
+  gap: 10px;
+  padding: 18px;
+}
+
+.lov-work-card strong {
+  font-size: 1.25rem;
+}
+
+.lov-progress-card {
+  padding: 12px;
+}
+
+.lov-contracts-layout h3 {
+  font-size: 1.45rem;
+}
+
+.lov-contract-list {
+  width: min(520px, 100%);
+  gap: 12px;
+}
+
+.lov-forge-panel {
+  grid-template-rows: auto auto minmax(120px, 1fr) auto auto;
+}
+
+.lov-anvil-slot {
+  min-height: 122px;
+  padding: 14px;
+}
+
+.lov-forge-instruction {
+  gap: 6px;
+}
+
+.lov-tower-shell {
+  width: min(980px, 100%);
+}
+
+.lov-tower-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.lov-tower-card {
+  gap: 8px;
+  padding: 10px;
+}
+
+.lov-tower-card h3 {
+  font-size: 1.08rem;
+}
+
+.lov-tower-card-image {
+  aspect-ratio: 16 / 9;
+}
+
+.lov-tower-mark,
+.lov-tower-lock {
+  font-size: 4.2rem;
+}
+
+.lov-tower-progress {
+  min-height: 42px;
+}
+
+.lov-tower-progress span {
+  font-size: 0.94rem;
+}
+
+.lov-quest-layout {
+  min-height: 0;
+  grid-template-columns: minmax(0, 0.92fr) minmax(220px, 0.88fr);
+}
+
+.lov-quest-copy {
+  gap: 14px;
+  padding: 18px;
+}
+
+.lov-quest-copy h3 {
+  font-size: 1.35rem;
+}
+
+.lov-quest-objective {
+  gap: 8px;
+}
+
+.lov-quest-objective strong {
+  font-size: 1.08rem;
+}
+
+.lov-arena-shell {
+  width: min(940px, 100%);
+}
+
+.lov-arena-layout {
+  min-height: 0;
+  grid-template-columns: minmax(248px, 0.82fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 14px 6px;
+}
+
+.lov-arena-stats,
+.lov-arena-preview {
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.lov-arena-stats {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  align-content: start;
+}
+
+.lov-arena-primary-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 14px 8px;
+}
+
+.lov-opponent-card {
+  padding: 12px 14px;
+}
+
+.lov-opponent-card strong {
+  font-size: 1.28rem;
+}
+
+.lov-arena-grid {
+  gap: 8px;
+}
+
+.lov-arena-stat {
+  min-height: 52px;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+.lov-arena-stat span {
+  font-size: 1.2rem;
+}
+
+.lov-arena-stat strong {
+  font-size: 1.25rem;
+}
+
+.lov-arena-preview {
+  display: grid;
+  place-items: center;
+}
+
+.lov-arena-preview img {
+  width: auto;
+  max-width: 100%;
+  max-height: clamp(160px, 28vh, 220px);
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.lov-arena-toggles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 14px 10px;
+}
+
+.lov-sheet {
+  position: relative;
+  width: min(100%, 1220px);
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  grid-template-columns: 132px minmax(0, 1fr) 332px;
+  gap: 12px;
+  padding: 14px;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.lov-sheet-rail [data-testid='character-tab-profile'] {
+  display: none;
+}
+
+.lov-sheet-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border-color: rgba(221, 182, 106, 0.84);
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f0d082, #c78e3f);
+  color: #4a2b18;
+}
+
+.lov-sheet-rail {
+  grid-auto-rows: minmax(56px, auto);
+}
+
+.lov-sheet-rail button {
+  min-height: 68px;
+  padding: 10px 8px;
+  font-size: 0.92rem;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.lov-sheet-rail button.back {
+  width: 52px;
+  min-height: 52px;
+}
+
+.lov-sheet-left,
+.lov-sheet-right {
+  padding: 16px;
+}
+
+.lov-sheet-left {
+  overflow: auto;
+}
+
+.lov-sheet-right {
+  display: grid;
+  overflow: hidden;
+}
+
+.lov-stats-panel,
+.lov-bag-screen,
+.lov-pet-screen,
+.lov-profile-screen,
+.lov-appearance-screen,
+.lov-achievement-screen {
+  min-height: 0;
+}
+
+.lov-bag-screen {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-bag-screen .lov-inventory-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.lov-paperdoll-stage {
+  grid-template-columns: 78px minmax(0, 1fr) 78px;
+  gap: 10px;
+}
+
+.lov-paperdoll-column {
+  gap: 8px;
+}
+
+.lov-paperdoll-hero {
+  max-height: 270px;
+}
+
+.lov-paperdoll-pet {
+  width: min(22%, 88px);
+  right: -2%;
+}
+
+.lov-paperdoll-slot {
+  min-height: 72px;
+  padding: 6px;
+}
+
+.lov-paperdoll-slot .item-chip img {
+  width: 44px;
+  height: 44px;
+}
+
+.lov-paperdoll-header {
+  padding: 12px 16px;
+}
+
+.lov-paperdoll-header strong {
+  font-size: 1.68rem;
+}
+
+.lov-paperdoll-header span {
+  font-size: 1.24rem;
+}
+
+.lov-paperdoll-quickbar {
+  grid-template-columns: repeat(7, 42px);
+  gap: 6px;
+}
+
+.lov-quick-slot {
+  width: 42px;
+  height: 42px;
+}
+
+.lov-profile-header {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.lov-profile-header img {
+  width: 64px;
+  height: 64px;
+}
+
+.lov-profile-header strong {
+  display: block;
+  color: #f2e2bf;
+  font-family: Georgia, serif;
+  font-size: 1.72rem;
+  font-weight: 500;
+}
+
+.lov-profile-header span {
+  font-size: 1.4rem;
+}
+
+.lov-profile-stats {
+  gap: 10px;
+}
+
+.lov-profile-stat {
+  min-height: 64px;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.lov-profile-stat span {
+  font-size: 1.6rem;
+}
+
+.lov-profile-stat strong {
+  font-size: 1.7rem;
+}
+
+.lov-motto-box {
+  min-height: 74px;
+  padding: 12px 14px;
+  font-size: 1.25rem;
+}
+
+.lov-reward-gallery > strong {
+  font-size: 1.45rem;
+}
+
+.lov-reward-gallery-grid {
+  gap: 8px;
+}
+
+.lov-travel-story {
+  width: min(40%, 450px);
+  bottom: 94px;
+  gap: 12px;
+  padding: 14px;
+}
+
+.lov-travel-portrait {
+  border-width: 3px;
+}
+
+.lov-travel-story-copy p {
+  font-size: 1rem;
+}
+
+.lov-travel-bottom {
+  bottom: 18px;
+  width: min(66%, 640px);
+}
+
+.lov-travel-progress {
+  height: 24px;
+}
+
+.lov-travel-bottom > strong {
+  font-size: 1.4rem;
+  line-height: 24px;
+}
+
+.lov-travel-quest-tag {
+  padding: 10px 14px;
+}
+
+.lov-combat-top {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  gap: 10px;
+}
+
+.lov-combat-header {
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-combat-header.enemy {
+  grid-template-columns: minmax(0, 1fr) 64px;
+}
+
+.lov-combat-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+}
+
+.lov-combat-meta {
+  gap: 6px;
+}
+
+.lov-combat-meta strong {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 1.22rem;
+}
+
+.lov-combat-meta span {
+  top: -6px;
+  width: 40px;
+  min-height: 40px;
+  font-size: 1.1rem;
+}
+
+.lov-health-track {
+  height: 18px;
+}
+
+.lov-combat-meta small {
+  top: 42px;
+  font-size: 1rem;
+  line-height: 18px;
+}
+
+.lov-skip-battle {
+  min-width: 136px;
+}
+
+.lov-battle-stage {
+  inset: 86px 18px 90px;
+}
+
+.lov-fighter {
+  width: min(56%, 280px);
+}
+
+.lov-battle-pet {
+  width: min(18%, 130px);
+  bottom: 8px;
+}
+
+.lov-battle-bottom {
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  grid-template-columns: minmax(188px, 0.52fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.lov-pet-card {
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.lov-pet-card-copy strong {
+  font-size: 1.2rem;
+}
+
+.lov-pet-card-copy span,
+.lov-pet-card-copy small {
+  font-size: 0.92rem;
+}
+
+.lov-battle-actions {
+  gap: 8px;
+}
+
+.lov-skill-bar {
+  grid-template-columns: repeat(5, 52px);
+  gap: 6px;
+  padding: 8px;
+}
+
+.lov-skill-slot {
+  width: 52px;
+  height: 52px;
+}
+
+.lov-skill-slot small {
+  font-size: 0.82rem;
+}
+
+.lov-victory-window {
+  width: min(100%, 520px);
+  min-height: unset;
+  max-height: 100%;
+  grid-template-columns: 170px minmax(0, 1fr);
+}
+
+.lov-victory-left {
+  min-height: 300px;
+}
+
+.lov-victory-right {
+  gap: 12px;
+  padding: 18px;
+}
+
+.lov-victory-right h2 {
+  font-size: 2rem;
+}
+
+.lov-victory-right p,
+.lov-victory-right span {
+  font-size: 1rem;
+}
+
+.lov-victory-rewards {
+  gap: 12px;
+}
+
+.lov-victory-rewards strong,
+.lov-pet-xp strong {
+  font-size: 1.2rem;
+}
+
+.lov-pet-xp img {
+  width: 54px;
+  height: 54px;
+}
+
+@media (max-width: 1200px) {
+  .lov-topbar-left {
+    grid-template-columns: 96px minmax(220px, 1fr);
+  }
+
+  .lov-friends-cards {
+    grid-auto-columns: 84px;
+  }
+
+  .shell-reset-window.size-standard {
+    --window-width: 860px;
+    --window-height: 640px;
+  }
+
+  .shell-reset-window.size-wide {
+    --window-width: 940px;
+    --window-height: 660px;
+  }
+
+  .lov-sheet {
+    width: min(100%, 1100px);
+    grid-template-columns: 120px minmax(0, 1fr) 300px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .lov-topbar {
+    grid-template-columns: minmax(360px, 1fr) auto;
+    gap: 12px;
+  }
+
+  .lov-topbar-left {
+    grid-template-columns: 92px minmax(180px, 1fr);
+  }
+
+  .lov-glory-strip {
+    display: none;
+  }
+
+  .lov-resource-strip {
+    gap: 6px;
+  }
+
+  .lov-resource-pill,
+  .lov-add-button {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.92rem;
+  }
+
+  .lov-xp-strip .meter {
+    grid-template-columns: minmax(0, 1fr) 116px;
+  }
+
+  .lov-xp-strip .meter strong {
+    min-width: 108px;
+  }
+
+  .stage-left-stack {
+    padding-top: 30px;
+  }
+
+  .lov-friends-band {
+    grid-template-columns: 30px minmax(0, 1fr) 30px 104px;
+  }
+
+  .lov-friends-cards {
+    grid-auto-columns: 82px;
+  }
+
+  .lov-invite-card {
+    width: 104px;
+  }
+
+  .shell-reset-window.size-standard {
+    --window-width: 820px;
+  }
+
+  .shell-reset-window.size-wide {
+    --window-width: 900px;
+  }
+
+  .lov-store-layout,
+  .lov-arena-layout,
+  .lov-window-split,
+  .lov-work-main {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-sheet {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+
+  .lov-sheet-right {
+    display: none;
+  }
+}
+
+@media (max-height: 720px) {
+  .stage-frame.shell-reset-stage {
+    --stage-topbar-height: 76px;
+    --stage-bottom-height: 132px;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .stage-left-stack {
+    padding-top: 28px;
+  }
+
+  .shell-reset-window.size-compact {
+    --window-height: 360px;
+  }
+
+  .shell-reset-window.size-standard {
+    --window-height: 590px;
+  }
+
+  .shell-reset-window.size-wide {
+    --window-height: 610px;
+  }
+
+  .lov-window-header {
+    padding: 10px 16px 8px;
+  }
+
+  .lov-window-footer {
+    padding: 8px 14px 12px;
+  }
+
+  .lov-merchant-illustration,
+  .lov-forge-illustration {
+    min-height: 116px;
+    max-height: 126px;
+  }
+
+  .lov-tavern-preview-card {
+    bottom: 14px;
+  }
+
+  .lov-sheet {
+    height: min(100%, 560px);
+  }
+
+  .lov-battle-stage {
+    inset: 74px 12px 78px;
+  }
+
+  .lov-fighter {
+    width: min(50%, 220px);
+  }
+
+  .lov-battle-bottom {
+    grid-template-columns: minmax(160px, 0.5fr) minmax(0, 1fr);
+  }
+}
+
+/* Final desktop fit pass */
+.stage-frame.shell-reset-stage {
+  --stage-topbar-height: 94px;
+  --stage-bottom-height: 126px;
+}
+
+.stage-left-stack {
+  padding-top: 22px;
+}
+
+.shell-reset-message {
+  display: none !important;
+}
+
+.lov-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px 8px 16px;
+  gap: 18px;
+}
+
+.lov-topbar-left {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 330px);
+  grid-template-columns: 118px minmax(360px, 1fr);
+  gap: 22px;
+}
+
+.lov-topbar-portrait {
+  width: 108px;
+  height: 84px;
+}
+
+.lov-topbar-portrait .shell-reset-level {
+  right: 2px;
+}
+
+.lov-topbar-badge {
+  left: 8px;
+  bottom: -8px;
+}
+
+.lov-xp-strip {
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.lov-xp-strip .meter {
+  grid-template-columns: minmax(0, 1fr) 150px;
+}
+
+.lov-xp-strip .meter strong {
+  min-width: 136px;
+}
+
+.lov-resource-strip {
+  justify-self: end;
+  padding-left: 28px;
+  gap: 12px;
+}
+
+.lov-resource-pill {
+  min-width: 92px;
+  justify-content: center;
+}
+
+.lov-add-button {
+  min-width: 196px;
+}
+
+.stage-frame.shell-reset-stage .lov-bottom-strip {
+  padding: 6px calc(var(--stage-right-rail-size) + 14px) 10px calc(var(--stage-left-rail-size) + 18px);
+  gap: 8px;
+}
+
+.lov-bottom-strip {
+  grid-template-rows: 72px 36px;
+}
+
+.lov-friends-band {
+  grid-template-columns: 30px minmax(0, 1fr) 30px 110px;
+  align-items: stretch;
+}
+
+.lov-friends-cards {
+  grid-auto-columns: 82px;
+  gap: 6px;
+}
+
+.lov-friend-card,
+.lov-invite-card {
+  min-height: 64px;
+}
+
+.lov-footer-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lov-footer-tabs .shell-reset-news-tab {
+  min-width: 0;
+}
+
+.scene-hotspot::before {
+  inset: 0;
+}
+
+.hotspot-label {
+  width: min(220px, calc(100vw - 84px));
+  padding: 10px 12px;
+  z-index: 3;
+}
+
+.hotspot-label strong {
+  font-size: 1.18rem;
+}
+
+.hotspot-label small {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.lov-quest-shell {
+  --window-width: 760px;
+  --window-height: 450px;
+}
+
+.lov-quest-layout {
+  grid-template-columns: minmax(250px, 0.88fr) minmax(0, 1fr);
+}
+
+.lov-quest-copy {
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.lov-quest-copy h3 {
+  font-size: 1.1rem;
+}
+
+.lov-quest-copy p {
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.lov-quest-objective {
+  gap: 4px;
+}
+
+.lov-quest-objective span,
+.lov-quest-objective strong {
+  font-size: 0.98rem;
+}
+
+.lov-tavern-shell {
+  --window-width: 1040px;
+  --window-height: 730px;
+}
+
+.lov-tavern-layout {
+  min-height: 0;
+  grid-template-columns: minmax(370px, 0.98fr) minmax(350px, 1.02fr);
+}
+
+.lov-tavern-right {
+  gap: 10px;
+  padding: 18px 18px 16px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.lov-tavern-preview-card {
+  left: 14px;
+  right: auto;
+  bottom: 14px;
+  max-width: 320px;
+  padding: 10px 12px;
+  gap: 4px;
+}
+
+.lov-tavern-preview-card h3 {
+  font-size: 1rem;
+}
+
+.lov-energy-block {
+  gap: 6px;
+}
+
+.lov-energy-block .meter {
+  grid-template-columns: 0 minmax(0, 1fr) auto;
+}
+
+.lov-energy-block .meter div {
+  height: 34px;
+}
+
+.lov-energy-block .meter strong {
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.15rem;
+}
+
+.lov-energy-block p,
+.lov-tavern-copy p {
+  font-size: 0.9rem;
+  line-height: 1.15;
+}
+
+.lov-energy-buy-row {
+  gap: 10px;
+}
+
+.lov-energy-button {
+  min-height: 56px;
+  gap: 4px;
+}
+
+.lov-energy-button strong {
+  font-size: 1.35rem;
+}
+
+.lov-energy-button span {
+  font-size: 0.85rem;
+}
+
+.lov-quest-stack {
+  grid-auto-rows: minmax(52px, auto);
+  align-content: start;
+  gap: 8px;
+}
+
+.lov-quest-row {
+  min-height: 0;
+}
+
+.lov-quest-row-title {
+  padding: 8px 10px;
+}
+
+.lov-quest-row-title strong {
+  font-size: 0.98rem;
+}
+
+.lov-quest-row-title span,
+.lov-quest-row-reward {
+  font-size: 0.82rem;
+}
+
+.lov-quest-row-reward {
+  padding: 6px 10px;
+}
+
+.lov-store-shell {
+  --window-width: 920px;
+  --window-height: 690px;
+}
+
+.lov-store-layout {
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+
+.lov-store-bag-panel {
+  position: relative;
+}
+
+.lov-store-bag-panel::after {
+  content: "Перетащи товар сюда, чтобы купить";
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 6px 10px;
+  border: 1px solid rgba(148, 192, 174, 0.44);
+  border-radius: 999px;
+  background: rgba(22, 34, 33, 0.82);
+  color: #dff4ec;
+  font-size: 0.74rem;
+  pointer-events: none;
+}
+
+.lov-merchant-panel {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.lov-store-scene-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 10px;
+  min-height: 0;
+}
+
+.lov-merchant-illustration {
+  min-height: 132px;
+  max-height: 150px;
+}
+
+.lov-store-hover {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.lov-store-hover h4 {
+  font-size: 1rem;
+}
+
+.lov-store-hover p {
+  font-size: 0.84rem;
+  line-height: 1.25;
+}
+
+.lov-store-stock-panel {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+
+.lov-store-stock-panel > strong {
+  color: #f0e1c3;
+  font-family: Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.lov-merchant-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  overflow: hidden;
+}
+
+.lov-merchant-item {
+  min-height: 70px;
+  padding: 6px;
+}
+
+.lov-fountain-shell {
+  --window-width: 780px;
+  --window-height: 520px;
+}
+
+.lov-fountain-layout {
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 14px 16px;
+}
+
+.lov-fountain-rules {
+  padding: 12px 14px;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.lov-fountain-main {
+  min-height: 0;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+}
+
+.lov-fountain-glow {
+  inset: 44% 28% auto;
+  height: 96px;
+}
+
+.lov-fountain-main h3 {
+  font-size: 1.58rem;
+  line-height: 1.08;
+}
+
+.lov-fountain-main p,
+.lov-fountain-timer span {
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.lov-fountain-timer {
+  margin-top: 54px;
+}
+
+.lov-fountain-timer strong {
+  font-size: 1.92rem;
+}
+
+.lov-donation-button {
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 1rem;
+}
+
+.lov-sheet {
+  width: min(100%, 1230px);
+  grid-template-columns: 118px minmax(0, 1fr) 294px;
+  gap: 10px;
+  padding: 12px;
+}
+
+.lov-sheet-rail {
+  grid-auto-rows: minmax(52px, auto);
+}
+
+.lov-sheet-rail button {
+  min-height: 60px;
+  padding: 8px 6px;
+  font-size: 0.82rem;
+}
+
+.lov-sheet-left,
+.lov-sheet-right {
+  padding: 12px;
+  min-width: 0;
+}
+
+.lov-sheet-left.tab-profile {
+  overflow: hidden;
+}
+
+.lov-sheet-right {
+  overflow: hidden;
+}
+
+.lov-profile-screen {
+  height: 100%;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.lov-profile-stats {
+  gap: 8px;
+}
+
+.lov-profile-stat {
+  min-height: 56px;
+  grid-template-columns: 24px 1fr;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.lov-profile-stat span,
+.lov-profile-stat strong {
+  font-size: 1.35rem;
+}
+
+.lov-quick-slots {
+  grid-template-columns: repeat(4, 46px);
+  gap: 8px;
+}
+
+.lov-quick-slots .lov-quick-slot {
+  width: 46px;
+  height: 46px;
+}
+
+.lov-motto-box {
+  min-height: 64px;
+  padding: 10px 12px;
+  font-size: 1.08rem;
+}
+
+.lov-reward-gallery {
+  gap: 8px;
+}
+
+.lov-reward-gallery > strong {
+  font-size: 1.28rem;
+}
+
+.lov-reward-gallery-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lov-profile-reward {
+  min-height: 72px;
+  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  font-size: 0.78rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.lov-paperdoll-header {
+  padding: 10px 12px;
+}
+
+.lov-paperdoll-header strong {
+  font-size: 1.52rem;
+}
+
+.lov-paperdoll-header span {
+  font-size: 1.1rem;
+}
+
+.lov-paperdoll-stage {
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  gap: 8px;
+}
+
+.lov-paperdoll-slot {
+  min-height: 64px;
+  padding: 4px;
+}
+
+.lov-paperdoll-slot .item-chip img {
+  width: 38px;
+  height: 38px;
+}
+
+.lov-paperdoll-hero {
+  max-height: 236px;
+}
+
+.lov-paperdoll-pet {
+  width: min(18%, 72px);
+  right: -5%;
+}
+
+.lov-paperdoll-quickbar {
+  grid-template-columns: repeat(7, 34px);
+  gap: 4px;
+}
+
+.lov-paperdoll-quickbar .lov-quick-slot {
+  width: 34px;
+  height: 34px;
+}
+
+.lov-combat-header {
+  position: relative;
+  align-items: center;
+}
+
+.lov-combat-info-button {
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(221, 182, 106, 0.84);
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(49, 44, 44, 0.94), rgba(32, 28, 29, 0.94));
+  color: #f0e0bd;
+}
+
+.lov-combat-header.ally .lov-combat-info-button {
+  order: -1;
+}
+
+.lov-combat-header.enemy .lov-combat-info-button {
+  order: 3;
+}
+
+.lov-battle-stage {
+  inset: 86px 18px 72px;
+}
+
+.lov-battle-bottom {
+  left: 14px;
+  right: auto;
+  bottom: 12px;
+  grid-template-columns: minmax(220px, 280px);
+  gap: 0;
+}
+
+.lov-pet-card {
+  gap: 8px;
+  padding: 8px;
+}
+
+.lov-pet-card-body {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.lov-pet-card-image {
+  min-height: 68px;
+}
+
+.lov-pet-card-copy strong {
+  font-size: 1rem;
+}
+
+.lov-pet-card-copy span,
+.lov-pet-card-copy small {
+  font-size: 0.82rem;
+}
+
+.lov-battle-pet,
+.lov-battle-actions,
+.lov-skill-bar {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .lov-topbar {
+    gap: 14px;
+  }
+
+  .lov-topbar-left {
+    max-width: calc(100% - 300px);
+    grid-template-columns: 110px minmax(260px, 1fr);
+    gap: 16px;
+  }
+
+  .stage-frame.shell-reset-stage .lov-bottom-strip {
+    padding-left: calc(var(--stage-left-rail-size) + 12px);
+    padding-right: calc(var(--stage-right-rail-size) + 10px);
+  }
+
+  .lov-store-scene-card {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-sheet {
+    width: min(100%, 1140px);
+    grid-template-columns: 112px minmax(0, 1fr) 276px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .lov-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .lov-topbar-left {
+    max-width: none;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .lov-resource-strip {
+    justify-self: start;
+    padding-left: 126px;
+  }
+
+  .stage-frame.shell-reset-stage {
+    --stage-bottom-height: 118px;
+  }
+
+  .lov-tavern-layout {
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  }
+
+  .stage-frame.shell-reset-stage .lov-bottom-strip {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-height: 720px) {
+  .stage-frame.shell-reset-stage {
+    --stage-topbar-height: 86px;
+    --stage-bottom-height: 116px;
+  }
+
+  .lov-bottom-strip {
+    grid-template-rows: 66px 34px;
+  }
+
+  .lov-tavern-shell {
+    --window-height: 680px;
+  }
+
+  .lov-tavern-right {
+    gap: 6px;
+    padding: 12px 14px 12px;
+  }
+
+  .lov-energy-block .meter div {
+    height: 30px;
+  }
+
+  .lov-energy-block .meter strong {
+    font-size: 1rem;
+  }
+
+  .lov-energy-block p,
+  .lov-tavern-copy p {
+    font-size: 0.8rem;
+  }
+
+  .lov-energy-button {
+    min-height: 46px;
+    gap: 2px;
+  }
+
+  .lov-energy-button strong {
+    font-size: 1.1rem;
+  }
+
+  .lov-energy-button span {
+    font-size: 0.76rem;
+  }
+
+  .lov-quest-stack {
+    gap: 6px;
+  }
+
+  .lov-quest-row-title {
+    padding: 6px 8px;
+  }
+
+  .lov-quest-row-title strong {
+    font-size: 0.88rem;
+  }
+
+  .lov-quest-row-title span,
+  .lov-quest-row-reward {
+    font-size: 0.74rem;
+  }
+
+  .lov-quest-row-reward {
+    padding: 5px 8px;
+  }
+
+  .lov-fountain-shell {
+    --window-height: 480px;
+  }
+
+  .lov-sheet {
+    height: min(100%, 548px);
+  }
+}

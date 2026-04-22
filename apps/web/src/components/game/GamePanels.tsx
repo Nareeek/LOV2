@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, useState, type CSSProperties, type DragEvent, type ReactNode } from 'react';
 import { exerciseDefinitions } from '@lov2/game-data';
 import {
   armorFromEquipment,
@@ -25,8 +25,11 @@ import { ItemChip, Meter, UiIcon } from './ui.js';
 type EquippedEntry = { stack: InventoryStack; item: ItemDefinition };
 type StoreTab = 'shop' | 'work' | 'contracts';
 type AppearanceKey = 'face' | 'hair' | 'color';
+type WindowSize = 'compact' | 'standard' | 'wide';
+type WindowBodyScroll = 'none' | 'body' | 'sections';
 
 const DRAG_STACK_TYPE = 'application/x-lov2-stack';
+const DRAG_STORE_ITEM_TYPE = 'application/x-lov2-store-item';
 const LEFT_SLOTS: EquipmentSlot[] = ['weapon', 'ring', 'amulet', 'pet'];
 const RIGHT_SLOTS: EquipmentSlot[] = ['helmet', 'armor', 'gloves', 'boots'];
 const PRIMARY_STATS: StatKey[] = ['сила', 'ловкость', 'интуиция', 'удача'];
@@ -166,15 +169,22 @@ export function WorldWindowShell({
   children,
   testId,
   className = '',
+  size = 'standard',
+  bodyScroll = 'body',
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
   testId?: string;
   className?: string;
+  size?: WindowSize;
+  bodyScroll?: WindowBodyScroll;
 }) {
   return (
-    <section className={`shell-reset-window lov-window-shell ${className}`.trim()} data-testid={testId}>
+    <section
+      className={`shell-reset-window lov-window-shell size-${size} scroll-${bodyScroll} ${className}`.trim()}
+      data-testid={testId}
+    >
       <header className="shell-reset-window-header lov-window-header">
         <h2>{title}</h2>
         <button
@@ -186,7 +196,7 @@ export function WorldWindowShell({
           <UiIcon name="close" />
         </button>
       </header>
-      <div className="shell-reset-window-body lov-window-body">{children}</div>
+      <div className={`shell-reset-window-body lov-window-body body-scroll-${bodyScroll}`}>{children}</div>
       <footer className="shell-reset-window-footer lov-window-footer">
         <button className="lov-close-button" data-testid="world-window-bottom-close" onClick={onClose}>
           Закрыть
@@ -215,14 +225,31 @@ export function TavernWindow({
   const [hoveredQuestId, setHoveredQuestId] = useState<string | null>(null);
   const activeQuest = hoveredQuestId
     ? state.quests.find((quest) => quest.id === hoveredQuestId)
-    : undefined;
+    : selectedQuest ?? state.quests[0];
 
   return (
-    <WorldWindowShell title="Таверна" onClose={onClose} testId="tavern-window" className="lov-tavern-shell">
+    <WorldWindowShell
+      title="Таверна"
+      onClose={onClose}
+      testId="tavern-window"
+      className="lov-tavern-shell"
+      size="wide"
+      bodyScroll="sections"
+    >
       <div className="lov-window-split lov-tavern-layout" data-testid="npc-dialog-screen">
         <section className="lov-illustration-panel lov-tavern-illustration">
           <img src={assetPath('scene-tavern')} alt="" />
           <div className="lov-speech-bubble tavernkeeper">シブシブ</div>
+          {activeQuest ? (
+            <aside className="lov-quest-hover-card lov-tavern-preview-card" data-testid="task-popup">
+              <h3>{activeQuest.titleRu}</h3>
+              <p>{QUEST_HINTS[activeQuest.id] ?? activeQuest.descriptionRu}</p>
+              <small>
+                Цена: {activeQuest.energyCost} энергии · Награда: {activeQuest.reward.gold} золота ·{' '}
+                {activeQuest.reward.experience} XP
+              </small>
+            </aside>
+          ) : null}
         </section>
 
         <section className="lov-tavern-right">
@@ -310,17 +337,6 @@ export function TavernWindow({
               );
             })}
           </div>
-
-          {activeQuest ? (
-            <aside className="lov-quest-hover-card" data-testid="task-popup">
-              <h3>{activeQuest.titleRu}</h3>
-              <p>{QUEST_HINTS[activeQuest.id] ?? activeQuest.descriptionRu}</p>
-              <small>
-                Цена: {activeQuest.energyCost} энергии · Награда: {activeQuest.reward.gold} золота ·{' '}
-                {activeQuest.reward.experience} XP
-              </small>
-            </aside>
-          ) : null}
         </section>
       </div>
     </WorldWindowShell>
@@ -350,7 +366,14 @@ export function ArenaPreviewWindow({
   ];
 
   return (
-    <WorldWindowShell title="Арена" onClose={onClose} testId="arena-window" className="lov-arena-shell">
+    <WorldWindowShell
+      title="Арена"
+      onClose={onClose}
+      testId="arena-window"
+      className="lov-arena-shell"
+      size="standard"
+      bodyScroll="none"
+    >
       <div className="lov-arena-layout">
         <section className="lov-arena-stats">
           <div className="lov-opponent-card">
@@ -365,12 +388,24 @@ export function ArenaPreviewWindow({
               </div>
             ))}
           </div>
-          <button type="button" className="secondary" onClick={() => onIntent({ type: 'selectArenaEnemy', enemyId: enemy.id })}>
-            Сменить соперника
-          </button>
-          <button type="button" className="lov-danger-button" data-testid="arena-start-button" onClick={() => onIntent({ type: 'startArena', enemyId: enemy.id })}>
-            Начать бой!
-          </button>
+          <div className="lov-arena-primary-actions">
+            <button
+              type="button"
+              className="secondary"
+              data-testid="arena-switch-button"
+              onClick={() => onIntent({ type: 'selectArenaEnemy', enemyId: enemy.id })}
+            >
+              Сменить соперника
+            </button>
+            <button
+              type="button"
+              className="lov-danger-button"
+              data-testid="arena-start-button"
+              onClick={() => onIntent({ type: 'startArena', enemyId: enemy.id })}
+            >
+              Начать бой!
+            </button>
+          </div>
         </section>
 
         <section className="lov-arena-preview">
@@ -407,9 +442,23 @@ export function StoreWindow({
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(selectedStoreItem?.id ?? state.items[0]?.id ?? null);
   const hoveredItem = state.items.find((item) => item.id === hoveredItemId) ?? selectedStoreItem ?? state.items[0];
   const backpack = useMemo(() => getBackpackStacks(state), [state]);
+  const handleStoreDrop = (event: DragEvent<HTMLElement>) => {
+    event.preventDefault();
+    const itemId = readDraggedStoreItemId(event);
+    if (itemId) {
+      onIntent({ type: 'purchaseItem', itemId });
+    }
+  };
 
   return (
-    <WorldWindowShell title="Магазин" onClose={onClose} testId="store-sheet" className={`lov-store-shell tab-${tab}`}>
+    <WorldWindowShell
+      title="Магазин"
+      onClose={onClose}
+      testId="store-sheet"
+      className={`lov-store-shell tab-${tab}`}
+      size="standard"
+      bodyScroll="sections"
+    >
       <div className="lov-store-tabs">
         <button type="button" className={tab === 'shop' ? 'active' : ''} onClick={() => setTab('shop')}>
           Магазин
@@ -428,7 +477,11 @@ export function StoreWindow({
 
       {tab === 'shop' ? (
         <div className="lov-store-layout" data-testid="store-popup">
-          <section className="lov-bag-panel">
+          <section
+            className="lov-bag-panel lov-store-bag-panel"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleStoreDrop}
+          >
             <h3>Рюкзак</h3>
             <InventoryGrid
               state={state}
@@ -440,41 +493,51 @@ export function StoreWindow({
           </section>
 
           <section className="lov-merchant-panel">
-            <div className="lov-merchant-illustration">
-              <img src={assetPath('scene-hub')} alt="" />
-              <div className="lov-speech-bubble merchant">シブシブ</div>
+            <div className="lov-store-scene-card">
+              <div className="lov-merchant-illustration">
+                <img src={assetPath('scene-hub')} alt="" />
+                <div className="lov-speech-bubble merchant">シブシブ</div>
+              </div>
+              {hoveredItem ? (
+                <div className="lov-store-hover">
+                  <h4>{hoveredItem.nameRu}</h4>
+                  <p>{hoveredItem.descriptionRu}</p>
+                  <small>{formatPrice(hoveredItem)}</small>
+                  <div className="lov-item-stat-tags">
+                    {getItemStatTags(hoveredItem).map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <div className="lov-store-stock-panel">
+              <strong>Товары лавки</strong>
+              <div className="lov-merchant-grid">
+                {state.items.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    draggable
+                    className={`lov-merchant-item ${hoveredItem?.id === item.id ? 'active' : ''}`}
+                    data-testid={`store-item-${item.id}`}
+                    title={item.descriptionRu}
+                    onMouseEnter={() => setHoveredItemId(item.id)}
+                    onFocus={() => setHoveredItemId(item.id)}
+                    onClick={() => onIntent({ type: 'purchaseItem', itemId: item.id })}
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = 'copy';
+                      event.dataTransfer.setData(DRAG_STORE_ITEM_TYPE, item.id);
+                    }}
+                  >
+                    <ItemChip item={item} compact />
+                  </button>
+                ))}
+              </div>
             </div>
             <button type="button" className="lov-refresh-button secondary" disabled>
               Обновить магазин · 1 жемчужина
             </button>
-            <div className="lov-merchant-grid">
-              {state.items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`lov-merchant-item ${hoveredItem?.id === item.id ? 'active' : ''}`}
-                  data-testid={`store-item-${item.id}`}
-                  title={item.descriptionRu}
-                  onMouseEnter={() => setHoveredItemId(item.id)}
-                  onFocus={() => setHoveredItemId(item.id)}
-                  onClick={() => onIntent({ type: 'purchaseItem', itemId: item.id })}
-                >
-                  <ItemChip item={item} compact />
-                </button>
-              ))}
-            </div>
-            {hoveredItem ? (
-              <div className="lov-store-hover">
-                <h4>{hoveredItem.nameRu}</h4>
-                <p>{hoveredItem.descriptionRu}</p>
-                <small>{formatPrice(hoveredItem)}</small>
-                <div className="lov-item-stat-tags">
-                  {getItemStatTags(hoveredItem).map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </section>
         </div>
       ) : null}
@@ -560,7 +623,14 @@ export function ForgeWindow({
   const upgradeCost = selectedItem && selectedForgeStack ? forgeUpgradeCost(selectedItem, selectedForgeStack.enhancementLevel ?? 0) : 0;
 
   return (
-    <WorldWindowShell title="Кузница" onClose={onClose} testId="forge-window" className="lov-forge-shell">
+    <WorldWindowShell
+      title="Кузница"
+      onClose={onClose}
+      testId="forge-window"
+      className="lov-forge-shell"
+      size="standard"
+      bodyScroll="sections"
+    >
       <div className="lov-store-layout">
         <section className="lov-bag-panel">
           <h3>Рюкзак</h3>
@@ -569,7 +639,9 @@ export function ForgeWindow({
             stacks={forgeableStacks}
             selectedStackId={selectedForgeStack?.id ?? null}
             onSelect={(inventoryStackId) => onIntent({ type: 'selectForgeItem', inventoryStackId })}
+            dataTestId="forge-inventory-panel"
             draggable
+            fillSlots={24}
           />
         </section>
 
@@ -635,7 +707,14 @@ export function TowerWindow({
   const bossUnlocked = state.character ? state.character.level >= 5 : false;
 
   return (
-    <WorldWindowShell title="Темная башня" onClose={onClose} testId="tower-window" className="lov-tower-shell">
+    <WorldWindowShell
+      title="Темная башня"
+      onClose={onClose}
+      testId="tower-window"
+      className="lov-tower-shell"
+      size="standard"
+      bodyScroll="none"
+    >
       <div className="lov-tower-grid">
         {TOWER_HALLS.map((hall) => {
           const locked = hall.locked && !bossUnlocked;
@@ -670,7 +749,14 @@ export function BoatmanWindow({
   onClose: () => void;
 }) {
   return (
-    <WorldWindowShell title="Лодочник" onClose={onClose} testId="boatman-window" className="lov-boatman-shell">
+    <WorldWindowShell
+      title="Лодочник"
+      onClose={onClose}
+      testId="boatman-window"
+      className="lov-boatman-shell"
+      size="standard"
+      bodyScroll="none"
+    >
       <div className="lov-window-split lov-boatman-layout">
         <section className="lov-illustration-panel lov-boatman-illustration">
           <img src={assetPath('scene-map')} alt="" />
@@ -699,7 +785,14 @@ export function FountainWindow({
   onClose: () => void;
 }) {
   return (
-    <WorldWindowShell title="Фонтан" onClose={onClose} testId="fountain-window" className="lov-fountain-shell">
+    <WorldWindowShell
+      title="Фонтан"
+      onClose={onClose}
+      testId="fountain-window"
+      className="lov-fountain-shell"
+      size="standard"
+      bodyScroll="none"
+    >
       <div className="lov-fountain-layout">
         <div className="lov-fountain-rules">
           Каждый раз, когда ты бросаешь в фонтан горсть монет, у тебя есть шанс получить ауру. Та раса, что пожертвует
@@ -737,7 +830,14 @@ export function ExerciseDetailWindow({
   const brief = EXERCISE_BRIEFS[exercise.id] ?? EXERCISE_BRIEFS['courtyard-lanterns']!;
 
   return (
-    <WorldWindowShell title="Новое задание" onClose={onClose} testId="exercise-detail-window" className="lov-quest-shell">
+    <WorldWindowShell
+      title="Новое задание"
+      onClose={onClose}
+      testId="exercise-detail-window"
+      className="lov-quest-shell"
+      size="compact"
+      bodyScroll="none"
+    >
       <div className="lov-window-split lov-quest-layout">
         <section className="lov-illustration-panel lov-quest-illustration">
           <img src={assetPath('scene-tavern')} alt="" />
@@ -772,7 +872,14 @@ export function JournalWindow({
   const cards = JOURNAL_COPY[activeTab];
 
   return (
-    <WorldWindowShell title={META_LABELS[activeTab]} onClose={onClose} testId="journal-window" className="lov-journal-shell">
+    <WorldWindowShell
+      title={META_LABELS[activeTab]}
+      onClose={onClose}
+      testId="journal-window"
+      className="lov-journal-shell"
+      size="standard"
+      bodyScroll="body"
+    >
       <div className="lov-journal-cards">
         {cards.map((card) => (
           <article key={card.title} className="lov-journal-card">
@@ -791,7 +898,13 @@ export function SettingsWindow({
   onClose: () => void;
 }) {
   return (
-    <WorldWindowShell title="Коллекции и помощь" onClose={onClose} testId="settings-window">
+    <WorldWindowShell
+      title="Коллекции и помощь"
+      onClose={onClose}
+      testId="settings-window"
+      size="standard"
+      bodyScroll="body"
+    >
       <div className="lov-journal-cards">
         <article className="lov-journal-card">
           <h3>Коллекции</h3>
@@ -879,7 +992,6 @@ export function TravelStage({
 }
 
 export function CombatStage({
-  combatId,
   character,
   enemy,
   characterHealth,
@@ -888,11 +1000,8 @@ export function CombatStage({
   enemyMaxHealth,
   petAssistArmed,
   replayTurns,
-  replayActive,
-  rewardVisible,
   onIntent,
 }: {
-  combatId: string | undefined;
   character: BootstrapState['character'];
   enemy: EnemyDefinition | undefined;
   characterHealth: number;
@@ -901,8 +1010,6 @@ export function CombatStage({
   enemyMaxHealth: number;
   petAssistArmed: boolean;
   replayTurns: CombatTurn[] | undefined;
-  replayActive: boolean;
-  rewardVisible: boolean;
   onIntent: (intent: GameIntent) => void;
 }) {
   if (!character || !enemy) {
@@ -919,6 +1026,15 @@ export function CombatStage({
 
       <div className="lov-combat-top">
         <div className="lov-combat-header ally">
+          <button
+            type="button"
+            className="lov-combat-info-button"
+            data-testid="combat-hero-info-button"
+            aria-label="Сведения о герое"
+            onClick={() => onIntent({ type: 'openInfo', windowId: 'heroInfo' })}
+          >
+            <UiIcon name="info" />
+          </button>
           <div className="lov-combat-avatar">
             <img src={assetPath('hero-nocturne')} alt="" />
           </div>
@@ -953,31 +1069,25 @@ export function CombatStage({
           <div className="lov-combat-avatar">
             <img src={assetPath('enemy-ash-baron')} alt="" />
           </div>
+          <button
+            type="button"
+            className="lov-combat-info-button"
+            data-testid="combat-enemy-info-button"
+            aria-label="Сведения о противнике"
+            onClick={() => onIntent({ type: 'openInfo', windowId: 'enemyInfo' })}
+          >
+            <UiIcon name="info" />
+          </button>
         </div>
       </div>
 
       <div className="lov-battle-stage">
         <img className="lov-fighter hero" src={assetPath('hero-nocturne')} alt="" />
         <img className="lov-fighter enemy" src={assetPath('enemy-ash-baron')} alt="" />
-        <img className={`lov-battle-pet ${petAssistArmed ? 'armed' : ''}`} src={assetPath('pet-wyvern')} alt="" />
       </div>
 
       <div className="lov-battle-bottom">
         <div className="lov-pet-card">
-          <div className="lov-pet-card-image">
-            <img src={assetPath('pet-wyvern')} alt="" />
-          </div>
-          <div className="lov-pet-card-copy">
-            <strong>Котёнок</strong>
-            <span>17 уровень</span>
-            <div className="lov-health-track">
-              <i style={{ width: '100%' }} />
-            </div>
-            <small>2100</small>
-          </div>
-        </div>
-
-        <div className="lov-battle-actions">
           <button
             type="button"
             className={`lov-toggle-chip ${petAssistArmed ? 'active' : ''}`}
@@ -986,25 +1096,18 @@ export function CombatStage({
           >
             Вызывать питомца
           </button>
-          {!rewardVisible && !replayActive ? (
-            <button
-              type="button"
-              className="lov-danger-button"
-              data-testid="resolve-combat-button"
-              disabled={!combatId}
-              onClick={() => combatId && onIntent({ type: 'resolveCombat', combatId })}
-            >
-              Начать бой!
-            </button>
-          ) : null}
-          <div className="lov-skill-bar">
-            {[assetPath('icon-onyx'), assetPath('icon-vest'), assetPath('icon-rapier'), assetPath('icon-onyx'), ''].map((src, index) => (
-              <span key={`${src}-${index}`} className={`lov-skill-slot ${src ? 'filled' : 'empty'}`}>
-                {src ? <img src={src} alt="" /> : <i />}
-                {index === 0 ? <small>2</small> : null}
-                {index === 3 ? <small>9</small> : null}
-              </span>
-            ))}
+          <div className="lov-pet-card-body">
+            <div className="lov-pet-card-image">
+              <img src={assetPath('pet-wyvern')} alt="" />
+            </div>
+            <div className="lov-pet-card-copy">
+              <strong>Котёнок</strong>
+              <span>17 уровень</span>
+              <div className="lov-health-track">
+                <i style={{ width: '100%' }} />
+              </div>
+              <small>2100</small>
+            </div>
           </div>
         </div>
       </div>
@@ -1101,6 +1204,15 @@ export function CharacterSheet({
         activeTab === 'pets' ? 'pet-sheet' : activeTab === 'inventory' ? 'inventory-sheet' : activeTab === 'profile' ? 'profile-sheet' : activeTab === 'appearance' ? 'appearance-sheet' : 'character-sheet'
       }
     >
+      <button
+        type="button"
+        className="lov-sheet-close"
+        data-testid="sheet-close-button"
+        aria-label="Закрыть окно героя"
+        onClick={() => onIntent({ type: 'closeSheet' })}
+      >
+        <UiIcon name="close" />
+      </button>
       <aside className="shell-reset-sheet-rail lov-sheet-rail">
         <button type="button" className={activeTab === 'inventory' ? 'active' : ''} data-testid="character-tab-equipment" onClick={() => onIntent({ type: 'setSheetTab', tab: 'inventory' })}>
           Сумка
@@ -1125,7 +1237,7 @@ export function CharacterSheet({
         </button>
       </aside>
 
-      <section className="shell-reset-sheet-left lov-sheet-left">
+      <section className={`shell-reset-sheet-left lov-sheet-left tab-${activeTab}`}>
         {activeTab === 'character' ? (
           <div className="lov-stats-panel">
             <header className="lov-panel-header">
@@ -1340,7 +1452,7 @@ export function CharacterSheet({
         ) : null}
       </section>
 
-      <section className="shell-reset-sheet-right lov-sheet-right">
+      <section className={`shell-reset-sheet-right lov-sheet-right tab-${activeTab}`}>
         <PaperDollPanel
           state={state}
           character={character}
@@ -1821,6 +1933,11 @@ function formatPrice(item: ItemDefinition) {
 function readDraggedStackId(event: { dataTransfer: DataTransfer }) {
   const inventoryStackId = event.dataTransfer.getData(DRAG_STACK_TYPE);
   return inventoryStackId || null;
+}
+
+function readDraggedStoreItemId(event: { dataTransfer: DataTransfer }) {
+  const itemId = event.dataTransfer.getData(DRAG_STORE_ITEM_TYPE);
+  return itemId || null;
 }
 
 function buildTravelProgress(travel: TravelTask, now: number) {

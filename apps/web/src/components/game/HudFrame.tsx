@@ -4,24 +4,15 @@ import { Meter, UiIcon } from './ui.js';
 
 export function HudFrame({
   character,
-  raceName,
   xpTarget,
   xpPercent,
   onIntent,
-  onLogout,
-  busy,
 }: {
   character: Character;
-  raceName: string;
   xpTarget: number;
   xpPercent: number;
   onIntent: (intent: GameIntent) => void;
-  onLogout: () => void;
-  busy: boolean;
 }) {
-  const gloryLevel = Math.min(12, Math.max(1, character.level));
-  const gloryCurrent = Math.min(20, 6 + character.rebirths * 2 + Math.floor(character.level / 2));
-
   return (
     <header className="shell-reset-topbar lov-topbar" data-testid="game-topbar">
       <section className="lov-topbar-left">
@@ -29,8 +20,8 @@ export function HudFrame({
           <button
             className="shell-reset-portrait"
             data-testid="character-portrait"
-            aria-label="Открыть профиль героя"
-            onClick={() => onIntent({ type: 'openSheet', tab: 'profile' })}
+            aria-label="Открыть окно героя"
+            onClick={() => onIntent({ type: 'openSheet', tab: 'character' })}
           >
             {character.name.slice(0, 1)}
           </button>
@@ -57,12 +48,6 @@ export function HudFrame({
             displayValue={`${character.experience}/${xpTarget}`}
           />
         </div>
-
-        <div className="lov-glory-strip" data-testid="hud-glory-strip">
-          <span>{gloryLevel}</span>
-          <strong>{gloryCurrent}/20</strong>
-          <i>✦</i>
-        </div>
       </section>
 
       <section className="shell-reset-resource-strip lov-resource-strip" data-testid="hud-resource-strip">
@@ -80,46 +65,6 @@ export function HudFrame({
           onClick={() => onIntent({ type: 'openWindow', windowId: 'store' })}
         >
           Добавить
-        </button>
-      </section>
-
-      <section className="shell-reset-meta-icons lov-topbar-actions">
-        <button
-          className="shell-reset-meta-button"
-          aria-label="Профиль"
-          title={`${character.name} · ${raceName}`}
-          onClick={() => onIntent({ type: 'openSheet', tab: 'profile' })}
-        >
-          <UiIcon name="hero" />
-        </button>
-        <button
-          className="shell-reset-meta-button"
-          aria-label="Внешность"
-          onClick={() => onIntent({ type: 'openSheet', tab: 'appearance' })}
-        >
-          <UiIcon name="journal" />
-        </button>
-        <button
-          className="shell-reset-meta-button"
-          aria-label="Питомцы"
-          onClick={() => onIntent({ type: 'openSheet', tab: 'pets' })}
-        >
-          <UiIcon name="pets" />
-        </button>
-        <button
-          className="shell-reset-meta-button"
-          aria-label="Журнал"
-          onClick={() => onIntent({ type: 'openWindow', windowId: 'journal' })}
-        >
-          <UiIcon name="gift" />
-        </button>
-        <button
-          className="shell-reset-meta-button secondary"
-          aria-label="Выйти"
-          disabled={busy}
-          onClick={onLogout}
-        >
-          <UiIcon name="logout" />
         </button>
       </section>
     </header>
