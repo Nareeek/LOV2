@@ -41,7 +41,7 @@ import {
   ExerciseDetailWindow,
   ForgeWindow,
   FountainWindow,
-  HeroInfoPanel,
+  HeroInfoWindow,
   ItemInfoPanel,
   JournalWindow,
   PetInfoPanel,
@@ -519,6 +519,11 @@ export function GameShell({
     onIntent: handleIntentRef.current,
   });
 
+  const heroInfoContent =
+    infoWindow === 'heroInfo'
+      ? <HeroInfoWindow state={state} onClose={() => setInfoWindow('none')} onIntent={handleIntentRef.current} />
+      : null;
+
   const infoWindowContent = renderInfoWindow({
     infoWindow,
     state,
@@ -583,7 +588,14 @@ export function GameShell({
                   </div>
                 ) : null}
 
-                {infoWindowContent ? (
+                {heroInfoContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="hero-info-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{heroInfoContent}</div>
+                  </div>
+                ) : null}
+
+                {!heroInfoContent && infoWindowContent ? (
                   <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
                     {infoWindowContent}
                   </OverlayLayer>
@@ -655,7 +667,14 @@ export function GameShell({
                   </div>
                 ) : null}
 
-                {infoWindowContent ? (
+                {heroInfoContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="hero-info-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{heroInfoContent}</div>
+                  </div>
+                ) : null}
+
+                {!heroInfoContent && infoWindowContent ? (
                   <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
                     {infoWindowContent}
                   </OverlayLayer>
@@ -760,7 +779,7 @@ function renderInfoWindow({
 }) {
   switch (infoWindow) {
     case 'heroInfo':
-      return <HeroInfoPanel state={state} />;
+      return null;
     case 'enemyInfo':
       return <EnemyInfoPanel enemy={combatEnemy} />;
     case 'itemInfo':

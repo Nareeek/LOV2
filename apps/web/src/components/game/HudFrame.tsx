@@ -32,12 +32,14 @@ export function HudFrame({
             className="shell-reset-info lov-topbar-badge"
             data-testid="character-info-button"
             aria-label="Сведения о герое"
-            onClick={() => onIntent({ type: 'openSheet', tab: 'profile' })}
+            onClick={() => onIntent({ type: 'openInfo', windowId: 'heroInfo' })}
           >
             <UiIcon name="info" />
           </button>
         </div>
+      </section>
 
+      <section className="lov-topbar-center">
         <div className="shell-reset-progress lov-xp-strip" data-testid="hud-xp">
           <Meter
             label="XP"

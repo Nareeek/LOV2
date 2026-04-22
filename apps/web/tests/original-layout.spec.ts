@@ -41,9 +41,10 @@ for (const viewport of [
     await expectSameRow(page.locator('.lov-friend-card'));
 
     await infoButton.click();
-    await expect(page.getByTestId('profile-sheet')).toBeVisible();
-    await expect(page.getByTestId('character-info-popup')).toHaveCount(0);
-    await page.getByTestId('sheet-close-button').click();
+    const heroInfoWindow = page.getByTestId('character-info-popup');
+    await expect(heroInfoWindow).toBeVisible();
+    await expect(page.getByTestId('profile-sheet')).toHaveCount(0);
+    await heroInfoWindow.getByTestId('world-window-close-button').click();
   });
 }
 

@@ -10389,3 +10389,456 @@ p {
     height: min(100%, 548px);
   }
 }
+
+/* Final hero info and large window alignment pass */
+.shell-reset-window.size-hero {
+  --window-width: 1220px;
+  --window-height: 780px;
+}
+
+.lov-hero-info-shell,
+.lov-store-shell,
+.lov-forge-shell,
+.lov-tavern-shell {
+  --window-width: 1220px;
+  --window-height: 780px;
+}
+
+.stage-frame.shell-reset-stage {
+  --stage-topbar-height: 110px;
+}
+
+.stage-left-stack {
+  padding-top: 42px;
+}
+
+.lov-topbar {
+  display: grid;
+  grid-template-columns: 112px minmax(280px, 1fr) auto;
+  align-items: center;
+  justify-content: start;
+  gap: 18px;
+  padding: 12px 20px 10px;
+}
+
+.lov-topbar-left {
+  display: block;
+}
+
+.lov-topbar-center {
+  min-width: 0;
+}
+
+.lov-topbar-portrait {
+  width: 112px;
+  height: 88px;
+}
+
+.lov-topbar-badge {
+  left: 18px;
+  bottom: -18px;
+}
+
+.lov-xp-strip {
+  min-width: 0;
+  padding-left: 6px;
+}
+
+.lov-xp-strip .meter {
+  grid-template-columns: 0 minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.lov-xp-strip .meter > span:first-child {
+  display: none;
+}
+
+.lov-xp-strip .meter div {
+  height: 24px;
+}
+
+.lov-resource-strip {
+  min-width: 0;
+  justify-self: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding-left: 0;
+  gap: 10px;
+}
+
+.lov-resource-pill {
+  min-width: 108px;
+  justify-content: center;
+}
+
+.lov-add-button {
+  min-width: 210px;
+}
+
+.lov-bag-panel .lov-inventory-grid,
+.lov-bag-screen .lov-inventory-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lov-grid-item .item-chip,
+.lov-merchant-item .item-chip {
+  width: 100%;
+  justify-content: center;
+}
+
+.lov-grid-item .item-chip > span:last-child,
+.lov-merchant-item .item-chip > span:last-child {
+  display: none;
+}
+
+.lov-grid-item .item-chip img,
+.lov-merchant-item .item-chip img {
+  width: 46px;
+  height: 46px;
+}
+
+.lov-store-layout {
+  grid-template-columns: minmax(420px, 0.92fr) minmax(520px, 1.08fr);
+  gap: 18px;
+  padding: 16px 18px 18px;
+}
+
+.lov-store-bag-panel::after {
+  font-size: 0.7rem;
+}
+
+.lov-merchant-panel {
+  grid-template-rows: minmax(200px, 0.86fr) minmax(0, 1fr) auto;
+}
+
+.lov-store-scene-card {
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 14px;
+  min-height: 212px;
+}
+
+.lov-merchant-illustration,
+.lov-forge-illustration {
+  min-height: 188px;
+  max-height: 188px;
+}
+
+.lov-store-hover {
+  gap: 10px;
+}
+
+.lov-store-hover p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.24;
+}
+
+.lov-store-stock-panel {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-store-stock-panel > strong {
+  font-size: 1.12rem;
+}
+
+.lov-merchant-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(84px, 1fr);
+  gap: 10px;
+  min-height: 0;
+}
+
+.lov-merchant-item {
+  min-height: 84px;
+  padding: 8px 6px;
+}
+
+.lov-forge-panel {
+  grid-template-rows: auto 190px minmax(124px, auto) auto auto;
+  gap: 12px;
+}
+
+.lov-anvil-slot {
+  min-height: 124px;
+}
+
+.lov-forge-instruction {
+  gap: 8px;
+}
+
+.lov-forge-shell button:not(.lov-close-button) {
+  min-height: 54px;
+}
+
+.lov-tavern-layout {
+  grid-template-columns: minmax(430px, 0.94fr) minmax(480px, 1.06fr);
+}
+
+.lov-tavern-right {
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.lov-energy-block {
+  gap: 8px;
+}
+
+.lov-energy-block .meter {
+  position: relative;
+  grid-template-columns: 0 minmax(0, 1fr) 0;
+  gap: 0;
+}
+
+.lov-energy-block .meter div {
+  height: 38px;
+}
+
+.lov-energy-block .meter strong {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.22rem;
+}
+
+.lov-energy-block p,
+.lov-tavern-copy p {
+  font-size: 0.94rem;
+  line-height: 1.12;
+}
+
+.lov-energy-button {
+  min-height: 72px;
+}
+
+.lov-quest-stack {
+  grid-auto-rows: minmax(78px, 1fr);
+  gap: 10px;
+}
+
+.lov-quest-row-title {
+  padding: 8px 12px;
+}
+
+.lov-quest-row-title strong {
+  font-size: 1rem;
+}
+
+.lov-quest-row-title span,
+.lov-quest-row-reward {
+  font-size: 0.84rem;
+}
+
+.lov-quest-row-reward {
+  padding: 6px 10px;
+}
+
+.lov-tavern-preview-card {
+  max-width: 280px;
+  padding: 8px 10px;
+}
+
+.lov-tavern-preview-card h3 {
+  font-size: 1rem;
+}
+
+.lov-tavern-preview-card p {
+  -webkit-line-clamp: 3;
+  font-size: 0.84rem;
+}
+
+.lov-hero-info-shell .lov-window-body {
+  display: grid;
+  overflow: hidden;
+}
+
+.lov-hero-info-layout {
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  padding: 12px;
+}
+
+.lov-hero-info-main,
+.lov-hero-info-side,
+.lov-profile-screen-window {
+  min-height: 0;
+}
+
+.lov-hero-info-main {
+  overflow: hidden;
+}
+
+.lov-profile-screen-window {
+  height: 100%;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.lov-profile-screen-window .lov-profile-header img {
+  width: 72px;
+  height: 72px;
+}
+
+.lov-profile-screen-window .lov-profile-header strong {
+  font-size: 1.82rem;
+}
+
+.lov-profile-screen-window .lov-profile-header span {
+  font-size: 1.28rem;
+}
+
+.lov-profile-screen-window .lov-profile-stat {
+  min-height: 60px;
+  padding: 10px 12px;
+}
+
+.lov-profile-screen-window .lov-profile-stat span,
+.lov-profile-screen-window .lov-profile-stat strong {
+  font-size: 1.55rem;
+}
+
+.lov-profile-screen-window .lov-motto-box {
+  min-height: 70px;
+  padding: 12px 14px;
+  font-size: 1.18rem;
+}
+
+.lov-profile-screen-window .lov-reward-gallery {
+  gap: 8px;
+  min-height: 0;
+}
+
+.lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 1.3rem;
+}
+
+.lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 8px;
+}
+
+.lov-profile-screen-window .lov-profile-reward {
+  min-height: 66px;
+  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  font-size: 0.76rem;
+  line-height: 1.12;
+  text-align: center;
+}
+
+.lov-hero-info-side {
+  overflow: hidden;
+}
+
+.lov-hero-info-side .lov-paperdoll-stage {
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  gap: 6px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot {
+  min-height: 58px;
+  padding: 3px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+  width: 38px;
+  height: 38px;
+}
+
+.lov-hero-info-side .lov-paperdoll-hero {
+  max-height: 220px;
+}
+
+.lov-hero-info-side .lov-paperdoll-pet {
+  width: min(18%, 72px);
+  right: -5%;
+}
+
+.lov-hero-info-side .lov-paperdoll-quickbar {
+  grid-template-columns: repeat(7, 36px);
+  gap: 4px;
+}
+
+.lov-hero-info-side .lov-paperdoll-quickbar .lov-quick-slot {
+  width: 36px;
+  height: 36px;
+}
+
+.lov-hero-info-side .lov-prestige-bar {
+  min-width: 0;
+  width: 100%;
+  font-size: 1.18rem;
+}
+
+@media (max-width: 1200px) {
+  .shell-reset-window.size-hero,
+  .lov-hero-info-shell,
+  .lov-store-shell,
+  .lov-forge-shell,
+  .lov-tavern-shell {
+    --window-width: 1120px;
+    --window-height: 740px;
+  }
+
+  .lov-topbar {
+    grid-template-columns: 112px minmax(240px, 1fr) auto;
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(0, 1fr) 286px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .shell-reset-window.size-hero,
+  .lov-hero-info-shell,
+  .lov-store-shell,
+  .lov-forge-shell,
+  .lov-tavern-shell {
+    --window-width: 960px;
+    --window-height: 690px;
+  }
+
+  .lov-topbar {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 10px 14px;
+  }
+
+  .lov-topbar-left {
+    grid-column: 1;
+  }
+
+  .lov-topbar-center {
+    grid-column: 2;
+  }
+
+  .lov-resource-strip {
+    grid-column: 2;
+    justify-self: center;
+    flex-wrap: wrap;
+    padding-left: 0;
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+}
+
+@media (max-height: 720px) {
+  .shell-reset-window.size-hero,
+  .lov-hero-info-shell,
+  .lov-store-shell,
+  .lov-forge-shell,
+  .lov-tavern-shell {
+    --window-height: 690px;
+  }
+
+  .lov-profile-screen-window .lov-profile-reward {
+    min-height: 72px;
+  }
+}
