@@ -7,8 +7,12 @@ import {
   AllocateStatsDto,
   CreateCharacterDto,
   EquipItemDto,
+  ForgeUpgradeDto,
+  PurchaseItemDto,
   RefillEnergyDto,
+  StartArenaDto,
   StartTravelDto,
+  UnequipItemDto,
 } from './game.dto.js';
 import { GameCommandsService } from './game-commands.service.js';
 
@@ -64,6 +68,16 @@ export class GameController {
     return this.commands.equipItem(user.id, dto.inventoryStackId);
   }
 
+  @Post('inventory/:id/unequip')
+  unequipItem(@CurrentUser() user: RequestWithUser['user'], @Param('id') inventoryStackId: string) {
+    return this.commands.unequipItem(user.id, inventoryStackId);
+  }
+
+  @Post('inventory/unequip')
+  unequipItemLegacy(@CurrentUser() user: RequestWithUser['user'], @Body() dto: UnequipItemDto) {
+    return this.commands.unequipItem(user.id, dto.inventoryStackId);
+  }
+
   @Post('stats/allocate')
   allocateStats(@CurrentUser() user: RequestWithUser['user'], @Body() dto: AllocateStatsDto) {
     return this.commands.allocateStats(user.id, dto);
@@ -77,5 +91,20 @@ export class GameController {
   @Post('energy/refill')
   refillEnergy(@CurrentUser() user: RequestWithUser['user'], @Body() dto: RefillEnergyDto) {
     return this.commands.refillEnergy(user.id, dto);
+  }
+
+  @Post('shop/purchase')
+  purchaseItem(@CurrentUser() user: RequestWithUser['user'], @Body() dto: PurchaseItemDto) {
+    return this.commands.purchaseItem(user.id, dto);
+  }
+
+  @Post('forge/upgrade')
+  upgradeItem(@CurrentUser() user: RequestWithUser['user'], @Body() dto: ForgeUpgradeDto) {
+    return this.commands.upgradeItem(user.id, dto);
+  }
+
+  @Post('arena/start')
+  startArena(@CurrentUser() user: RequestWithUser['user'], @Body() dto: StartArenaDto) {
+    return this.commands.startArena(user.id, dto);
   }
 }

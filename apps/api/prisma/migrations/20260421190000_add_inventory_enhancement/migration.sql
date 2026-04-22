@@ -1,0 +1,2 @@
+ALTER TABLE "InventoryStack"
+ADD COLUMN "enhancementLevel" INTEGER NOT NULL DEFAULT 0;

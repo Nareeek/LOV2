@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { gameData } from '@lov2/game-data';
 import {
   DEFAULT_MAX_ENERGY,
-  ENERGY_REFILL_GEMS_COST,
+  ENERGY_REFILL_LARGE,
+  ENERGY_REFILL_LARGE_GEMS_COST,
+  ENERGY_REFILL_SMALL,
+  ENERGY_REFILL_SMALL_GEMS_COST,
   hasEnoughEnergy,
   refillEnergy,
   resolveCombat,
@@ -49,7 +52,8 @@ describe('vertical slice game data contract', () => {
   it('models travel energy spending and gem refills for command handlers', () => {
     const quest = gameData.quests.find((entry) => entry.id === 'tavern-first-contract');
     expect(quest).toBeDefined();
-    expect(ENERGY_REFILL_GEMS_COST).toBeGreaterThan(0);
+    expect(ENERGY_REFILL_SMALL_GEMS_COST).toBeGreaterThan(0);
+    expect(ENERGY_REFILL_LARGE_GEMS_COST).toBeGreaterThan(ENERGY_REFILL_SMALL_GEMS_COST);
 
     const currentEnergy = DEFAULT_MAX_ENERGY;
     expect(hasEnoughEnergy(currentEnergy, quest!.energyCost)).toBe(true);
@@ -57,5 +61,7 @@ describe('vertical slice game data contract', () => {
     const spentEnergy = spendEnergy(currentEnergy, quest!.energyCost);
     expect(spentEnergy).toBe(currentEnergy - quest!.energyCost);
     expect(refillEnergy(spentEnergy, DEFAULT_MAX_ENERGY)).toBe(DEFAULT_MAX_ENERGY);
+    expect(refillEnergy(20, DEFAULT_MAX_ENERGY, ENERGY_REFILL_SMALL)).toBe(25);
+    expect(refillEnergy(12, DEFAULT_MAX_ENERGY, ENERGY_REFILL_LARGE)).toBe(DEFAULT_MAX_ENERGY);
   });
 });

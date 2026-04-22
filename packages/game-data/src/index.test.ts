@@ -12,6 +12,11 @@ describe('game data', () => {
 
   it('defines normalized clickable scenes', () => {
     for (const scene of sceneDefinitions) {
+      if (['combat', 'inventory', 'character', 'pets', 'journal'].includes(scene.id)) {
+        expect(scene.hotspots.length).toBe(0);
+        continue;
+      }
+
       expect(scene.hotspots.length).toBeGreaterThan(0);
       const hotspotIds = new Set(scene.hotspots.map((hotspot) => hotspot.id));
       expect(hotspotIds.size).toBe(scene.hotspots.length);

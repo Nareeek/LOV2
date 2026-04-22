@@ -58,6 +58,8 @@ model Character {
   userId            String
   name              String
   raceId            String
+  gender            String                @default("male")
+  classId           String                @default("swordsman")
   level             Int                   @default(1)
   experience        Int                   @default(0)
   rebirths          Int                   @default(0)
@@ -67,8 +69,8 @@ model Character {
   stats             Json
   gold              Int                   @default(120)
   gems              Int                   @default(0)
-  energy            Int                   @default(10)
-  maxEnergy         Int                   @default(10)
+  energy            Int                   @default(30)
+  maxEnergy         Int                   @default(30)
   energyUpdatedAt   DateTime              @default(now())
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
@@ -88,6 +90,7 @@ model InventoryStack {
   characterId  String
   itemId       String
   quantity     Int      @default(1)
+  enhancementLevel Int  @default(0)
   equippedSlot String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -5,21 +5,29 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import type { Character as DbCharacter, Prisma } from '@prisma/client';
 import { gameData } from '@lov2/game-data';
 import {
   DEFAULT_MAX_ENERGY,
-  ENERGY_REFILL_GEMS_COST,
+  ENERGY_REFILL_LARGE,
+  ENERGY_REFILL_LARGE_GEMS_COST,
+  ENERGY_REFILL_SMALL,
+  ENERGY_REFILL_SMALL_GEMS_COST,
+  armorFromEquipment,
   canRebirth,
+  forgeUpgradeCost,
   hasEnoughEnergy,
   levelFromExperience,
   maxHealthForStats,
   refillEnergy as refillEnergyMeter,
   rebirthStats,
   resolveCombat as resolveCombatLog,
+  shouldResetDailyEnergy,
   spendEnergy,
   statsWithEquipment,
   type BootstrapState,
+  type CharacterClassId,
+  type CharacterGender,
   type CharacterStats,
   type CombatLog,
   type EquipmentSlot,
@@ -28,6 +36,29 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsGateway } from './notifications.gateway.js';
 import { TravelQueueService } from './travel-queue.service.js';
+
+const CLASS_STAT_BONUSES: Record<CharacterClassId, Partial<CharacterStats>> = {
+  swordsman: { сила: 2 },
+  ranger: { ловкость: 2 },
+  mage: { интуиция: 2 },
+};
+
+const ENERGY_REFILL_OPTIONS = {
+  cup: { amount: ENERGY_REFILL_SMALL, gems: ENERGY_REFILL_SMALL_GEMS_COST },
+  bundle: { amount: ENERGY_REFILL_LARGE, gems: ENERGY_REFILL_LARGE_GEMS_COST },
+} as const;
+
+type EnergyRefillMode = keyof typeof ENERGY_REFILL_OPTIONS;
+
+function applyClassBonus(stats: CharacterStats, classId: CharacterClassId): CharacterStats {
+  const bonus = CLASS_STAT_BONUSES[classId];
+  return {
+    сила: stats.сила + (bonus.сила ?? 0),
+    ловкость: stats.ловкость + (bonus.ловкость ?? 0),
+    интуиция: stats.интуиция + (bonus.интуиция ?? 0),
+    удача: stats.удача + (bonus.удача ?? 0),
+  };
+}
 
 @Injectable()
 export class GameCommandsService {
@@ -100,6 +131,7 @@ export class GameCommandsService {
           characterId: item.characterId,
           itemId: item.itemId,
           quantity: item.quantity,
+          enhancementLevel: item.enhancementLevel,
         };
         return item.equippedSlot
           ? { ...mapped, equippedSlot: item.equippedSlot as EquipmentSlot }
@@ -140,10 +172,16 @@ export class GameCommandsService {
     };
   }
 
-  async createCharacter(userId: string, input: { name: string; raceId: string }) {
+  async createCharacter(
+    userId: string,
+    input: { name: string; raceId: string; gender: CharacterGender; classId: CharacterClassId },
+  ) {
     const race = gameData.races.find((entry) => entry.id === input.raceId);
     if (!race) {
       throw new BadRequestException('Неизвестная раса');
+    }
+    if (!CLASS_STAT_BONUSES[input.classId]) {
+      throw new BadRequestException('Неизвестный класс');
     }
 
     const existing = await this.prisma.character.findFirst({ where: { userId } });
@@ -151,13 +189,16 @@ export class GameCommandsService {
       throw new ConflictException('У аккаунта уже есть персонаж');
     }
 
-    const maxHealth = maxHealthForStats(race.baseStats, 1);
-    const character = await this.prisma.character.create({
+    const classedStats = applyClassBonus(race.baseStats, input.classId);
+    const maxHealth = maxHealthForStats(classedStats, 1);
+    await this.prisma.character.create({
       data: {
         userId,
         name: input.name,
         raceId: race.id,
-        stats: race.baseStats as unknown as Prisma.InputJsonObject,
+        gender: input.gender,
+        classId: input.classId,
+        stats: classedStats as unknown as Prisma.InputJsonObject,
         health: maxHealth,
         maxHealth,
         energy: DEFAULT_MAX_ENERGY,
@@ -169,7 +210,11 @@ export class GameCommandsService {
         events: {
           create: {
             type: 'character.created',
-            payload: { raceId: race.id },
+            payload: {
+              raceId: race.id,
+              gender: input.gender,
+              classId: input.classId,
+            } as Prisma.InputJsonObject,
           },
         },
       },
@@ -345,25 +390,32 @@ export class GameCommandsService {
       where: { characterId: character.id, equippedSlot: { not: null } },
     });
     const equippedDefinitions = equipped
-      .map((entry) => gameData.items.find((item) => item.id === entry.itemId))
-      .filter((item): item is ItemDefinition => item !== undefined);
+      .map((entry) => {
+        const definition = gameData.items.find((item) => item.id === entry.itemId);
+        return definition ? { definition, enhancementLevel: entry.enhancementLevel } : null;
+      })
+      .filter((item): item is { definition: ItemDefinition; enhancementLevel?: number } => item !== null);
     const effectiveStats = statsWithEquipment(
       character.stats as unknown as CharacterStats,
       equippedDefinitions,
     );
+    const effectiveArmor = armorFromEquipment(equippedDefinitions);
     const log = resolveCombatLog({
       characterStats: effectiveStats,
       characterLevel: character.level,
       characterHealth: character.health,
+      characterArmor: effectiveArmor,
       enemy,
       reward: combat.questId
         ? (gameData.quests.find((quest) => quest.id === combat.questId)?.reward ?? enemy.reward)
         : enemy.reward,
     });
     const won = log.winner === 'character';
+    const now = new Date();
     const nextExperience = character.experience + log.reward.experience;
     const nextLevel = levelFromExperience(nextExperience);
     const levelGain = Math.max(0, nextLevel - character.level);
+    const leveledUp = levelGain > 0;
     const nextBaseStats = character.stats as unknown as CharacterStats;
     const nextMaxHealth = maxHealthForStats(nextBaseStats, nextLevel, character.rebirths);
 
@@ -382,6 +434,13 @@ export class GameCommandsService {
           gems: { increment: log.reward.gems },
           health: won ? nextMaxHealth : Math.max(1, Math.floor(nextMaxHealth * 0.35)),
           maxHealth: nextMaxHealth,
+          maxEnergy: DEFAULT_MAX_ENERGY,
+          ...(leveledUp
+            ? {
+                energy: DEFAULT_MAX_ENERGY,
+                energyUpdatedAt: now,
+              }
+            : {}),
         },
       });
       if (log.reward.gold !== 0) {
@@ -421,7 +480,12 @@ export class GameCommandsService {
         data: {
           characterId: character.id,
           type: 'combat.resolved',
-          payload: { combatId: combat.id, won, reward: log.reward } as unknown as Prisma.InputJsonObject,
+          payload: {
+            combatId: combat.id,
+            won,
+            reward: log.reward,
+            leveledUp,
+          } as unknown as Prisma.InputJsonObject,
         },
       });
     });
@@ -465,6 +529,35 @@ export class GameCommandsService {
     return this.bootstrap(userId);
   }
 
+  async unequipItem(userId: string, inventoryStackId: string) {
+    const character = await this.requireCharacter(userId);
+    const stack = await this.prisma.inventoryStack.findFirst({
+      where: { id: inventoryStackId, characterId: character.id },
+    });
+    if (!stack) {
+      throw new NotFoundException('Предмет не найден');
+    }
+    if (!stack.equippedSlot) {
+      throw new ConflictException('Предмет уже снят');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.inventoryStack.update({
+        where: { id: stack.id },
+        data: { equippedSlot: null },
+      }),
+      this.prisma.gameEvent.create({
+        data: {
+          characterId: character.id,
+          type: 'inventory.updated',
+          payload: { unequipped: stack.itemId, slot: stack.equippedSlot },
+        },
+      }),
+    ]);
+
+    return this.bootstrap(userId);
+  }
+
   async allocateStats(userId: string, input: { stat: keyof CharacterStats; points: number }) {
     const character = await this.requireCharacter(userId);
     if (character.unspentStatPoints < input.points) {
@@ -487,25 +580,26 @@ export class GameCommandsService {
     return this.bootstrap(userId);
   }
 
-  async refillEnergy(userId: string, input: { mode: 'gems' }) {
+  async refillEnergy(userId: string, input: { mode: EnergyRefillMode }) {
     const character = await this.requireCharacter(userId);
-    if (input.mode !== 'gems') {
+    const option = ENERGY_REFILL_OPTIONS[input.mode];
+    if (!option) {
       throw new BadRequestException('Неизвестный способ пополнения энергии');
     }
     if (character.energy >= character.maxEnergy) {
       throw new ConflictException('Энергия уже заполнена');
     }
-    if (character.gems < ENERGY_REFILL_GEMS_COST) {
+    if (character.gems < option.gems) {
       throw new BadRequestException('Недостаточно жемчужин для пополнения энергии');
     }
 
     const now = new Date();
-    const nextEnergy = refillEnergyMeter(character.energy, character.maxEnergy);
+    const nextEnergy = refillEnergyMeter(character.energy, character.maxEnergy, option.amount);
     await this.prisma.$transaction(async (tx) => {
       await tx.character.update({
         where: { id: character.id },
         data: {
-          gems: { decrement: ENERGY_REFILL_GEMS_COST },
+          gems: { decrement: option.gems },
           energy: nextEnergy,
           energyUpdatedAt: now,
         },
@@ -514,8 +608,8 @@ export class GameCommandsService {
         data: {
           characterId: character.id,
           currency: 'gems',
-          amount: -ENERGY_REFILL_GEMS_COST,
-          reason: 'energy:refill',
+          amount: -option.gems,
+          reason: `energy:${input.mode}`,
         },
       });
       await tx.gameEvent.create({
@@ -524,7 +618,8 @@ export class GameCommandsService {
           type: 'energy.refilled',
           payload: {
             mode: input.mode,
-            gemsSpent: ENERGY_REFILL_GEMS_COST,
+            gemsSpent: option.gems,
+            energyAdded: option.amount,
             energy: nextEnergy,
           } as Prisma.InputJsonObject,
         },
@@ -533,9 +628,156 @@ export class GameCommandsService {
 
     this.notifications.emitCharacterEvent(character.id, 'currency.updated', {
       currency: 'gems',
-      amount: -ENERGY_REFILL_GEMS_COST,
+      amount: -option.gems,
     });
     this.notifications.emitCharacterEvent(character.id, 'energy.refilled', { energy: nextEnergy });
+    return this.bootstrap(userId);
+  }
+
+  async purchaseItem(userId: string, input: { itemId: string }) {
+    const character = await this.requireCharacter(userId);
+    const item = gameData.items.find((entry) => entry.id === input.itemId);
+    if (!item) {
+      throw new NotFoundException('Предмет не найден');
+    }
+
+    const priceGems = item.priceGems ?? 0;
+    const currency = priceGems > 0 ? 'gems' : 'gold';
+    const amount = priceGems > 0 ? priceGems : item.priceGold;
+
+    if (currency === 'gems' && character.gems < amount) {
+      throw new BadRequestException('Недостаточно жемчужин для покупки');
+    }
+    if (currency === 'gold' && character.gold < amount) {
+      throw new BadRequestException('Недостаточно золота для покупки');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.character.update({
+        where: { id: character.id },
+        data: currency === 'gems' ? { gems: { decrement: amount } } : { gold: { decrement: amount } },
+      });
+      await tx.inventoryStack.upsert({
+        where: { characterId_itemId: { characterId: character.id, itemId: item.id } },
+        update: { quantity: { increment: 1 } },
+        create: { characterId: character.id, itemId: item.id, quantity: 1 },
+      });
+      await tx.currencyLedgerEntry.create({
+        data: {
+          characterId: character.id,
+          currency,
+          amount: -amount,
+          reason: `shop:${item.id}`,
+        },
+      });
+      await tx.gameEvent.create({
+        data: {
+          characterId: character.id,
+          type: 'inventory.updated',
+          payload: {
+            action: 'purchase',
+            itemId: item.id,
+            currency,
+            amount,
+          } as Prisma.InputJsonObject,
+        },
+      });
+    });
+
+    return this.bootstrap(userId);
+  }
+
+  async upgradeItem(userId: string, input: { inventoryStackId: string }) {
+    const character = await this.requireCharacter(userId);
+    const stack = await this.prisma.inventoryStack.findFirst({
+      where: { id: input.inventoryStackId, characterId: character.id },
+    });
+    if (!stack) {
+      throw new NotFoundException('Предмет не найден');
+    }
+
+    const item = gameData.items.find((entry) => entry.id === stack.itemId);
+    if (!item?.forgeable || !item.slot || item.slot === 'pet') {
+      throw new BadRequestException('Этот предмет пока нельзя улучшить в кузнице');
+    }
+
+    const cost = forgeUpgradeCost(item, stack.enhancementLevel);
+    if (character.gold < cost) {
+      throw new BadRequestException('Недостаточно золота для улучшения');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.character.update({
+        where: { id: character.id },
+        data: { gold: { decrement: cost } },
+      });
+      await tx.inventoryStack.update({
+        where: { id: stack.id },
+        data: { enhancementLevel: { increment: 1 } },
+      });
+      await tx.currencyLedgerEntry.create({
+        data: {
+          characterId: character.id,
+          currency: 'gold',
+          amount: -cost,
+          reason: `forge:${stack.id}`,
+        },
+      });
+      await tx.gameEvent.create({
+        data: {
+          characterId: character.id,
+          type: 'inventory.updated',
+          payload: {
+            action: 'forge-upgrade',
+            inventoryStackId: stack.id,
+            itemId: item.id,
+            cost,
+          } as Prisma.InputJsonObject,
+        },
+      });
+    });
+
+    return this.bootstrap(userId);
+  }
+
+  async startArena(userId: string, input: { enemyId: string }) {
+    const character = await this.requireCharacter(userId);
+    const enemy = gameData.enemies.find((entry) => entry.id === input.enemyId);
+    if (!enemy) {
+      throw new NotFoundException('Соперник не найден');
+    }
+
+    const [activeTravel, pendingCombat] = await Promise.all([
+      this.prisma.travelTask.findFirst({
+        where: { characterId: character.id, status: { in: ['traveling', 'arrived'] } },
+      }),
+      this.prisma.combatEncounter.findFirst({
+        where: { characterId: character.id, status: 'pending' },
+      }),
+    ]);
+    if (activeTravel) {
+      throw new ConflictException('Сначала завершите текущее путешествие');
+    }
+    if (pendingCombat) {
+      throw new ConflictException('Сначала завершите текущий бой');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.combatEncounter.create({
+        data: {
+          characterId: character.id,
+          enemyId: enemy.id,
+        },
+      });
+      await tx.gameEvent.create({
+        data: {
+          characterId: character.id,
+          type: 'combat.started',
+          payload: { source: 'arena', enemyId: enemy.id } as Prisma.InputJsonObject,
+        },
+      });
+    });
+
     return this.bootstrap(userId);
   }
 
@@ -556,6 +798,9 @@ export class GameCommandsService {
         stats: stats as unknown as Prisma.InputJsonObject,
         maxHealth,
         health: maxHealth,
+        maxEnergy: DEFAULT_MAX_ENERGY,
+        energy: DEFAULT_MAX_ENERGY,
+        energyUpdatedAt: new Date(),
         unspentStatPoints: 0,
       },
     });
@@ -564,10 +809,11 @@ export class GameCommandsService {
   }
 
   private async getCharacterForUser(userId: string) {
-    return this.prisma.character.findFirst({
+    const character = await this.prisma.character.findFirst({
       where: { userId },
       orderBy: { createdAt: 'asc' },
     });
+    return character ? this.syncCharacterEnergy(character) : null;
   }
 
   private async requireCharacter(userId: string) {
@@ -578,6 +824,26 @@ export class GameCommandsService {
     return character;
   }
 
+  private async syncCharacterEnergy(character: DbCharacter) {
+    const now = new Date();
+    const needsReset = shouldResetDailyEnergy(character.energyUpdatedAt, now);
+    const needsCapSync = character.maxEnergy !== DEFAULT_MAX_ENERGY;
+    const needsClamp = character.energy > DEFAULT_MAX_ENERGY;
+
+    if (!needsReset && !needsCapSync && !needsClamp) {
+      return character;
+    }
+
+    return this.prisma.character.update({
+      where: { id: character.id },
+      data: {
+        maxEnergy: DEFAULT_MAX_ENERGY,
+        energy: needsReset || needsCapSync ? DEFAULT_MAX_ENERGY : Math.min(character.energy, DEFAULT_MAX_ENERGY),
+        energyUpdatedAt: needsReset || needsCapSync ? now : character.energyUpdatedAt,
+      },
+    });
+  }
+
   private async recordEvent(characterId: string, type: string, payload: unknown) {
     await this.prisma.gameEvent.create({
       data: { characterId, type, payload: payload as Prisma.InputJsonValue },
@@ -585,12 +851,14 @@ export class GameCommandsService {
     this.notifications.emitCharacterEvent(characterId, type, payload);
   }
 
-  private toCharacter(character: Awaited<ReturnType<GameCommandsService['requireCharacter']>>) {
+  private toCharacter(character: DbCharacter) {
     return {
       id: character.id,
       userId: character.userId,
       name: character.name,
       raceId: character.raceId,
+      gender: character.gender as CharacterGender,
+      classId: character.classId as CharacterClassId,
       level: character.level,
       experience: character.experience,
       rebirths: character.rebirths,

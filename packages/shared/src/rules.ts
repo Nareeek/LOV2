@@ -1,7 +1,11 @@
 import type { CharacterStats, CombatLog, EnemyDefinition, ItemDefinition, Reward } from './types.js';
 
-export const DEFAULT_MAX_ENERGY = 10;
-export const ENERGY_REFILL_GEMS_COST = 1;
+export const DEFAULT_MAX_ENERGY = 30;
+export const ENERGY_RESET_HOUR = 4;
+export const ENERGY_REFILL_SMALL = 5;
+export const ENERGY_REFILL_LARGE = 25;
+export const ENERGY_REFILL_SMALL_GEMS_COST = 1;
+export const ENERGY_REFILL_LARGE_GEMS_COST = 5;
 
 export const ZERO_REWARD: Reward = {
   experience: 0,
@@ -22,8 +26,31 @@ export function spendEnergy(currentEnergy: number, energyCost: number): number {
   return Math.max(0, currentEnergy - Math.max(0, energyCost));
 }
 
-export function refillEnergy(currentEnergy: number, maxEnergy: number): number {
-  return Math.max(0, maxEnergy);
+export function refillEnergy(currentEnergy: number, maxEnergy: number, amount = maxEnergy): number {
+  return Math.min(Math.max(0, maxEnergy), Math.max(0, currentEnergy) + Math.max(0, amount));
+}
+
+export function getDailyEnergyResetBoundary(date: Date, resetHour = ENERGY_RESET_HOUR): Date {
+  const boundary = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    resetHour,
+    0,
+    0,
+    0,
+  );
+
+  if (date.getTime() < boundary.getTime()) {
+    boundary.setDate(boundary.getDate() - 1);
+  }
+
+  return boundary;
+}
+
+export function shouldResetDailyEnergy(lastUpdatedAt: Date, now: Date, resetHour = ENERGY_RESET_HOUR): boolean {
+  return getDailyEnergyResetBoundary(now, resetHour).getTime() >
+    getDailyEnergyResetBoundary(lastUpdatedAt, resetHour).getTime();
 }
 
 export function experienceForLevel(level: number): number {
@@ -60,14 +87,53 @@ export function mergeStats(base: CharacterStats, bonus: Partial<CharacterStats>)
   };
 }
 
-export function statsWithEquipment(base: CharacterStats, items: ItemDefinition[]): CharacterStats {
-  return items.reduce((stats, item) => mergeStats(stats, item.statBonus), base);
+export function itemStatsWithEnhancement(
+  item: ItemDefinition,
+  enhancementLevel = 0,
+): Partial<CharacterStats> {
+  const factor = Math.max(0, enhancementLevel);
+  return {
+    сила: (item.statBonus.сила ?? 0) + (item.statBonus.сила ? factor : 0),
+    ловкость: (item.statBonus.ловкость ?? 0) + (item.statBonus.ловкость ? factor : 0),
+    интуиция: (item.statBonus.интуиция ?? 0) + (item.statBonus.интуиция ? factor : 0),
+    удача: (item.statBonus.удача ?? 0) + (item.statBonus.удача ? factor : 0),
+  };
+}
+
+export function itemArmorWithEnhancement(item: ItemDefinition, enhancementLevel = 0): number {
+  return Math.max(0, (item.armorBonus ?? 0) + Math.max(0, enhancementLevel) * ((item.armorBonus ?? 0) > 0 ? 2 : 0));
+}
+
+export function forgeUpgradeCost(item: ItemDefinition, enhancementLevel = 0): number {
+  return Math.max(120, Math.floor(item.priceGold * 0.55) + Math.max(0, enhancementLevel) * 90);
+}
+
+export function statsWithEquipment(
+  base: CharacterStats,
+  items: Array<ItemDefinition | { definition: ItemDefinition; enhancementLevel?: number }>,
+): CharacterStats {
+  return items.reduce((stats, entry) => {
+    const definition = 'definition' in entry ? entry.definition : entry;
+    const enhancementLevel = 'definition' in entry ? entry.enhancementLevel ?? 0 : 0;
+    return mergeStats(stats, itemStatsWithEnhancement(definition, enhancementLevel));
+  }, base);
+}
+
+export function armorFromEquipment(
+  items: Array<ItemDefinition | { definition: ItemDefinition; enhancementLevel?: number }>,
+): number {
+  return items.reduce((total, entry) => {
+    const definition = 'definition' in entry ? entry.definition : entry;
+    const enhancementLevel = 'definition' in entry ? entry.enhancementLevel ?? 0 : 0;
+    return total + itemArmorWithEnhancement(definition, enhancementLevel);
+  }, 0);
 }
 
 export function resolveCombat(params: {
   characterStats: CharacterStats;
   characterLevel: number;
   characterHealth: number;
+  characterArmor?: number;
   enemy: EnemyDefinition;
   reward: Reward;
 }): CombatLog {
@@ -84,7 +150,8 @@ export function resolveCombat(params: {
         params.characterStats.сила * 1.8 +
           params.characterStats.ловкость * 0.9 +
           params.characterStats.интуиция * 0.6 +
-          params.characterLevel * 4,
+          params.characterLevel * 4 -
+          params.enemy.armor * 0.35,
       ) * (characterCrit ? 2 : 1),
     );
     enemyHealth = Math.max(0, enemyHealth - characterDamage);
@@ -109,7 +176,8 @@ export function resolveCombat(params: {
         params.enemy.stats.сила * 1.5 +
           params.enemy.stats.интуиция * 0.7 +
           params.enemy.level * 3 -
-          dodgeReduction,
+          dodgeReduction -
+          (params.characterArmor ?? 0) * 0.32,
       ) * (enemyCrit ? 2 : 1),
     );
     characterHealth = Math.max(0, characterHealth - enemyDamage);

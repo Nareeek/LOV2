@@ -9,9 +9,19 @@ import type {
   StatKey,
 } from '@lov2/shared';
 
-export const GAME_DATA_VERSION = '2026.04.vertical-slice.1';
+export const GAME_DATA_VERSION = '2026.04.vertical-slice.2';
 
 export const STAT_KEYS: StatKey[] = ['сила', 'ловкость', 'интуиция', 'удача'];
+
+export interface ExerciseDefinition {
+  id: string;
+  titleRu: string;
+  subtitleRu: string;
+  descriptionRu: string;
+  locationHintRu: string;
+  recommendedLevelRu: string;
+  tone: 'gold' | 'mint' | 'ember';
+}
 
 export const gameAssetIds = [
   'scene-hub',
@@ -64,6 +74,7 @@ export const items: ItemDefinition[] = [
     slot: 'weapon',
     rarity: 'uncommon',
     priceGold: 120,
+    forgeable: true,
     statBonus: { сила: 3, ловкость: 2 },
   },
   {
@@ -74,6 +85,8 @@ export const items: ItemDefinition[] = [
     slot: 'armor',
     rarity: 'uncommon',
     priceGold: 160,
+    armorBonus: 8,
+    forgeable: true,
     statBonus: { сила: 2, интуиция: 2 },
   },
   {
@@ -84,6 +97,7 @@ export const items: ItemDefinition[] = [
     slot: 'amulet',
     rarity: 'rare',
     priceGold: 280,
+    forgeable: true,
     statBonus: { удача: 4 },
   },
   {
@@ -93,7 +107,8 @@ export const items: ItemDefinition[] = [
     iconAssetId: 'icon-wyvern',
     slot: 'pet',
     rarity: 'rare',
-    priceGold: 400,
+    priceGold: 0,
+    priceGems: 3,
     statBonus: { интуиция: 2, удача: 2 },
   },
 ];
@@ -108,7 +123,7 @@ export const locations: LocationDefinition[] = [
   },
   {
     id: 'fog-harbor',
-    nameRu: 'Туманный причал',
+    nameRu: 'Пристань туманов',
     descriptionRu: 'Лодки скрипят у черной воды, а на острове горит одинокая башня.',
     travelSeconds: 8,
     sceneAssetId: 'scene-map',
@@ -128,6 +143,7 @@ export const enemies: EnemyDefinition[] = [
     nameRu: 'Туманный налетчик',
     level: 1,
     health: 55,
+    armor: 3,
     boss: false,
     stats: { сила: 6, ловкость: 5, интуиция: 4, удача: 3 },
     reward: { experience: 70, gold: 35, gems: 0, itemIds: ['duelist-rapier'] },
@@ -137,6 +153,7 @@ export const enemies: EnemyDefinition[] = [
     nameRu: 'Причальный призрак',
     level: 3,
     health: 115,
+    armor: 7,
     boss: false,
     stats: { сила: 10, ловкость: 7, интуиция: 9, удача: 5 },
     reward: { experience: 140, gold: 80, gems: 1, itemIds: ['moon-vest'] },
@@ -146,6 +163,7 @@ export const enemies: EnemyDefinition[] = [
     nameRu: 'Барон Пепла',
     level: 5,
     health: 210,
+    armor: 14,
     boss: true,
     stats: { сила: 16, ловкость: 11, интуиция: 13, удача: 8 },
     reward: { experience: 320, gold: 180, gems: 4, itemIds: ['lucky-onyx', 'ember-whelp'] },
@@ -182,62 +200,83 @@ export const quests: QuestDefinition[] = [
   },
 ];
 
+export const exerciseDefinitions: ExerciseDefinition[] = [
+  {
+    id: 'courtyard-lanterns',
+    titleRu: 'Ночной дозор',
+    subtitleRu: 'Упражнение',
+    descriptionRu: 'Стража просит пройтись по кварталу и проверить, где гаснут фонари. Это отдельное городское поручение, а не таверненный контракт на бой.',
+    locationHintRu: 'Двор заката',
+    recommendedLevelRu: 'для 1-3 уровня',
+    tone: 'mint',
+  },
+  {
+    id: 'harbor-rumors',
+    titleRu: 'Шепот у пристани',
+    subtitleRu: 'Слухи',
+    descriptionRu: 'Рыбаки передают слухи о странниках и редких гостях. Подсказка ведет к лодочнику и прибрежным разговорам, а не в список контрактов.',
+    locationHintRu: 'Пристань туманов',
+    recommendedLevelRu: 'для 2-4 уровня',
+    tone: 'gold',
+  },
+  {
+    id: 'tower-whispers',
+    titleRu: 'Эхо башни',
+    subtitleRu: 'Напоминание',
+    descriptionRu: 'Смотрители напоминают, что башня хранит испытания и закрытые залы. Сейчас это отдельная справка о месте и будущем прогрессе.',
+    locationHintRu: 'Темная башня',
+    recommendedLevelRu: 'для 4+ уровня',
+    tone: 'ember',
+  },
+];
+
 export const sceneDefinitions: SceneDefinition[] = [
   {
     id: 'hub',
-    nameRu: 'Ночной двор',
-    descriptionRu: 'Главная площадь с фонтаном, таверной, дорогами и городскими службами.',
+    nameRu: 'Домашний двор',
+    descriptionRu: 'Главная площадь с фонтаном, таверной, ареной, рынком и дорогой к пристани.',
     sceneAssetId: 'scene-hub',
     ambientLayerIds: ['fountain', 'lanterns', 'moon-haze'],
     hotspots: [
       {
         id: 'hub-tavern',
         labelRu: 'Таверна',
-        descriptionRu: 'Контракты, слухи и первые ночные поручения.',
-        rect: { x: 0.65, y: 0.34, width: 0.25, height: 0.28 },
-        action: { type: 'openScene', sceneId: 'tavern' },
-      },
-      {
-        id: 'hub-map',
-        labelRu: 'Путь',
-        descriptionRu: 'Маршруты к пристани, арене и старым кварталам.',
-        rect: { x: 0.05, y: 0.55, width: 0.24, height: 0.26 },
-        action: { type: 'openScene', sceneId: 'map' },
+        descriptionRu: 'Контракты на вылазки, траты энергии и дорога к монстрам.',
+        rect: { x: 0.06, y: 0.57, width: 0.2, height: 0.24 },
+        action: { type: 'openPanel', panelId: 'contracts' },
+        visual: { kind: 'door', accent: 'gold', labelSide: 'top' },
       },
       {
         id: 'hub-arena',
-        labelRu: 'Дуэль',
-        descriptionRu: 'Здесь появляются ожидающие бои и боссовые вызовы.',
-        rect: { x: 0.4, y: 0.35, width: 0.2, height: 0.38 },
-        action: { type: 'openScene', sceneId: 'combat' },
+        labelRu: 'Арена',
+        descriptionRu: 'Доска дуэлей и быстрый вызов соперника.',
+        rect: { x: 0.34, y: 0.08, width: 0.18, height: 0.22 },
+        action: { type: 'openPanel', panelId: 'arena' },
+        visual: { kind: 'arena', accent: 'ember', labelSide: 'top' },
       },
       {
-        id: 'hub-inventory',
-        labelRu: 'Инвентарь',
-        descriptionRu: 'Снаряжение, находки и быстрый доступ к экипировке.',
-        rect: { x: 0.79, y: 0.68, width: 0.15, height: 0.18 },
-        action: { type: 'openScene', sceneId: 'inventory' },
+        id: 'hub-store',
+        labelRu: 'Магазин',
+        descriptionRu: 'Рынок для покупки вещей, зелий и редких спутников.',
+        rect: { x: 0.72, y: 0.3, width: 0.22, height: 0.24 },
+        action: { type: 'openPanel', panelId: 'store' },
+        visual: { kind: 'shop', accent: 'gold', labelSide: 'top' },
       },
       {
-        id: 'hub-character',
-        labelRu: 'Герой',
-        descriptionRu: 'Характеристики, очки развития и перерождение.',
-        rect: { x: 0.42, y: 0.12, width: 0.16, height: 0.2 },
-        action: { type: 'openScene', sceneId: 'character' },
+        id: 'hub-sign',
+        labelRu: 'Пристань',
+        descriptionRu: 'Деревянный указатель ведет к лодочнику и второму дому.',
+        rect: { x: 0.78, y: 0.55, width: 0.15, height: 0.24 },
+        action: { type: 'openScene', sceneId: 'map' },
+        visual: { kind: 'portal', accent: 'mint', labelSide: 'bottom' },
       },
       {
-        id: 'hub-pets',
-        labelRu: 'Питомцы',
-        descriptionRu: 'Спутники, бонусы и будущий рост питомцев.',
-        rect: { x: 0.17, y: 0.24, width: 0.16, height: 0.18 },
-        action: { type: 'openScene', sceneId: 'pets' },
-      },
-      {
-        id: 'hub-journal',
-        labelRu: 'Журнал',
-        descriptionRu: 'События, новости клана и социальные уведомления.',
-        rect: { x: 0.02, y: 0.14, width: 0.15, height: 0.24 },
-        action: { type: 'openScene', sceneId: 'journal' },
+        id: 'hub-fountain',
+        labelRu: 'Фонтан',
+        descriptionRu: 'Дух фонтана принимает горсти монет и обещает ночные благословения.',
+        rect: { x: 0.39, y: 0.42, width: 0.18, height: 0.25 },
+        action: { type: 'openPanel', panelId: 'fountain' },
+        visual: { kind: 'portal', accent: 'gold', labelSide: 'bottom' },
       },
     ],
   },
@@ -254,6 +293,7 @@ export const sceneDefinitions: SceneDefinition[] = [
         descriptionRu: 'Выберите заказ и получите маршрут.',
         rect: { x: 0.61, y: 0.18, width: 0.24, height: 0.35 },
         action: { type: 'openPanel', panelId: 'contracts' },
+        visual: { kind: 'board', accent: 'gold', labelSide: 'top' },
       },
       {
         id: 'tavern-keeper',
@@ -261,57 +301,48 @@ export const sceneDefinitions: SceneDefinition[] = [
         descriptionRu: 'Рассказывает, какие дороги сегодня опасны.',
         rect: { x: 0.35, y: 0.2, width: 0.2, height: 0.36 },
         action: { type: 'openPanel', panelId: 'contracts' },
-      },
-      {
-        id: 'tavern-travel',
-        labelRu: 'Карта на столе',
-        descriptionRu: 'Перейти к маршрутам и таймерам пути.',
-        rect: { x: 0.44, y: 0.62, width: 0.28, height: 0.18 },
-        action: { type: 'openScene', sceneId: 'map' },
-      },
-      {
-        id: 'tavern-exit',
-        labelRu: 'Во двор',
-        descriptionRu: 'Вернуться на главную площадь.',
-        rect: { x: 0.02, y: 0.62, width: 0.16, height: 0.24 },
-        action: { type: 'openScene', sceneId: 'hub' },
+        visual: { kind: 'npc', accent: 'ember', labelSide: 'top' },
       },
     ],
   },
   {
     id: 'map',
-    nameRu: 'Карта туманных дорог',
-    descriptionRu: 'Маршруты открываются через контракты и приводят к дуэлям.',
+    nameRu: 'Вторая гавань',
+    descriptionRu: 'Пристань, кузня, башня боссов и путь к лодочнику.',
     sceneAssetId: 'scene-map',
     ambientLayerIds: ['water', 'route-glow', 'beacon'],
     hotspots: [
       {
-        id: 'route-tavern',
-        labelRu: 'Старая таверна',
-        descriptionRu: 'Короткий путь к первому ночному контракту.',
-        rect: { x: 0.18, y: 0.54, width: 0.18, height: 0.18 },
-        action: { type: 'travelNode', locationId: 'old-tavern', questId: 'tavern-first-contract' },
+        id: 'map-town',
+        labelRu: 'Город',
+        descriptionRu: 'Извилистая дорожка ведет обратно во двор.',
+        rect: { x: 0.03, y: 0.56, width: 0.18, height: 0.22 },
+        action: { type: 'openScene', sceneId: 'hub' },
+        visual: { kind: 'door', accent: 'gold', labelSide: 'bottom' },
       },
       {
-        id: 'route-harbor',
-        labelRu: 'Туманный причал',
-        descriptionRu: 'Лодки, зеленый фонарь и опасная вода.',
-        rect: { x: 0.48, y: 0.42, width: 0.22, height: 0.2 },
-        action: { type: 'travelNode', locationId: 'fog-harbor', questId: 'harbor-lantern' },
+        id: 'map-forge',
+        labelRu: 'Кузня',
+        descriptionRu: 'Кузнечная мастерская для усиления вещей.',
+        rect: { x: 0.07, y: 0.14, width: 0.23, height: 0.24 },
+        action: { type: 'openPanel', panelId: 'forge' },
+        visual: { kind: 'forge', accent: 'ember', labelSide: 'top' },
       },
       {
-        id: 'route-arena',
-        labelRu: 'Багряная арена',
-        descriptionRu: 'Боссовый путь к Барону Пепла.',
-        rect: { x: 0.72, y: 0.2, width: 0.2, height: 0.22 },
-        action: { type: 'travelNode', locationId: 'crimson-arena', questId: 'ash-baron-duel' },
+        id: 'map-tower',
+        labelRu: 'Темная башня',
+        descriptionRu: 'Множество тайн хранят ее стены.',
+        rect: { x: 0.76, y: 0.05, width: 0.19, height: 0.26 },
+        action: { type: 'openPanel', panelId: 'tower' },
+        visual: { kind: 'tower', accent: 'moon', labelSide: 'top' },
       },
       {
-        id: 'map-travel-panel',
-        labelRu: 'Текущий путь',
-        descriptionRu: 'Проверить таймер и забрать встречу.',
-        rect: { x: 0.34, y: 0.76, width: 0.34, height: 0.14 },
-        action: { type: 'openPanel', panelId: 'travel' },
+        id: 'map-boatman',
+        labelRu: 'Лодочник',
+        descriptionRu: 'Старик укажет путь и предложит дальнюю переправу.',
+        rect: { x: 0.67, y: 0.56, width: 0.23, height: 0.27 },
+        action: { type: 'openPanel', panelId: 'boatman' },
+        visual: { kind: 'boat', accent: 'gold', labelSide: 'bottom' },
       },
     ],
   },
@@ -321,22 +352,7 @@ export const sceneDefinitions: SceneDefinition[] = [
     descriptionRu: 'Стороны сходятся в коротком серверном бою с наградой.',
     sceneAssetId: 'scene-combat',
     ambientLayerIds: ['braziers', 'hit-flash', 'dust'],
-    hotspots: [
-      {
-        id: 'combat-enemy',
-        labelRu: 'Противник',
-        descriptionRu: 'Начать ожидающую дуэль или посмотреть последний бой.',
-        rect: { x: 0.62, y: 0.28, width: 0.24, height: 0.46 },
-        action: { type: 'combatNode' },
-      },
-      {
-        id: 'combat-result',
-        labelRu: 'Награда',
-        descriptionRu: 'Последний результат, опыт, золото и добыча.',
-        rect: { x: 0.38, y: 0.76, width: 0.24, height: 0.14 },
-        action: { type: 'openPanel', panelId: 'reward' },
-      },
-    ],
+    hotspots: [],
   },
   {
     id: 'inventory',
@@ -344,29 +360,7 @@ export const sceneDefinitions: SceneDefinition[] = [
     descriptionRu: 'Бумажная кукла героя, слоты экипировки и сумка.',
     sceneAssetId: 'scene-inventory',
     ambientLayerIds: ['gem-glow', 'paper-doll'],
-    hotspots: [
-      {
-        id: 'inventory-grid',
-        labelRu: 'Сумка',
-        descriptionRu: 'Открыть предметы и экипировать доступную находку.',
-        rect: { x: 0.08, y: 0.18, width: 0.32, height: 0.54 },
-        action: { type: 'openPanel', panelId: 'inventory' },
-      },
-      {
-        id: 'inventory-equip',
-        labelRu: 'Экипировать',
-        descriptionRu: 'Быстро надеть первый доступный предмет.',
-        rect: { x: 0.44, y: 0.62, width: 0.18, height: 0.18 },
-        action: { type: 'equipFirst' },
-      },
-      {
-        id: 'inventory-stats',
-        labelRu: 'Характеристики',
-        descriptionRu: 'Перейти к росту героя.',
-        rect: { x: 0.72, y: 0.18, width: 0.2, height: 0.32 },
-        action: { type: 'openScene', sceneId: 'character' },
-      },
-    ],
+    hotspots: [],
   },
   {
     id: 'character',
@@ -374,29 +368,7 @@ export const sceneDefinitions: SceneDefinition[] = [
     descriptionRu: 'Рост характеристик, уровень, здоровье и перерождение.',
     sceneAssetId: 'scene-character',
     ambientLayerIds: ['fireplace', 'stat-runes'],
-    hotspots: [
-      {
-        id: 'character-stats',
-        labelRu: 'Статы',
-        descriptionRu: 'Распределить силу, ловкость, интуицию и удачу.',
-        rect: { x: 0.08, y: 0.2, width: 0.34, height: 0.5 },
-        action: { type: 'openPanel', panelId: 'character' },
-      },
-      {
-        id: 'character-inventory',
-        labelRu: 'Снаряжение',
-        descriptionRu: 'Посмотреть экипировку героя.',
-        rect: { x: 0.68, y: 0.55, width: 0.24, height: 0.22 },
-        action: { type: 'openScene', sceneId: 'inventory' },
-      },
-      {
-        id: 'character-pets',
-        labelRu: 'Питомец',
-        descriptionRu: 'Открыть спутника и его бонусы.',
-        rect: { x: 0.58, y: 0.18, width: 0.2, height: 0.22 },
-        action: { type: 'openScene', sceneId: 'pets' },
-      },
-    ],
+    hotspots: [],
   },
   {
     id: 'pets',
@@ -404,22 +376,7 @@ export const sceneDefinitions: SceneDefinition[] = [
     descriptionRu: 'Место для питомца, бонусов и будущего роста.',
     sceneAssetId: 'scene-pets',
     ambientLayerIds: ['pet-idle', 'nest-glow'],
-    hotspots: [
-      {
-        id: 'pets-active',
-        labelRu: 'Активный питомец',
-        descriptionRu: 'Проверить спутника и бонусы.',
-        rect: { x: 0.32, y: 0.26, width: 0.32, height: 0.44 },
-        action: { type: 'openPanel', panelId: 'pets' },
-      },
-      {
-        id: 'pets-inventory',
-        labelRu: 'Сумка',
-        descriptionRu: 'Найти предметы для питомца.',
-        rect: { x: 0.72, y: 0.58, width: 0.2, height: 0.22 },
-        action: { type: 'openScene', sceneId: 'inventory' },
-      },
-    ],
+    hotspots: [],
   },
   {
     id: 'journal',
@@ -427,22 +384,7 @@ export const sceneDefinitions: SceneDefinition[] = [
     descriptionRu: 'Журнал событий, системные уведомления и будущая социальная лента.',
     sceneAssetId: 'scene-journal',
     ambientLayerIds: ['paper-glow', 'seal-pulse'],
-    hotspots: [
-      {
-        id: 'journal-feed',
-        labelRu: 'Лента событий',
-        descriptionRu: 'Открыть последние события вертикального среза.',
-        rect: { x: 0.16, y: 0.16, width: 0.48, height: 0.62 },
-        action: { type: 'openPanel', panelId: 'journal' },
-      },
-      {
-        id: 'journal-contracts',
-        labelRu: 'Контракты',
-        descriptionRu: 'Быстрый переход к заданиям таверны.',
-        rect: { x: 0.7, y: 0.24, width: 0.18, height: 0.18 },
-        action: { type: 'openScene', sceneId: 'tavern' },
-      },
-    ],
+    hotspots: [],
   },
 ];
 
@@ -464,6 +406,7 @@ export const gameData = {
   locations,
   enemies,
   quests,
+  exercises: exerciseDefinitions,
   scenes: sceneDefinitions,
 };
 
@@ -524,10 +467,7 @@ export function validateGameData(): void {
         if (!locations.some((location) => location.id === action.locationId)) {
           throw new Error(`hotspot ${hotspot.id} references missing location ${action.locationId}`);
         }
-        if (
-          action.questId &&
-          !quests.some((quest) => quest.id === action.questId)
-        ) {
+        if (action.questId && !quests.some((quest) => quest.id === action.questId)) {
           throw new Error(`hotspot ${hotspot.id} references missing quest ${action.questId}`);
         }
       }

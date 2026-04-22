@@ -14,11 +14,17 @@ export type ScenePanelId =
   | 'contracts'
   | 'travel'
   | 'combat'
+  | 'arena'
   | 'inventory'
   | 'character'
   | 'pets'
   | 'journal'
-  | 'reward';
+  | 'reward'
+  | 'fountain'
+  | 'store'
+  | 'forge'
+  | 'tower'
+  | 'boatman';
 
 export interface CharacterStats {
   сила: number;
@@ -48,11 +54,17 @@ export interface Race {
   passiveRu: string;
 }
 
+export type CharacterGender = 'male' | 'female';
+
+export type CharacterClassId = 'swordsman' | 'ranger' | 'mage';
+
 export interface Character {
   id: string;
   userId: string;
   name: string;
   raceId: string;
+  gender: CharacterGender;
+  classId: CharacterClassId;
   level: number;
   experience: number;
   rebirths: number;
@@ -88,6 +100,9 @@ export interface ItemDefinition {
   slot?: EquipmentSlot;
   rarity: ItemRarity;
   priceGold: number;
+  priceGems?: number;
+  armorBonus?: number;
+  forgeable?: boolean;
   statBonus: Partial<CharacterStats>;
 }
 
@@ -96,6 +111,7 @@ export interface InventoryStack {
   characterId: string;
   itemId: string;
   quantity: number;
+  enhancementLevel?: number;
   equippedSlot?: EquipmentSlot;
 }
 
@@ -133,6 +149,27 @@ export interface SceneRect {
   height: number;
 }
 
+export type SceneHotspotKind =
+  | 'door'
+  | 'board'
+  | 'npc'
+  | 'route'
+  | 'tower'
+  | 'forge'
+  | 'boat'
+  | 'shop'
+  | 'arena'
+  | 'hero'
+  | 'pet'
+  | 'reward'
+  | 'portal';
+
+export interface SceneHotspotVisual {
+  kind: SceneHotspotKind;
+  accent?: 'gold' | 'mint' | 'ember' | 'moon';
+  labelSide?: 'top' | 'bottom';
+}
+
 export type SceneAction =
   | { type: 'openScene'; sceneId: SceneId }
   | { type: 'openPanel'; panelId: ScenePanelId }
@@ -146,6 +183,7 @@ export interface SceneHotspot {
   descriptionRu: string;
   rect: SceneRect;
   action: SceneAction;
+  visual?: SceneHotspotVisual;
 }
 
 export interface SceneDefinition {
@@ -172,6 +210,7 @@ export interface EnemyDefinition {
   nameRu: string;
   level: number;
   health: number;
+  armor: number;
   stats: CharacterStats;
   boss: boolean;
   reward: Reward;
