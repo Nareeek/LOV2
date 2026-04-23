@@ -35,6 +35,7 @@ import { BottomTray } from './BottomTray.js';
 import {
   ArenaPreviewWindow,
   BoatmanWindow,
+  CombatResultWindow,
   CharacterSheet,
   CombatStage,
   EnemyInfoPanel,
@@ -44,19 +45,22 @@ import {
   HeroInfoWindow,
   ItemInfoPanel,
   JournalWindow,
+  PaymentWindow,
   PetInfoPanel,
-  RewardWindow,
   SettingsWindow,
   StoreWindow,
   TavernWindow,
   TowerWindow,
   TravelStage,
+  WorldLeaderboardWindow,
 } from './GamePanels.js';
 import { HudFrame } from './HudFrame.js';
 import { OverlayLayer } from './OverlayLayer.js';
 import { TaskRail } from './TaskRail.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
+const COMBAT_REPLAY_TURN_MS = 1100;
+const COMBAT_REPLAY_REWARD_DELAY_MS = 650;
 
 export function GameShell({
   state,
@@ -163,19 +167,25 @@ export function GameShell({
 
     setReplayTurnCount(0);
     let turnIndex = 0;
+    let rewardTimer: number | undefined;
     const interval = window.setInterval(() => {
       turnIndex += 1;
       setReplayTurnCount(turnIndex);
       if (turnIndex >= latestResolvedCombat.log!.turns.length) {
         window.clearInterval(interval);
-        window.setTimeout(() => {
+        rewardTimer = window.setTimeout(() => {
           setReplayActive(false);
           setRewardVisible(true);
-        }, 350);
+        }, COMBAT_REPLAY_REWARD_DELAY_MS);
       }
-    }, 650);
+    }, COMBAT_REPLAY_TURN_MS);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearInterval(interval);
+      if (rewardTimer) {
+        window.clearTimeout(rewardTimer);
+      }
+    };
   }, [latestResolvedCombat, replayActive]);
 
   const visibleReplayTurns =
@@ -662,7 +672,7 @@ export function GameShell({
                   <div className="shell-reset-modal-layer reward">
                     <div className="shell-reset-scrim" aria-hidden="true" />
                     <div className="shell-reset-modal-card">
-                      <RewardWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
+                      <CombatResultWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
                     </div>
                   </div>
                 ) : null}
@@ -743,6 +753,8 @@ function renderWorldWindow({
           onIntent={onIntent}
         />
       );
+    case 'payments':
+      return <PaymentWindow onClose={onClose} />;
     case 'forge':
       return <ForgeWindow state={state} selectedForgeStack={selectedForgeStack} onClose={onClose} onIntent={onIntent} />;
     case 'tower':
@@ -753,6 +765,8 @@ function renderWorldWindow({
       return <FountainWindow onClose={onClose} />;
     case 'exerciseDetail':
       return <ExerciseDetailWindow exerciseId={selectedExerciseId} onClose={onClose} />;
+    case 'leaderboard':
+      return <WorldLeaderboardWindow state={state} onClose={onClose} />;
     case 'journal':
       return <JournalWindow activeTab={metaTab} onClose={onClose} />;
     case 'settings':

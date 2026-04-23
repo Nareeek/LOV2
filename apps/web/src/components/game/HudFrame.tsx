@@ -64,7 +64,7 @@ export function HudFrame({
         <button
           className="shell-reset-add lov-add-button"
           data-testid="add-currency-button"
-          onClick={() => onIntent({ type: 'openWindow', windowId: 'store' })}
+          onClick={() => onIntent({ type: 'openWindow', windowId: 'payments' })}
         >
           Добавить
         </button>

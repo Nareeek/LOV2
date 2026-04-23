@@ -43,8 +43,30 @@ for (const viewport of [
     await infoButton.click();
     const heroInfoWindow = page.getByTestId('character-info-popup');
     await expect(heroInfoWindow).toBeVisible();
+    await expect(heroInfoWindow.getByText('Здоровье')).toBeVisible();
+    await expect(heroInfoWindow.getByText('Броня')).toBeVisible();
+    await expect(heroInfoWindow.getByText('ATK')).toHaveCount(0);
+    await expectContained(
+      heroInfoWindow.locator('.lov-paperdoll-hero'),
+      heroInfoWindow.locator('.lov-paperdoll-center'),
+    );
     await expect(page.getByTestId('profile-sheet')).toHaveCount(0);
     await heroInfoWindow.getByTestId('world-window-close-button').click();
+
+    await page.getByTestId('add-currency-button').click();
+    const paymentWindow = page.getByTestId('payment-window');
+    await expect(paymentWindow).toBeVisible();
+    await expect(paymentWindow.getByText('1000 золота')).toBeVisible();
+    await expect(paymentWindow.getByText('100 жемчужин')).toBeVisible();
+    await expect(page.getByTestId('store-sheet')).toHaveCount(0);
+    await paymentWindow.getByTestId('world-window-close-button').click();
+
+    await page.getByTestId('action-leaderboard').click();
+    const leaderboardWindow = page.getByTestId('leaderboard-window');
+    await expect(leaderboardWindow).toBeVisible();
+    await expect(leaderboardWindow.locator('.lov-leaderboard-card')).toHaveCount(3);
+    await expect(page.getByTestId('profile-sheet')).toHaveCount(0);
+    await leaderboardWindow.getByTestId('world-window-close-button').click();
   });
 }
 
@@ -69,7 +91,10 @@ test('world windows stay inside the playfield on a narrow desktop viewport', asy
   await expect(forgeWindow).toBeVisible();
   await expectContained(forgeWindow, playfield);
   await expect(page.locator('[data-testid="forge-inventory-panel"] > *')).toHaveCount(24);
-  await expect(forgeWindow.getByRole('button', { name: 'Улучшить' })).toBeVisible();
+  await expect(forgeWindow.locator('.lov-grid-item')).toHaveCount(6);
+  await expect(forgeWindow.getByTestId('forge-anvil-slot')).toBeVisible();
+  await expect(forgeWindow.getByTestId('forge-upgrade-button')).toBeVisible();
+  await expect(forgeWindow.getByTestId('forge-upgrade-button')).toBeEnabled();
   await forgeWindow.getByTestId('world-window-close-button').click();
 
   await page.getByTestId('hotspot-map-tower').click();
@@ -87,6 +112,33 @@ test('world windows stay inside the playfield on a narrow desktop viewport', asy
   await expect(exerciseWindow.getByTestId('world-window-close-button')).toBeVisible();
 
   await expectNoDocumentScroll(page);
+});
+
+test('travel screen hides story prompt and placeholder counters', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(
+    page,
+    createBootstrapState({
+      travels: [
+        {
+          id: 'travel-clean-ui',
+          characterId: 'character-1',
+          locationId: gameData.quests[0]!.locationId,
+          questId: gameData.quests[0]!.id,
+          status: 'traveling',
+          startedAt: new Date(Date.parse(NOW) - 1000).toISOString(),
+          completesAt: new Date(Date.parse(NOW) + 30000).toISOString(),
+        },
+      ],
+    }),
+  );
+
+  const travelScreen = page.getByTestId('travel-screen');
+  await expect(travelScreen).toBeVisible();
+  await expect(travelScreen.locator('.lov-travel-story')).toBeHidden();
+  await expect(travelScreen.locator('.lov-travel-sidecard')).toHaveCount(1);
+  await expect(travelScreen.getByText('0/5')).toHaveCount(0);
+  await expect(travelScreen.getByText('0/1')).toHaveCount(0);
 });
 
 test('tavern quests and arena actions stay visible on a wide desktop viewport', async ({ page }) => {
@@ -135,10 +187,28 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expect(page.locator('.lov-fighter.enemy')).toBeVisible();
   await expect(page.getByTestId('bottom-tray')).toBeVisible();
 
+  await page.getByTestId('pet-assist-button').click();
+  await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
+
   await page.getByTestId('combat-skip-button').click();
   const rewardWindow = page.getByTestId('reward-screen');
   await expect(rewardWindow).toBeVisible();
   await expectContained(rewardWindow, playfield);
+  await expect(page.getByTestId('reward-continue-button')).toBeVisible();
+});
+
+test('lost combat shows a defeat result without zero rewards', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(page, createLostCombatState());
+
+  await page.getByTestId('combat-skip-button').click();
+
+  const rewardWindow = page.getByTestId('reward-screen');
+  await expect(rewardWindow).toBeVisible();
+  await expect(rewardWindow.getByRole('heading', { name: '\u041f\u043e\u0440\u0430\u0436\u0435\u043d\u0438\u0435!' })).toBeVisible();
+  await expect(rewardWindow.locator('.lov-victory-rewards')).toHaveCount(0);
+  await expect(rewardWindow.locator('.lov-reward-drop')).toHaveCount(0);
+  await expect(rewardWindow.locator('.lov-pet-xp')).toHaveCount(0);
   await expect(page.getByTestId('reward-continue-button')).toBeVisible();
 });
 
@@ -156,10 +226,20 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
 
   await page.getByTestId('hotspot-hub-arena').click();
   const arenaWindow = page.getByTestId('arena-window');
+  const arenaStats = arenaWindow.locator('.lov-arena-stat');
+  const arenaSwitchButton = arenaWindow.getByTestId('arena-switch-button');
+  const arenaStartButton = arenaWindow.getByTestId('arena-start-button');
   await expect(arenaWindow).toBeVisible();
   await expectContained(arenaWindow, playfield);
-  await expect(arenaWindow.getByTestId('arena-switch-button')).toBeVisible();
-  await expect(arenaWindow.getByTestId('arena-start-button')).toBeVisible();
+  await expect(arenaStats).toHaveCount(6);
+  await expect(arenaSwitchButton).toBeVisible();
+  await expect(arenaStartButton).toBeVisible();
+  await expect(arenaStats.nth(4)).toBeVisible();
+  await expect(arenaStats.nth(5)).toBeVisible();
+  await expectNoOverlap(arenaStats.nth(2), arenaSwitchButton);
+  await expectNoOverlap(arenaStats.nth(3), arenaStartButton);
+  await expectNoOverlap(arenaStats.nth(4), arenaSwitchButton);
+  await expectNoOverlap(arenaStats.nth(5), arenaStartButton);
   await arenaWindow.getByTestId('world-window-close-button').click();
 }
 
@@ -332,6 +412,37 @@ function createCombatState() {
       enemyId: gameData.enemies[2]!.id,
       status: 'won',
       createdAt: '2026-04-22T11:58:00.000Z',
+      log: combatLog,
+    },
+    {
+      id: 'combat-pending',
+      characterId: 'character-1',
+      enemyId: gameData.enemies[2]!.id,
+      status: 'pending',
+      createdAt: NOW,
+    },
+  ];
+
+  return createBootstrapState({ combats });
+}
+
+function createLostCombatState() {
+  const combatLog: CombatLog = {
+    winner: 'enemy',
+    turns: [
+      { turn: 1, actor: 'character', damage: 210, critical: false, targetHealth: 1590 },
+      { turn: 2, actor: 'enemy', damage: 8200, critical: true, targetHealth: 33862 },
+      { turn: 3, actor: 'enemy', damage: 33862, critical: false, targetHealth: 0 },
+    ],
+    reward: { experience: 0, gold: 0, gems: 0, itemIds: [] },
+  };
+  const combats: CombatEncounter[] = [
+    {
+      id: 'combat-lost',
+      characterId: 'character-1',
+      enemyId: gameData.enemies[2]!.id,
+      status: 'lost',
+      createdAt: '2026-04-22T11:57:00.000Z',
       log: combatLog,
     },
     {
