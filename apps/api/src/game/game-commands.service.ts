@@ -246,6 +246,8 @@ export class GameCommandsService {
       throw new BadRequestException('Сначала примите квест в таверне');
     }
 
+    const questId = input.questId;
+
     const location = gameData.locations.find((entry) => entry.id === input.locationId);
     if (!location) {
       throw new NotFoundException('Локация не найдена');
@@ -297,7 +299,7 @@ export class GameCommandsService {
         data: {
           characterId: character.id,
           locationId: location.id,
-          questId: input.questId,
+          questId,
           startedAt,
           completesAt,
         },
@@ -309,7 +311,7 @@ export class GameCommandsService {
           type: 'travel.started',
           payload: {
             locationId: location.id,
-            questId: input.questId,
+            questId,
             energyCost: questDefinition.energyCost,
             energyLeft: nextEnergy,
           } as Prisma.InputJsonObject,
@@ -321,7 +323,7 @@ export class GameCommandsService {
     await this.travelQueue.scheduleArrival(travel.id, completesAt);
     this.notifications.emitCharacterEvent(character.id, 'travel.started', {
       locationId: location.id,
-      questId: input.questId,
+      questId,
     });
 
     return this.bootstrap(userId);
@@ -389,12 +391,16 @@ export class GameCommandsService {
     const equipped = await this.prisma.inventoryStack.findMany({
       where: { characterId: character.id, equippedSlot: { not: null } },
     });
-    const equippedDefinitions = equipped
-      .map((entry) => {
-        const definition = gameData.items.find((item) => item.id === entry.itemId);
-        return definition ? { definition, enhancementLevel: entry.enhancementLevel } : null;
-      })
-      .filter((item): item is { definition: ItemDefinition; enhancementLevel?: number } => item !== null);
+    const equippedDefinitions: Array<{ definition: ItemDefinition; enhancementLevel: number }> =
+  equipped.flatMap((entry) => {
+    const definition = gameData.items.find((item) => item.id === entry.itemId);
+
+    if (!definition) {
+      return [];
+    }
+
+    return [{ definition, enhancementLevel: entry.enhancementLevel }];
+  });
     const effectiveStats = statsWithEquipment(
       character.stats as unknown as CharacterStats,
       equippedDefinitions,
