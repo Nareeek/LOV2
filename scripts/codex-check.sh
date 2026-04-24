@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -e
+
+case "$1" in
+  api)
+    docker compose run --rm api sh -lc "pnpm --filter @lov2/api check && pnpm --filter @lov2/api test"
+    ;;
+  web)
+    docker compose run --rm web sh -lc "pnpm --filter @lov2/web check && pnpm --filter @lov2/web test"
+    ;;
+  shared)
+    docker compose run --rm web sh -lc "pnpm --filter @lov2/shared check && pnpm --filter @lov2/shared test"
+    ;;
+  game-data)
+    docker compose run --rm web sh -lc "pnpm --filter @lov2/game-data check && pnpm --filter @lov2/game-data test"
+    ;;
+  worker)
+    docker compose run --rm worker sh -lc "pnpm --filter @lov2/worker check && pnpm --filter @lov2/worker test"
+    ;;
+  all|"")
+    docker compose run --rm web sh -lc "pnpm check && pnpm test"
+    ;;
+  *)
+    echo "Usage: bash scripts/codex-check.sh [api|web|shared|game-data|worker|all]"
+    exit 1
+    ;;
+esac
