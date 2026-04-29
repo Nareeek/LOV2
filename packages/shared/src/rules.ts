@@ -108,6 +108,14 @@ export function forgeUpgradeCost(item: ItemDefinition, enhancementLevel = 0): nu
   return Math.max(120, Math.floor(item.priceGold * 0.55) + Math.max(0, enhancementLevel) * 90);
 }
 
+export function statAllocationGoldCost(currentStatValue: number, points = 1): number {
+  let cost = 0;
+  for (let point = 0; point < Math.max(0, points); point += 1) {
+    cost += 25 + (Math.max(0, currentStatValue) + point) * 5;
+  }
+  return cost;
+}
+
 export function statsWithEquipment(
   base: CharacterStats,
   items: Array<ItemDefinition | { definition: ItemDefinition; enhancementLevel?: number }>,

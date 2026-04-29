@@ -24,6 +24,7 @@ import {
   resolveCombat as resolveCombatLog,
   shouldResetDailyEnergy,
   spendEnergy,
+  statAllocationGoldCost,
   statsWithEquipment,
   type BootstrapState,
   type CharacterClassId,
@@ -566,21 +567,33 @@ export class GameCommandsService {
 
   async allocateStats(userId: string, input: { stat: keyof CharacterStats; points: number }) {
     const character = await this.requireCharacter(userId);
-    if (character.unspentStatPoints < input.points) {
-      throw new BadRequestException('Недостаточно очков характеристик');
-    }
+    const points = Math.max(1, input.points);
     const stats = { ...(character.stats as unknown as CharacterStats) };
-    stats[input.stat] += input.points;
+    const cost = statAllocationGoldCost(stats[input.stat], points);
+    if (character.gold < cost) {
+      throw new BadRequestException('Недостаточно золота для повышения характеристики');
+    }
+    stats[input.stat] += points;
     const maxHealth = maxHealthForStats(stats, character.level, character.rebirths);
 
-    await this.prisma.character.update({
-      where: { id: character.id },
-      data: {
-        stats: stats as unknown as Prisma.InputJsonObject,
-        maxHealth,
-        health: maxHealth,
-        unspentStatPoints: { decrement: input.points },
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.character.update({
+        where: { id: character.id },
+        data: {
+          stats: stats as unknown as Prisma.InputJsonObject,
+          maxHealth,
+          health: maxHealth,
+          gold: { decrement: cost },
+        },
+      });
+      await tx.currencyLedgerEntry.create({
+        data: {
+          characterId: character.id,
+          currency: 'gold',
+          amount: -cost,
+          reason: `stat:${String(input.stat)}`,
+        },
+      });
     });
 
     return this.bootstrap(userId);

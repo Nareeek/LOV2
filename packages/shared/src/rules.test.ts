@@ -12,6 +12,7 @@ import {
   resolveCombat,
   shouldResetDailyEnergy,
   spendEnergy,
+  statAllocationGoldCost,
 } from './rules.js';
 import type { EnemyDefinition } from './types.js';
 
@@ -23,6 +24,11 @@ describe('game rules', () => {
 
   it('derives health from stats and level', () => {
     expect(maxHealthForStats({ сила: 12, ловкость: 10, интуиция: 10, удача: 8 }, 3)).toBeGreaterThan(100);
+  });
+
+  it('prices manual stat allocation from the current stat value', () => {
+    expect(statAllocationGoldCost(10)).toBe(75);
+    expect(statAllocationGoldCost(10, 2)).toBe(155);
   });
 
   it('validates and refills energy', () => {
