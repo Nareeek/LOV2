@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type FormEvent, type ReactNode, useCallback,
 import type { BootstrapState, CharacterClassId, CharacterGender } from '@lov2/shared';
 import { apiClient } from './lib/api.js';
 import { GameShell } from './components/game/GameShell.js';
+import { assetPath } from './components/game/assets.js';
 
 const GENDER_OPTIONS: Array<{
   id: CharacterGender;
@@ -168,7 +169,7 @@ export function App() {
           </form>
           {message && <p className="message">{message}</p>}
         </section>
-        <img src="/assets/original/scene-hub.svg" alt="" className="auth-art" />
+        <img src={assetPath('scene-hub')} alt="" className="auth-art" />
       </main>
     );
   }
@@ -290,14 +291,14 @@ export function App() {
               </button>
             </div>
             <div className="lov-creation-scene">
-              <img src="/assets/original/scene-hub.svg" alt="" />
+              <img src={assetPath('scene-hub')} alt="" />
               <div className="lov-creation-avatar-card">
                 <div className="lov-creation-avatar-meta">
                   <span>{selectedRace?.nameRu ?? 'Раса'}</span>
                   <strong>{selectedClass.label}</strong>
                   <small>{gender === 'male' ? 'Мужчина' : 'Женщина'}</small>
                 </div>
-                <img src="/assets/original/hero-nocturne.svg" alt="" />
+                <img src={assetPath('hero-nocturne')} alt="" />
               </div>
             </div>
           </section>

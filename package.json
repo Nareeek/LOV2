@@ -13,7 +13,8 @@
     "test:e2e:docker": "docker compose --profile test run --rm --build e2e",
     "prebuild": "pnpm --filter @lov2/api prisma:generate",
     "build": "pnpm -r --if-present build",
-    "security:audit": "pnpm audit --audit-level moderate"
+    "security:audit": "pnpm audit --audit-level moderate",
+    "assets:check": "node scripts/validate-assets.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
