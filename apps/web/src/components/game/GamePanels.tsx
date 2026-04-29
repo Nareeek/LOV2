@@ -1,9 +1,21 @@
-import { useEffect, useMemo, useState, type CSSProperties, type DragEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type DragEvent,
+  type FocusEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react';
 import { exerciseDefinitions } from '@lov2/game-data';
 import {
   armorFromEquipment,
   forgeUpgradeCost,
+  itemArmorWithEnhancement,
   itemStatsWithEnhancement,
+  maxHealthForStats,
+  statAllocationGoldCost,
   statsWithEquipment,
   type BootstrapState,
   type CharacterStats,
@@ -23,18 +35,26 @@ import type { GameIntent, MetaTab, RouteState, SheetTab } from '../../game/types
 import { ItemChip, Meter, UiIcon } from './ui.js';
 
 type EquippedEntry = { stack: InventoryStack; item: ItemDefinition };
+type BreakdownKey = StatKey | 'health' | 'armor';
+type StatBreakdownLine = {
+  label: string;
+  value: string;
+  tone?: 'total';
+};
 type StatBreakdown = {
-  key: StatKey;
+  key: BreakdownKey;
   title: string;
-  base: number;
-  manual: number;
-  equipment: number;
+  details?: StatBreakdownLine[];
+  base?: number;
+  manual?: number;
+  equipment?: number;
   total: number;
-  derivedLabel: string;
-  derivedValue: string;
+  derivedLabel?: string;
+  derivedValue?: string;
 };
 type StoreTab = 'shop' | 'work' | 'contracts';
 type AppearanceKey = 'face' | 'hair' | 'color';
+type AppearanceOption = { id: string; label: string; swatch?: string; imageAssetId?: string };
 type WindowSize = 'compact' | 'standard' | 'wide' | 'hero';
 type WindowBodyScroll = 'none' | 'body' | 'sections';
 
@@ -78,21 +98,21 @@ const CLASS_BONUSES: Record<string, Partial<CharacterStats>> = {
   ranger: { [STAT_AGILITY]: 2 },
   mage: { [STAT_INTUITION]: 2 },
 };
-const APPEARANCE_OPTIONS: Record<AppearanceKey, Array<{ id: string; label: string; swatch?: string }>> = {
+const APPEARANCE_OPTIONS: Record<AppearanceKey, AppearanceOption[]> = {
   face: [
-    { id: 'face-1', label: 'Спокойное лицо' },
-    { id: 'face-2', label: 'Резкие черты' },
-    { id: 'face-3', label: 'Светлый профиль' },
+    { id: 'face-1', label: 'Спокойное лицо', imageAssetId: 'ui-appearance-face-card' },
+    { id: 'face-2', label: 'Резкие черты', imageAssetId: 'ui-appearance-face-card' },
+    { id: 'face-3', label: 'Светлый профиль', imageAssetId: 'ui-appearance-face-card' },
   ],
   hair: [
-    { id: 'hair-1', label: 'Собранные пряди' },
-    { id: 'hair-2', label: 'Боевой вихрь' },
-    { id: 'hair-3', label: 'Длинные пряди' },
+    { id: 'hair-1', label: 'Собранные пряди', imageAssetId: 'ui-appearance-hair-style' },
+    { id: 'hair-2', label: 'Боевой вихрь', imageAssetId: 'ui-appearance-hair-style' },
+    { id: 'hair-3', label: 'Длинные пряди', imageAssetId: 'ui-appearance-hair-style' },
   ],
   color: [
-    { id: 'color-1', label: 'Светлый', swatch: '#d3bf8d' },
-    { id: 'color-2', label: 'Медный', swatch: '#a5664d' },
-    { id: 'color-3', label: 'Темный', swatch: '#37353d' },
+    { id: 'color-1', label: 'Светлый', swatch: '#d3bf8d', imageAssetId: 'ui-appearance-hair-color' },
+    { id: 'color-2', label: 'Медный', swatch: '#a5664d', imageAssetId: 'ui-appearance-hair-color' },
+    { id: 'color-3', label: 'Темный', swatch: '#37353d', imageAssetId: 'ui-appearance-hair-color' },
   ],
 };
 const PROFILE_REWARDS = [
@@ -104,9 +124,9 @@ const PROFILE_REWARDS = [
   { id: 'reward-6', label: 'Пусто', accent: 'empty' },
 ];
 const PET_VARIANTS = [
-  { id: 'foxling', name: 'Лисёнок', level: 12, hp: 1800, damage: '34-35' },
-  { id: 'wyrmlet', name: 'Дракончик', level: 14, hp: 1950, damage: '36-38' },
-  { id: 'kitten', name: 'Котёнок', level: 17, hp: 2100, damage: '40-41' },
+  { id: 'foxling', name: 'Лисёнок', level: 12, hp: 1800, damage: '34-35', assetId: 'pet-wolf' },
+  { id: 'wyrmlet', name: 'Дракончик', level: 14, hp: 1950, damage: '36-38', assetId: 'pet-dragon' },
+  { id: 'kitten', name: 'Котёнок', level: 17, hp: 2100, damage: '40-41', assetId: 'pet-cat' },
 ];
 const STORE_CONTRACTS = [
   { title: 'Договор на сезон', price: '1000 ОК', profit: '1620 жемчужин за 90 дней' },
@@ -580,7 +600,7 @@ export function StoreWindow({
               state={state}
               stacks={backpack}
               selectedStackId={selectedItemStackId}
-              onSelect={(inventoryStackId) => onIntent({ type: 'openItemInfo', inventoryStackId })}
+              onSelect={() => undefined}
               dataTestId="inventory-panel"
               fillSlots={24}
             />
@@ -1483,17 +1503,23 @@ export function CharacterSheet({
   state,
   activeTab,
   selectedItemStackId,
+  selectedPetId,
+  onSelectPet,
   onIntent,
 }: {
   state: BootstrapState;
   activeTab: SheetTab;
   selectedItemStackId: string | null;
+  selectedPetId: string;
+  onSelectPet: (petId: string) => void;
   onIntent: (intent: GameIntent) => void;
 }) {
   const character = state.character;
-  const [hoveredStat, setHoveredStat] = useState<StatKey | null>(null);
-  const [selectedPetId, setSelectedPetId] = useState(PET_VARIANTS[2]!.id);
+  const [hoveredStat, setHoveredStat] = useState<BreakdownKey | null>(null);
+  const [statTooltipPosition, setStatTooltipPosition] = useState({ x: 0, y: 0 });
   const [petSatiety, setPetSatiety] = useState(16);
+  const [petFood, setPetFood] = useState(16);
+  const [inventorySlotOrder, setInventorySlotOrder] = useState<Record<string, number>>({});
   const [appearance, setAppearance] = useState<Record<AppearanceKey, string>>({
     face: APPEARANCE_OPTIONS.face[1]!.id,
     hair: APPEARANCE_OPTIONS.hair[1]!.id,
@@ -1507,15 +1533,37 @@ export function CharacterSheet({
   const race = state.races.find((entry) => entry.id === character.raceId);
   const equippedBySlot = getEquippedBySlot(state);
   const equippedEntries = Object.values(equippedBySlot).filter((entry): entry is EquippedEntry => Boolean(entry));
-  const backpack = getBackpackStacks(state);
+  const backpack = orderBackpackStacks(getBackpackStacks(state), inventorySlotOrder, 24);
   const totals = buildCharacterTotals(state, equippedEntries);
   const breakdowns = buildStatBreakdowns(state, race, equippedEntries);
+  const healthBreakdown = buildHealthBreakdown(state, race, equippedEntries);
+  const armorBreakdown = buildArmorBreakdown(equippedEntries, totals.armor);
   const selectedPet = PET_VARIANTS.find((entry) => entry.id === selectedPetId) ?? PET_VARIANTS[2]!;
   const profileSummaryStats = buildProfileSummaryStats(character, totals);
+  const hoveredBreakdown =
+    hoveredStat === 'health'
+      ? healthBreakdown
+      : hoveredStat === 'armor'
+        ? armorBreakdown
+        : hoveredStat
+          ? breakdowns[hoveredStat]
+          : null;
+  const updateStatTooltipPosition = (event: { clientX: number; clientY: number }) => {
+    setStatTooltipPosition({ x: event.clientX, y: event.clientY });
+  };
+  const feedPet = (requestedAmount: number) => {
+    const satietyRoom = Math.max(0, 99 - petSatiety);
+    const amount = Math.min(requestedAmount, petFood, satietyRoom);
+    if (amount < 1) {
+      return;
+    }
+    setPetFood((value) => Math.max(0, value - amount));
+    setPetSatiety((value) => Math.min(99, value + amount));
+  };
 
   return (
     <section
-      className="shell-reset-sheet lov-sheet"
+      className={`shell-reset-sheet lov-sheet tab-${activeTab}`}
       data-testid={
         activeTab === 'pets' ? 'pet-sheet' : activeTab === 'inventory' ? 'inventory-sheet' : activeTab === 'profile' ? 'profile-sheet' : activeTab === 'appearance' ? 'appearance-sheet' : 'character-sheet'
       }
@@ -1560,7 +1608,12 @@ export function CharacterSheet({
               <h2>Характеристики</h2>
             </header>
 
-            <div className="lov-core-stat">
+            <div
+              className="lov-core-stat"
+              onMouseEnter={() => setHoveredStat('health')}
+              onMouseMove={updateStatTooltipPosition}
+              onMouseLeave={() => setHoveredStat((current) => (current === 'health' ? null : current))}
+            >
               <div className="lov-core-stat-icon">❤</div>
               <div className="lov-core-stat-body">
                 <strong>Здоровье</strong>
@@ -1568,7 +1621,12 @@ export function CharacterSheet({
               </div>
             </div>
 
-            <div className="lov-core-stat">
+            <div
+              className="lov-core-stat"
+              onMouseEnter={() => setHoveredStat('armor')}
+              onMouseMove={updateStatTooltipPosition}
+              onMouseLeave={() => setHoveredStat((current) => (current === 'armor' ? null : current))}
+            >
               <div className="lov-core-stat-icon">🛡</div>
               <div className="lov-core-stat-body">
                 <strong>Броня</strong>
@@ -1578,42 +1636,57 @@ export function CharacterSheet({
 
             {PRIMARY_STATS.map((stat) => {
               const row = breakdowns[stat];
+              const allocationCost = statAllocationGoldCost(character.stats[stat]);
               return (
                 <div
                   key={stat}
                   className="lov-stat-group"
                   onMouseEnter={() => setHoveredStat(stat)}
+                  onMouseMove={updateStatTooltipPosition}
                   onMouseLeave={() => setHoveredStat((current) => (current === stat ? null : current))}
                 >
-                  <button
-                    type="button"
-                    className="lov-primary-stat"
-                    onClick={() => character.unspentStatPoints > 0 && onIntent({ type: 'allocateStat', stat })}
-                    disabled={character.unspentStatPoints < 1}
-                  >
+                  <div className="lov-primary-stat">
                     <div className="lov-primary-stat-main">
                       <span>{statTitle(stat)}</span>
                       <strong>{row.total}</strong>
                     </div>
-                    <i>+</i>
-                  </button>
+                    <button
+                      type="button"
+                      className="lov-stat-add-button"
+                      onClick={() => character.gold >= allocationCost && onIntent({ type: 'allocateStat', stat })}
+                      disabled={character.gold < allocationCost}
+                      aria-label={`Добавить ${statTitle(stat)}`}
+                    >
+                      <i>+</i>
+                      <span className="lov-stat-add-tooltip">{statAllocationCostLabel(allocationCost)}</span>
+                    </button>
+                  </div>
                   <div className="lov-secondary-stat">{row.derivedLabel}</div>
                   <div className="lov-secondary-stat value">{row.derivedValue}</div>
+                  {stat === STAT_STRENGTH ? (
+                    <div className="lov-damage-row lov-damage-row-inline">
+                      <span>Урон</span>
+                      <strong>{buildDamageRange(totals.stats)}</strong>
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
 
-            <div className="lov-damage-row">
-              <span>Урон</span>
-              <strong>{buildDamageRange(totals.stats)}</strong>
-            </div>
-
             <div className="lov-currency-row">
-              <span>{character.gold}</span>
-              <span>{character.gems}</span>
+              <span className="lov-currency-pill gold">
+                <img src={assetPath('icon-gold-coin')} alt="" />
+                <i aria-hidden="true">â—‰</i>
+                <strong>{character.gold}</strong>
+              </span>
+              <span className="lov-currency-pill pearls">
+                <img src={assetPath('icon-moon-gem')} alt="" />
+                <i aria-hidden="true">â—Œ</i>
+                <strong>{character.gems}</strong>
+              </span>
             </div>
 
-            {hoveredStat ? <StatBreakdownCard breakdown={breakdowns[hoveredStat]} /> : null}
+            {hoveredBreakdown ? <StatBreakdownCard breakdown={hoveredBreakdown} position={statTooltipPosition} /> : null}
           </div>
         ) : null}
 
@@ -1627,7 +1700,13 @@ export function CharacterSheet({
               stacks={backpack}
               selectedStackId={selectedItemStackId}
               onSelect={(inventoryStackId) => onIntent({ type: 'openItemInfo', inventoryStackId })}
-              onDropStack={(inventoryStackId) => onIntent({ type: 'unequipItem', inventoryStackId })}
+              onDropStack={(inventoryStackId, slotIndex) => {
+                setInventorySlotOrder((current) => ({ ...current, [inventoryStackId]: slotIndex }));
+                const stack = state.inventory.find((entry) => entry.id === inventoryStackId);
+                if (stack?.equippedSlot) {
+                  onIntent({ type: 'unequipItem', inventoryStackId });
+                }
+              }}
               dataTestId="inventory-panel"
               draggable
               fillSlots={24}
@@ -1646,9 +1725,9 @@ export function CharacterSheet({
                   key={pet.id}
                   type="button"
                   className={`lov-pet-thumb ${selectedPet.id === pet.id ? 'active' : ''}`}
-                  onClick={() => setSelectedPetId(pet.id)}
+                  onClick={() => onSelectPet(pet.id)}
                 >
-                  <img src={assetPath('pet-wyvern')} alt="" />
+                  <img src={assetPath(pet.assetId)} alt="" />
                 </button>
               ))}
             </div>
@@ -1660,7 +1739,7 @@ export function CharacterSheet({
               </div>
             </div>
             <div className="lov-pet-preview">
-              <img src={assetPath('pet-wyvern')} alt="" />
+              <img src={assetPath(selectedPet.assetId)} alt="" />
             </div>
             <div className="lov-pet-core-stats">
               <span>❤ {selectedPet.hp}</span>
@@ -1672,14 +1751,17 @@ export function CharacterSheet({
                 <span>{petSatiety}</span>
               </div>
               <div className="lov-pet-feed-buttons">
-                <button type="button" onClick={() => setPetSatiety((value) => Math.min(99, value + 1))}>
+                <button type="button" onClick={() => feedPet(1)} disabled={petFood < 1 || petSatiety >= 99}>
                   +1
                 </button>
-                <button type="button" onClick={() => setPetSatiety((value) => Math.min(99, value + 10))}>
+                <button type="button" onClick={() => feedPet(10)} disabled={petFood < 1 || petSatiety >= 99}>
                   +10
                 </button>
               </div>
-              <div className="lov-pet-food">16</div>
+              <div className="lov-pet-food">
+                <strong>Еда</strong>
+                <span>{petFood}</span>
+              </div>
             </div>
           </div>
         ) : null}
@@ -1774,6 +1856,7 @@ export function CharacterSheet({
           character={character}
           activeTab={activeTab}
           equippedBySlot={equippedBySlot}
+          selectedPetAssetId={selectedPet.assetId}
           onIntent={onIntent}
         />
       </section>
@@ -1988,14 +2071,19 @@ function PaperDollPanel({
   character,
   activeTab,
   equippedBySlot,
+  selectedPetAssetId,
   onIntent,
 }: {
   state: BootstrapState;
   character: NonNullable<BootstrapState['character']>;
   activeTab: SheetTab;
   equippedBySlot: Partial<Record<EquipmentSlot, EquippedEntry>>;
+  selectedPetAssetId?: string | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
+  const heroAssetId = paperDollHeroAssetId(equippedBySlot);
+  const paperDollPetAssetId = selectedPetAssetId ?? 'pet-wyvern';
+
   return (
     <div className={`lov-paperdoll ${activeTab === 'profile' ? 'profile' : ''}`}>
       <div className="lov-paperdoll-header">
@@ -2013,11 +2101,12 @@ function PaperDollPanel({
               onIntent={onIntent}
             />
           ))}
+          <span className="shell-reset-slot lov-paperdoll-slot empty reserve" aria-hidden="true" />
         </div>
 
         <div className="lov-paperdoll-center">
-          <img className="lov-paperdoll-hero" src={assetPath('hero-nocturne')} alt="" />
-          {equippedBySlot.pet ? <img className="lov-paperdoll-pet" src={assetPath('pet-wyvern')} alt="" /> : null}
+          <img className="lov-paperdoll-hero" src={assetPath(heroAssetId)} alt="" />
+          {equippedBySlot.pet || selectedPetAssetId ? <img className="lov-paperdoll-pet" src={assetPath(paperDollPetAssetId)} alt="" /> : null}
           <span className="lov-wing-badge">🪽</span>
         </div>
 
@@ -2030,6 +2119,7 @@ function PaperDollPanel({
               onIntent={onIntent}
             />
           ))}
+          <span className="shell-reset-slot lov-paperdoll-slot empty reserve" aria-hidden="true" />
         </div>
       </div>
 
@@ -2048,6 +2138,25 @@ function PaperDollPanel({
   );
 }
 
+function paperDollHeroAssetId(equippedBySlot: Partial<Record<EquipmentSlot, EquippedEntry>>): string {
+  const hasArmor = Boolean(equippedBySlot.armor);
+  const hasWeapon = Boolean(equippedBySlot.weapon);
+
+  if (!hasArmor && hasWeapon) {
+    return 'hero-nocturne-without-armor-with-sword';
+  }
+
+  if (!hasArmor) {
+    return 'hero-nocturne-without-armor';
+  }
+
+  if (!hasWeapon) {
+    return 'hero-nocturne-without-sword';
+  }
+
+  return 'hero-nocturne';
+}
+
 function AppearanceSelector({
   title,
   options,
@@ -2055,7 +2164,7 @@ function AppearanceSelector({
   onSelect,
 }: {
   title: string;
-  options: Array<{ id: string; label: string; swatch?: string }>;
+  options: AppearanceOption[];
   activeId: string;
   onSelect: (value: string) => void;
 }) {
@@ -2077,6 +2186,7 @@ function AppearanceSelector({
             className={`lov-appearance-card ${index === 1 ? 'active' : ''}`}
             style={option.swatch ? ({ '--swatch': option.swatch } as CSSProperties) : undefined}
           >
+            {option.imageAssetId ? <img src={assetPath(option.imageAssetId)} alt="" /> : null}
             {option.swatch ? <i /> : null}
           </span>
         ))}
@@ -2090,21 +2200,45 @@ function AppearanceSelector({
 
 function StatBreakdownCard({
   breakdown,
+  position,
 }: {
   breakdown: StatBreakdown;
+  position: { x: number; y: number };
 }) {
+  const details = breakdown.details ?? [
+    { label: 'Базовое значение', value: `${breakdown.base ?? 0}` },
+    { label: 'Вручную добавлено', value: `+${breakdown.manual ?? 0}` },
+    { label: 'Надетое снаряжение', value: `+${breakdown.equipment ?? 0}` },
+    { label: 'Эффект от зелья', value: '+0' },
+    { label: 'Эффект от достижений', value: '+0' },
+    { label: 'Бонус клана', value: '+0' },
+    { label: 'Итог', value: `${breakdown.total}`, tone: 'total' as const },
+  ];
+  const visibleDetails = details.filter((line) => line.tone === 'total' || !isZeroBreakdownValue(line.value));
+
   return (
-    <div className="lov-stat-breakdown" data-testid={`stat-breakdown-${breakdown.key}`}>
+    <div
+      className="lov-stat-breakdown"
+      data-testid={`stat-breakdown-${breakdown.key}`}
+      style={{ '--stat-tooltip-x': `${position.x}px`, '--stat-tooltip-y': `${position.y}px` } as CSSProperties}
+    >
       <h3>{breakdown.title}</h3>
-      <div className="lov-breakdown-line"><span>Базовое значение</span><strong>{breakdown.base}</strong></div>
-      <div className="lov-breakdown-line"><span>Вручную добавлено</span><strong>+{breakdown.manual}</strong></div>
-      <div className="lov-breakdown-line"><span>Надетое снаряжение</span><strong>+{breakdown.equipment}</strong></div>
-      <div className="lov-breakdown-line"><span>Эффект от зелья</span><strong>+0</strong></div>
-      <div className="lov-breakdown-line"><span>Эффект от достижений</span><strong>+0</strong></div>
-      <div className="lov-breakdown-line"><span>Бонус клана</span><strong>+0</strong></div>
-      <div className="lov-breakdown-line total"><span>Итог</span><strong>{breakdown.total}</strong></div>
+      {visibleDetails.map((line) => (
+        <div key={line.label} className={`lov-breakdown-line ${line.tone === 'total' ? 'total' : ''}`}>
+          <span>{line.label}</span>
+          <strong>{line.value}</strong>
+        </div>
+      ))}
     </div>
   );
+}
+
+function isZeroBreakdownValue(value: string) {
+  return value.trim() === '0' || value.trim() === '+0';
+}
+
+function statAllocationCostLabel(goldCost: number) {
+  return `${goldCost} золота`;
 }
 
 function InventoryGrid({
@@ -2118,10 +2252,10 @@ function InventoryGrid({
   fillSlots = 18,
 }: {
   state: BootstrapState;
-  stacks: InventoryStack[];
+  stacks: Array<InventoryStack | null>;
   selectedStackId: string | null;
   onSelect: (inventoryStackId: string) => void;
-  onDropStack?: (inventoryStackId: string) => void;
+  onDropStack?: (inventoryStackId: string, slotIndex: number) => void;
   dataTestId?: string;
   draggable?: boolean;
   fillSlots?: number;
@@ -2143,13 +2277,30 @@ function InventoryGrid({
         event.preventDefault();
         const inventoryStackId = readDraggedStackId(event);
         if (inventoryStackId) {
-          onDropStack(inventoryStackId);
+          onDropStack(inventoryStackId, 0);
         }
       }}
     >
       {cells.map((stack, index) => {
         if (!stack) {
-          return <span key={`empty-${index}`} className="lov-grid-empty" />;
+          return (
+            <span
+              key={`empty-${index}`}
+              className="lov-grid-empty"
+              onDragOver={(event) => onDropStack && event.preventDefault()}
+              onDrop={(event) => {
+                if (!onDropStack) {
+                  return;
+                }
+                event.preventDefault();
+                event.stopPropagation();
+                const inventoryStackId = readDraggedStackId(event);
+                if (inventoryStackId) {
+                  onDropStack(inventoryStackId, index);
+                }
+              }}
+            />
+          );
         }
         const item = state.items.find((entry) => entry.id === stack.itemId);
         return (
@@ -2159,6 +2310,8 @@ function InventoryGrid({
             draggable={draggable}
             className={`shell-reset-grid-item lov-grid-item ${selectedStackId === stack.id ? 'active' : ''}`}
             onClick={() => onSelect(stack.id)}
+            onPointerMove={setItemHoverPosition}
+            onFocus={setItemHoverPositionFromFocus}
             onDragStart={(event) => {
               if (!draggable) {
                 return;
@@ -2166,9 +2319,22 @@ function InventoryGrid({
               event.dataTransfer.effectAllowed = 'move';
               event.dataTransfer.setData(DRAG_STACK_TYPE, stack.id);
             }}
+            onDragOver={(event) => onDropStack && event.preventDefault()}
+            onDrop={(event) => {
+              if (!onDropStack) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              const inventoryStackId = readDraggedStackId(event);
+              if (inventoryStackId) {
+                onDropStack(inventoryStackId, index);
+              }
+            }}
           >
             <ItemChip item={item} compact />
             <small>x{stack.quantity}</small>
+            {item ? <ItemHoverCard stack={stack} item={item} /> : null}
           </button>
         );
       })}
@@ -2192,7 +2358,8 @@ function EquipmentSlotButton({
       className={`shell-reset-slot lov-paperdoll-slot ${entry ? 'filled' : 'empty'}`}
       data-slot={slot}
       aria-label={entry ? `${entry.item.nameRu}` : SLOT_LABELS[slot]}
-      onClick={() => entry && onIntent({ type: 'openItemInfo', inventoryStackId: entry.stack.id, slot })}
+      onPointerMove={setItemHoverPosition}
+      onFocus={setItemHoverPositionFromFocus}
       onDragStart={(event) => {
         if (!entry) {
           return;
@@ -2210,7 +2377,10 @@ function EquipmentSlotButton({
       }}
     >
       {entry ? (
-        <ItemChip item={entry.item} compact />
+        <>
+          <ItemChip item={entry.item} compact />
+          <ItemHoverCard stack={entry.stack} item={entry.item} />
+        </>
       ) : (
         <span className="lov-slot-silhouette" aria-hidden="true">
           {SLOT_HINTS[slot]}
@@ -2218,6 +2388,41 @@ function EquipmentSlotButton({
       )}
     </button>
   );
+}
+
+function ItemHoverCard({
+  stack,
+  item,
+}: {
+  stack: InventoryStack;
+  item: ItemDefinition;
+}) {
+  const statTags = getItemStatTags(item, stack.enhancementLevel ?? 0);
+
+  return (
+    <span className="lov-item-hover-card" role="tooltip">
+      <strong>{item.nameRu}</strong>
+      <span>{item.descriptionRu}</span>
+      <span className="lov-item-hover-tags">
+        {statTags.map((tag) => (
+          <i key={tag}>{tag}</i>
+        ))}
+      </span>
+      <small>{formatPrice(item)}</small>
+      <small>{`Улучшение: +${stack.enhancementLevel ?? 0}`}</small>
+    </span>
+  );
+}
+
+function setItemHoverPosition(event: PointerEvent<HTMLElement>) {
+  event.currentTarget.style.setProperty('--item-tooltip-x', `${event.clientX}px`);
+  event.currentTarget.style.setProperty('--item-tooltip-y', `${event.clientY}px`);
+}
+
+function setItemHoverPositionFromFocus(event: FocusEvent<HTMLElement>) {
+  const rect = event.currentTarget.getBoundingClientRect();
+  event.currentTarget.style.setProperty('--item-tooltip-x', `${rect.right}px`);
+  event.currentTarget.style.setProperty('--item-tooltip-y', `${rect.top + rect.height / 2}px`);
 }
 
 function buildCharacterTotals(state: BootstrapState, equippedEntries: EquippedEntry[]) {
@@ -2245,6 +2450,86 @@ function buildProfileSummaryStats(
     { label: '\u0418\u043d\u0442\u0443\u0438\u0446\u0438\u044f', value: totals.stats[STAT_INTUITION] },
     { label: '\u0423\u0434\u0430\u0447\u0430', value: totals.stats[STAT_LUCK] },
   ];
+}
+
+function buildHealthBreakdown(
+  state: BootstrapState,
+  race: Race | undefined,
+  equippedEntries: EquippedEntry[],
+): StatBreakdown {
+  const character = state.character!;
+  const classStrength = CLASS_BONUSES[character.classId]?.[STAT_STRENGTH] ?? 0;
+  const raceStrength = race?.baseStats[STAT_STRENGTH] ?? 0;
+  const manualStrength = Math.max(0, character.stats[STAT_STRENGTH] - raceStrength - classStrength);
+  const equipmentStrength = equippedEntries.reduce(
+    (total, entry) => total + (itemStatsWithEnhancement(entry.item, entry.stack.enhancementLevel ?? 0)[STAT_STRENGTH] ?? 0),
+    0,
+  );
+  const baseHealth = maxHealthForStats(
+    {
+      '\u0441\u0438\u043b\u0430': raceStrength + classStrength,
+      '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 0,
+      '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 0,
+      '\u0443\u0434\u0430\u0447\u0430': 0,
+    } as CharacterStats,
+    character.level,
+    character.rebirths,
+  );
+  const investedHealth = manualStrength * 6;
+  const equipmentHealth = equipmentStrength * 6;
+  const remainder = character.maxHealth - baseHealth - investedHealth - equipmentHealth;
+  const adjustedBase = Math.max(0, baseHealth + Math.min(0, remainder));
+  const wingHealth = Math.max(0, remainder);
+
+  return {
+    key: 'health',
+    title: 'Здоровье',
+    total: character.maxHealth,
+    details: [
+      { label: 'Базовое значение', value: `${adjustedBase}` },
+      { label: 'Вложено в силу', value: `+${investedHealth}` },
+      { label: 'Надетое снаряжение', value: `+${equipmentHealth}` },
+      { label: 'Эффект от зелья', value: '+0' },
+      { label: 'Эффект от подарков', value: '+0' },
+      { label: 'Эффект от крыльев', value: `+${wingHealth}` },
+      { label: 'Итог', value: `${character.maxHealth}`, tone: 'total' },
+    ],
+  };
+}
+
+function buildArmorBreakdown(
+  equippedEntries: EquippedEntry[],
+  totalArmor: number,
+): StatBreakdown {
+  const armorPieces = equippedEntries
+    .filter((entry) => (entry.item.armorBonus ?? 0) > 0)
+    .map((entry) => ({
+      slot: entry.stack.equippedSlot,
+      value: itemArmorWithEnhancement(entry.item, entry.stack.enhancementLevel ?? 0),
+    }))
+    .filter((entry) => entry.slot && entry.value > 0);
+
+  const details: StatBreakdownLine[] = [
+    { label: 'Базовое значение', value: '0' },
+    { label: 'Надетое снаряжение', value: `+${totalArmor}` },
+    { label: 'Эффект от зелья', value: '+0' },
+  ];
+
+  for (const piece of armorPieces) {
+    details.push({
+      label: `${slotTitle(piece.slot!)}:`,
+      value: `+${piece.value}`,
+    });
+  }
+
+  details.push({ label: 'Итог', value: `${totalArmor}`, tone: 'total' });
+
+  return {
+    key: 'armor',
+    title: 'Броня',
+    total: totalArmor,
+    details,
+  };
 }
 
 function buildStatBreakdowns(
@@ -2327,13 +2612,59 @@ function buildStatBreakdowns(
 }
 
 function buildDamageRange(stats: CharacterStats) {
-  const min = Math.max(1, Math.round(stats[STAT_STRENGTH] * 1.8 + stats[STAT_AGILITY] * 0.7));
-  const max = Math.max(min + 1, Math.round(min + stats[STAT_INTUITION] * 0.8 + stats[STAT_LUCK] * 0.35));
+  const min = Math.max(1, Math.round(stats[STAT_STRENGTH] * 2.2));
+  const max = Math.max(min + 1, Math.round(stats[STAT_STRENGTH] * 3.2));
   return `${min}-${max}`;
 }
 
 function getBackpackStacks(state: BootstrapState) {
   return state.inventory.filter((stack) => !stack.equippedSlot);
+}
+
+function orderBackpackStacks(stacks: InventoryStack[], slotOrder: Record<string, number>, fillSlots: number) {
+  const cells: Array<InventoryStack | null> = Array.from({ length: fillSlots }, () => null);
+  const unordered: InventoryStack[] = [];
+
+  for (const stack of stacks) {
+    const preferredIndex = slotOrder[stack.id];
+    if (preferredIndex === undefined) {
+      unordered.push(stack);
+      continue;
+    }
+
+    const startIndex = Math.min(Math.max(0, preferredIndex), fillSlots - 1);
+    const availableIndex = findNextOpenInventoryCell(cells, startIndex);
+    if (availableIndex === -1) {
+      unordered.push(stack);
+      continue;
+    }
+    cells[availableIndex] = stack;
+  }
+
+  for (const stack of unordered) {
+    const availableIndex = findNextOpenInventoryCell(cells, 0);
+    if (availableIndex === -1) {
+      cells.push(stack);
+    } else {
+      cells[availableIndex] = stack;
+    }
+  }
+
+  return cells;
+}
+
+function findNextOpenInventoryCell(cells: Array<InventoryStack | null>, startIndex: number) {
+  for (let index = startIndex; index < cells.length; index += 1) {
+    if (!cells[index]) {
+      return index;
+    }
+  }
+  for (let index = 0; index < startIndex; index += 1) {
+    if (!cells[index]) {
+      return index;
+    }
+  }
+  return -1;
 }
 
 function getEquippedBySlot(state: BootstrapState) {
@@ -2410,6 +2741,29 @@ function statTitle(stat: StatKey) {
       return 'Удача';
     default:
       return stat;
+  }
+}
+
+function slotTitle(slot: EquipmentSlot) {
+  switch (slot) {
+    case 'weapon':
+      return 'Оружие';
+    case 'helmet':
+      return 'Шлем';
+    case 'armor':
+      return 'Доспех';
+    case 'gloves':
+      return 'Перчатки';
+    case 'boots':
+      return 'Обувь';
+    case 'amulet':
+      return 'Амулет';
+    case 'ring':
+      return 'Кольцо';
+    case 'pet':
+      return 'Питомец';
+    default:
+      return slot;
   }
 }
 

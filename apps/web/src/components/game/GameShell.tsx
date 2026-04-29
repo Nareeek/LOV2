@@ -83,6 +83,7 @@ export function GameShell({
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(state.quests[0]?.id ?? null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(exerciseDefinitions[0]?.id ?? null);
   const [selectedItemStackId, setSelectedItemStackId] = useState<string | null>(null);
+  const [selectedPetId, setSelectedPetId] = useState('kitten');
   const [selectedStoreItemId, setSelectedStoreItemId] = useState<string | null>(null);
   const [selectedForgeStackId, setSelectedForgeStackId] = useState<string | null>(null);
   const [selectedArenaEnemyId, setSelectedArenaEnemyId] = useState<string | null>(state.enemies[0]?.id ?? null);
@@ -401,14 +402,12 @@ export function GameShell({
         case 'equipItem':
           await run(() => apiClient.equipItem(intent.inventoryStackId), 'Предмет экипирован.');
           setSelectedItemStackId(intent.inventoryStackId);
-          setInfoWindow('itemInfo');
+          setInfoWindow('none');
           return;
         case 'unequipItem':
           await run(() => apiClient.unequipItem(intent.inventoryStackId), 'Предмет снят.');
           setSelectedItemStackId(intent.inventoryStackId);
-          if (baseStage !== 'sheet') {
-            setInfoWindow('itemInfo');
-          }
+          setInfoWindow('none');
           return;
         case 'purchaseItem':
           setSelectedStoreItemId(intent.itemId);
@@ -627,6 +626,8 @@ export function GameShell({
                   state={state}
                   activeTab={sheetTab}
                   selectedItemStackId={selectedItemStackId}
+                  selectedPetId={selectedPetId}
+                  onSelectPet={setSelectedPetId}
                   onIntent={handleIntent}
                 />
 
