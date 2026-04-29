@@ -4370,6 +4370,15 @@ p {
   left: 22%;
 }
 
+.shell-reset-damage.to-pet {
+  top: 58%;
+  left: 27%;
+}
+
+.shell-reset-damage.actor-pet {
+  color: #baf3cb;
+}
+
 .shell-reset-damage.critical {
   color: #ffb277;
 }
@@ -6899,13 +6908,14 @@ p {
 
 .lov-combat-header {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
+  grid-template-columns: 42px 84px minmax(0, 1fr);
   gap: 12px;
   align-items: start;
+  position: relative;
 }
 
 .lov-combat-header.enemy {
-  grid-template-columns: minmax(0, 1fr) 84px;
+  grid-template-columns: minmax(0, 1fr) 84px 42px;
 }
 
 .lov-combat-avatar {
@@ -7030,11 +7040,15 @@ p {
   transform: translateX(5%);
 }
 
-.lov-battle-pet {
+.lov-battle-pet-wrap {
   position: absolute;
   left: clamp(14%, 24%, 28%);
-  bottom: 10px;
-  width: min(18%, 170px);
+  bottom: -4px;
+  width: min(21%, 210px);
+}
+
+.lov-battle-pet {
+  width: 100%;
   opacity: 0;
   transform: translateX(-12px) translateY(10px) scale(0.96);
   transform-origin: 58% 82%;
@@ -7051,6 +7065,42 @@ p {
 
 .lov-battle-pet.armed {
   transform: translateX(0) translateY(0) scale(1);
+}
+
+.lov-battle-pet-wrap.pet-wyrmlet {
+  bottom: -10px;
+  width: min(23%, 230px);
+}
+
+.lov-pet-battle-health {
+  display: grid;
+  gap: 3px;
+  min-width: 120px;
+  color: #fff4dd;
+  font-family: Georgia, serif;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.lov-pet-battle-health .lov-health-track {
+  height: 14px;
+}
+
+.lov-combat-turn-callout {
+  position: absolute;
+  left: 50%;
+  top: 126px;
+  z-index: 4;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 4px;
+  min-width: 280px;
+  padding: 10px 16px;
+  border: 1px solid rgba(218, 182, 122, 0.84);
+  border-radius: 16px;
+  background: rgba(24, 20, 23, 0.82);
+  color: #f8ecd0;
+  text-align: center;
+  font-family: Georgia, serif;
 }
 
 .lov-battle-pet.assisting {
@@ -8444,7 +8494,7 @@ p {
   }
 
   .lov-battle-pet {
-    width: min(36%, 160px);
+    width: 100%;
   }
 
   .lov-paperdoll-quickbar,
@@ -9654,8 +9704,7 @@ p {
 }
 
 .lov-battle-pet {
-  width: min(18%, 130px);
-  bottom: 8px;
+  width: 100%;
 }
 
 .lov-battle-bottom {

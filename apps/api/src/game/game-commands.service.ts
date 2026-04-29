@@ -372,7 +372,7 @@ export class GameCommandsService {
     return this.bootstrap(userId);
   }
 
-  async resolveCombat(userId: string, combatId: string) {
+  async resolveCombat(userId: string, combatId: string, input: { petId?: string } = {}) {
     const character = await this.requireCharacter(userId);
     const combat = await this.prisma.combatEncounter.findFirst({
       where: { id: combatId, characterId: character.id },
@@ -416,6 +416,14 @@ export class GameCommandsService {
       reward: combat.questId
         ? (gameData.quests.find((quest) => quest.id === combat.questId)?.reward ?? enemy.reward)
         : enemy.reward,
+      ...(input.petId
+        ? {
+            pet: {
+              level: input.petId === 'kitten' ? 17 : input.petId === 'wyrmlet' ? 14 : 12,
+              health: input.petId === 'kitten' ? 2100 : input.petId === 'wyrmlet' ? 1950 : 1800,
+            },
+          }
+        : {}),
     });
     const won = log.winner === 'character';
     const now = new Date();

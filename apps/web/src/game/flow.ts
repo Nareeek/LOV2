@@ -83,25 +83,32 @@ export function getCombatReplayFrame(
       characterStart: fallbackCharacterHealth,
       enemyCurrent: enemyHealth,
       enemyStart: enemyHealth,
-      lastActor: null as 'character' | 'enemy' | null,
+      petCurrent: 0,
+      petStart: 0,
+      lastActor: null as 'character' | 'enemy' | 'pet' | null,
     };
   }
 
   const visible = combatLog.turns.slice(0, Math.max(0, visibleTurns));
-  const characterTurns = combatLog.turns.filter((turn) => turn.actor === 'enemy');
-  const enemyTurns = combatLog.turns.filter((turn) => turn.actor === 'character');
+  const characterTurns = combatLog.turns.filter((turn) => turn.target === 'character' || (!turn.target && turn.actor === 'enemy'));
+  const enemyTurns = combatLog.turns.filter((turn) => turn.target === 'enemy' || (!turn.target && turn.actor === 'character'));
+  const petTurns = combatLog.turns.filter((turn) => turn.target === 'pet');
   const characterStart = Math.max(
     fallbackCharacterHealth,
     ...characterTurns.map((turn) => turn.targetHealth + turn.damage),
   );
   const enemyStart = Math.max(enemyHealth, ...enemyTurns.map((turn) => turn.targetHealth + turn.damage));
+  const petStart = Math.max(0, ...petTurns.map((turn) => turn.targetHealth + turn.damage));
 
   let characterCurrent = characterStart;
   let enemyCurrent = enemyStart;
-  let lastActor: 'character' | 'enemy' | null = null;
+  let petCurrent = petStart;
+  let lastActor: 'character' | 'enemy' | 'pet' | null = null;
   for (const turn of visible) {
-    if (turn.actor === 'character') {
+    if (turn.target === 'enemy' || (!turn.target && turn.actor === 'character')) {
       enemyCurrent = turn.targetHealth;
+    } else if (turn.target === 'pet') {
+      petCurrent = turn.targetHealth;
     } else {
       characterCurrent = turn.targetHealth;
     }
@@ -113,6 +120,8 @@ export function getCombatReplayFrame(
     characterStart,
     enemyCurrent,
     enemyStart,
+    petCurrent,
+    petStart,
     lastActor,
   };
 }

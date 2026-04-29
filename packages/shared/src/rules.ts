@@ -144,58 +144,80 @@ export function resolveCombat(params: {
   characterArmor?: number;
   enemy: EnemyDefinition;
   reward: Reward;
+  pet?: {
+    level: number;
+    health: number;
+  };
 }): CombatLog {
   const turns = [];
   let characterHealth = params.characterHealth;
   let enemyHealth = params.enemy.health;
+  let petHealth = params.pet?.health ?? 0;
   let turn = 1;
+  let allyTurn: 'character' | 'pet' = 'character';
+  const strength = '\u0441\u0438\u043b\u0430' as keyof CharacterStats;
+  const agility = '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c' as keyof CharacterStats;
+  const intuition = '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f' as keyof CharacterStats;
+  const luck = '\u0443\u0434\u0430\u0447\u0430' as keyof CharacterStats;
+  const stat = (stats: CharacterStats, key: keyof CharacterStats) => stats[key] ?? 0;
+  const characterInitiative =
+    (stat(params.characterStats, luck) * 7 + stat(params.characterStats, agility) * 3 + params.characterLevel * 5 + 17) % 100;
+  const enemyInitiative = (stat(params.enemy.stats, luck) * 7 + stat(params.enemy.stats, agility) * 3 + params.enemy.level * 5) % 100;
+  let nextSide: 'character' | 'enemy' = characterInitiative >= enemyInitiative ? 'character' : 'enemy';
 
   while (characterHealth > 0 && enemyHealth > 0 && turn <= 30) {
-    const characterCrit = (params.characterStats.удача + turn * 3) % 11 === 0;
-    const characterDamage = Math.max(
-      1,
-      Math.floor(
-        params.characterStats.сила * 1.8 +
-          params.characterStats.ловкость * 0.9 +
-          params.characterStats.интуиция * 0.6 +
+    if (nextSide === 'character') {
+      const isPetTurn: boolean = allyTurn === 'pet' && petHealth > 0;
+      const critical = isPetTurn
+        ? (stat(params.characterStats, luck) + (params.pet?.level ?? 1) + turn * 2) % 12 === 0
+        : (stat(params.characterStats, luck) + turn * 3) % 11 === 0;
+      const baseDamage = isPetTurn
+        ? (params.pet?.level ?? 1) * 2.1 + stat(params.characterStats, intuition) * 0.45
+        : stat(params.characterStats, strength) * 1.8 +
+          stat(params.characterStats, agility) * 0.9 +
+          stat(params.characterStats, intuition) * 0.6 +
           params.characterLevel * 4 -
-          params.enemy.armor * 0.35,
-      ) * (characterCrit ? 2 : 1),
-    );
-    enemyHealth = Math.max(0, enemyHealth - characterDamage);
-    turns.push({
-      turn,
-      actor: 'character' as const,
-      damage: characterDamage,
-      critical: characterCrit,
-      targetHealth: enemyHealth,
-    });
-
-    if (enemyHealth <= 0) {
-      break;
+          params.enemy.armor * 0.35;
+      const damage = Math.max(1, Math.floor(baseDamage) * (critical ? 2 : 1));
+      enemyHealth = Math.max(0, enemyHealth - damage);
+      turns.push({
+        turn,
+        actor: isPetTurn ? 'pet' as const : 'character' as const,
+        target: 'enemy' as const,
+        damage,
+        critical,
+        targetHealth: enemyHealth,
+      });
+      allyTurn = !isPetTurn && params.pet && petHealth > 0 ? 'pet' : 'character';
+      nextSide = 'enemy';
+      continue;
     }
 
-    const enemyCrit = (params.enemy.stats.удача + turn * 5) % 13 === 0;
+    const target = params.pet && allyTurn === 'character' && petHealth > 0 ? 'pet' as const : 'character' as const;
+    const enemyCrit = (stat(params.enemy.stats, luck) + turn * 5) % 13 === 0;
     const dodgeReduction =
-      params.characterStats.ловкость > params.enemy.stats.интуиция ? params.characterStats.ловкость / 6 : 0;
+      target === 'character' && stat(params.characterStats, agility) > stat(params.enemy.stats, intuition)
+        ? stat(params.characterStats, agility) / 6
+        : 0;
+    const armorReduction = target === 'character' ? (params.characterArmor ?? 0) * 0.32 : 0;
     const enemyDamage = Math.max(
       1,
       Math.floor(
-        params.enemy.stats.сила * 1.5 +
-          params.enemy.stats.интуиция * 0.7 +
+        stat(params.enemy.stats, strength) * 1.5 +
+          stat(params.enemy.stats, intuition) * 0.7 +
           params.enemy.level * 3 -
           dodgeReduction -
-          (params.characterArmor ?? 0) * 0.32,
+          armorReduction,
       ) * (enemyCrit ? 2 : 1),
     );
-    characterHealth = Math.max(0, characterHealth - enemyDamage);
-    turns.push({
-      turn,
-      actor: 'enemy' as const,
-      damage: enemyDamage,
-      critical: enemyCrit,
-      targetHealth: characterHealth,
-    });
+    if (target === 'pet') {
+      petHealth = Math.max(0, petHealth - enemyDamage);
+      turns.push({ turn, actor: 'enemy' as const, target, damage: enemyDamage, critical: enemyCrit, targetHealth: petHealth });
+    } else {
+      characterHealth = Math.max(0, characterHealth - enemyDamage);
+      turns.push({ turn, actor: 'enemy' as const, target, damage: enemyDamage, critical: enemyCrit, targetHealth: characterHealth });
+    }
+    nextSide = 'character';
     turn += 1;
   }
 
@@ -207,7 +229,6 @@ export function resolveCombat(params: {
     reward: won ? params.reward : ZERO_REWARD,
   };
 }
-
 export function canRebirth(level: number): boolean {
   return level >= 30;
 }

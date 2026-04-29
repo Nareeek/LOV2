@@ -1264,34 +1264,47 @@ export function TravelStage({
 }
 
 export function CombatStage({
-  character,
+  state,
   enemy,
   characterHealth,
   characterMaxHealth,
   enemyHealth,
   enemyMaxHealth,
+  petHealth,
+  petMaxHealth,
   petAssistArmed,
+  selectedPetId,
   replayTurns,
   onIntent,
 }: {
-  character: BootstrapState['character'];
+  state: BootstrapState;
   enemy: EnemyDefinition | undefined;
   characterHealth: number;
   characterMaxHealth: number;
   enemyHealth: number;
   enemyMaxHealth: number;
+  petHealth: number;
+  petMaxHealth: number;
   petAssistArmed: boolean;
+  selectedPetId: string;
   replayTurns: CombatTurn[] | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
+  const character = state.character;
   if (!character || !enemy) {
     return null;
   }
 
+  const equippedBySlot = getEquippedBySlot(state);
+  const heroAssetId = paperDollHeroAssetId(equippedBySlot);
+  const selectedPet = PET_VARIANTS.find((pet) => pet.id === selectedPetId) ?? PET_VARIANTS[2]!;
   const recentTurns = replayTurns?.slice(-2) ?? [];
   const latestReplayTurn = replayTurns?.[replayTurns.length - 1];
   const petSummoned = petAssistArmed;
-  const petActing = petSummoned && latestReplayTurn?.actor === 'character';
+  const petActing = petSummoned && latestReplayTurn?.actor === 'pet';
+  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPet.name, enemy.nameRu, character.name) : null;
+  const displayedPetHealth = petMaxHealth > 0 ? petHealth : selectedPet.hp;
+  const displayedPetMaxHealth = petMaxHealth > 0 ? petMaxHealth : selectedPet.hp;
 
   return (
     <section className="shell-reset-combat-stage lov-combat-stage" data-testid="combat-screen">
@@ -1311,7 +1324,7 @@ export function CombatStage({
             <UiIcon name="info" />
           </button>
           <div className="lov-combat-avatar">
-            <img src={assetPath('hero-nocturne')} alt="" />
+            <img src={assetPath(heroAssetId)} alt="" />
           </div>
           <div className="lov-combat-meta">
             <strong>{character.name}</strong>
@@ -1357,18 +1370,34 @@ export function CombatStage({
       </div>
 
       <div className="lov-battle-stage">
-        <img className="lov-fighter hero" src={assetPath('hero-nocturne')} alt="" />
+        <img className="lov-fighter hero" src={assetPath(heroAssetId)} alt="" />
         <img className="lov-fighter enemy" src={assetPath('enemy-ash-baron')} alt="" />
         {petSummoned ? (
-          <img
-            className={`lov-battle-pet summoned armed ${petActing ? 'assisting' : ''}`}
-            data-testid="combat-summoned-pet"
-            src={assetPath('pet-wyvern')}
-            alt=""
-            aria-hidden="true"
-          />
+          <div className={`lov-battle-pet-wrap pet-${selectedPet.id}`}>
+            <img
+              className={`lov-battle-pet summoned armed ${petActing ? 'assisting' : ''}`}
+              data-testid="combat-summoned-pet"
+              src={assetPath(selectedPet.assetId)}
+              alt=""
+              aria-hidden="true"
+            />
+            <div className="lov-pet-battle-health">
+              <span>{selectedPet.name}</span>
+              <div className="lov-health-track">
+                <i style={{ width: `${Math.round((displayedPetHealth / Math.max(1, displayedPetMaxHealth)) * 100)}%` }} />
+              </div>
+              <small>{displayedPetHealth}</small>
+            </div>
+          </div>
         ) : null}
       </div>
+
+      {latestTurnLabel ? (
+        <div className={`lov-combat-turn-callout actor-${latestReplayTurn?.actor ?? 'none'}`}>
+          <strong>{latestTurnLabel.title}</strong>
+          <span>{latestTurnLabel.detail}</span>
+        </div>
+      ) : null}
 
       <div className="lov-battle-bottom">
         <div className="lov-pet-card">
@@ -1382,15 +1411,15 @@ export function CombatStage({
           </button>
           <div className="lov-pet-card-body">
             <div className="lov-pet-card-image">
-              <img src={assetPath('pet-wyvern')} alt="" />
+              <img src={assetPath(selectedPet.assetId)} alt="" />
             </div>
             <div className="lov-pet-card-copy">
-              <strong>Котёнок</strong>
-              <span>17 уровень</span>
+              <strong>{selectedPet.name}</strong>
+              <span>{selectedPet.level} уровень</span>
               <div className="lov-health-track">
-                <i style={{ width: '100%' }} />
+                <i style={{ width: `${Math.round((displayedPetHealth / Math.max(1, displayedPetMaxHealth)) * 100)}%` }} />
               </div>
-              <small>2100</small>
+              <small>{displayedPetHealth}</small>
             </div>
           </div>
         </div>
@@ -1401,16 +1430,35 @@ export function CombatStage({
           {recentTurns.map((turn: CombatTurn, index: number) => (
             <span
               key={`${turn.turn}-${turn.actor}-${turn.damage}-${index}`}
-              className={`shell-reset-damage ${turn.actor === 'character' ? 'to-enemy' : 'to-hero'} ${turn.critical ? 'critical' : ''}`}
+              className={`shell-reset-damage ${damageTargetClass(turn)} actor-${turn.actor} ${turn.critical ? 'critical' : ''}`}
               style={{ '--float-index': `${index}` } as CSSProperties}
             >
-              -{turn.damage}
+              {turn.actor === 'pet' ? selectedPet.name : turn.actor === 'character' ? character.name : enemy.nameRu}: -{turn.damage}
             </span>
           ))}
         </div>
       ) : null}
     </section>
   );
+}
+
+function damageTargetClass(turn: CombatTurn) {
+  if (turn.target === 'pet') {
+    return 'to-pet';
+  }
+  if (turn.target === 'enemy' || (!turn.target && turn.actor === 'character')) {
+    return 'to-enemy';
+  }
+  return 'to-hero';
+}
+
+function combatTurnLabel(turn: CombatTurn, petName: string, enemyName: string, heroName: string) {
+  const actor = turn.actor === 'pet' ? petName : turn.actor === 'character' ? heroName : enemyName;
+  const target = turn.target === 'pet' ? petName : turn.target === 'enemy' ? enemyName : heroName;
+  return {
+    title: turn.critical ? 'Критический удар' : 'Удар',
+    detail: `${actor} → ${target}: ${turn.damage}`,
+  };
 }
 
 export function RewardWindow({
@@ -1698,8 +1746,8 @@ export function CharacterSheet({
             <InventoryGrid
               state={state}
               stacks={backpack}
-              selectedStackId={selectedItemStackId}
-              onSelect={(inventoryStackId) => onIntent({ type: 'openItemInfo', inventoryStackId })}
+              selectedStackId={null}
+              onSelect={() => onIntent({ type: 'closeInfo' })}
               onDropStack={(inventoryStackId, slotIndex) => {
                 setInventorySlotOrder((current) => ({ ...current, [inventoryStackId]: slotIndex }));
                 const stack = state.inventory.find((entry) => entry.id === inventoryStackId);
@@ -2006,6 +2054,57 @@ export function EnemyInfoPanel({
         <div className="lov-profile-stat"><span>LCK</span><strong>{enemy.stats[STAT_LUCK]}</strong></div>
       </div>
     </div>
+  );
+}
+
+export function EnemyInfoWindow({
+  enemy,
+  onClose,
+}: {
+  enemy: EnemyDefinition | undefined;
+  onClose: () => void;
+}) {
+  if (!enemy) {
+    return null;
+  }
+
+  return (
+    <WorldWindowShell
+      title={'\u0421\u0432\u0435\u0434\u0435\u043d\u0438\u044f \u043e \u043f\u0440\u043e\u0442\u0438\u0432\u043d\u0438\u043a\u0435'}
+      onClose={onClose}
+      testId="enemy-info-popup"
+      className="lov-hero-info-shell lov-enemy-info-shell"
+      size="hero"
+      bodyScroll="none"
+    >
+      <div className="lov-hero-info-layout lov-enemy-info-layout">
+        <section className="lov-sheet-left lov-hero-info-main">
+          <div className="lov-profile-screen lov-profile-screen-window">
+            <div className="lov-profile-header">
+              <img src={assetPath('enemy-ash-baron')} alt="" />
+              <div>
+                <strong>{enemy.nameRu}</strong>
+                <span>{enemy.boss ? '\u0411\u043e\u0441\u0441' : '\u041f\u0440\u043e\u0442\u0438\u0432\u043d\u0438\u043a'}</span>
+              </div>
+            </div>
+            <div className="lov-profile-stats">
+              <div className="lov-profile-stat"><span>HP</span><strong>{enemy.health}</strong></div>
+              <div className="lov-profile-stat"><span>Броня</span><strong>{enemy.armor}</strong></div>
+              <div className="lov-profile-stat"><span>Сила</span><strong>{enemy.stats[STAT_STRENGTH]}</strong></div>
+              <div className="lov-profile-stat"><span>Ловкость</span><strong>{enemy.stats[STAT_AGILITY]}</strong></div>
+              <div className="lov-profile-stat"><span>Интуиция</span><strong>{enemy.stats[STAT_INTUITION]}</strong></div>
+              <div className="lov-profile-stat"><span>Удача</span><strong>{enemy.stats[STAT_LUCK]}</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section className="lov-sheet-right lov-hero-info-side">
+          <div className="lov-enemy-info-portrait">
+            <img src={assetPath('enemy-ash-baron')} alt="" />
+          </div>
+        </section>
+      </div>
+    </WorldWindowShell>
   );
 }
 

@@ -89,3 +89,10 @@ export class StartArenaDto {
   @IsString()
   enemyId!: string;
 }
+
+export class ResolveCombatDto {
+  @ApiProperty({ example: 'kitten', required: false })
+  @IsOptional()
+  @IsString()
+  petId?: string;
+}

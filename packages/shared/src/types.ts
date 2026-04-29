@@ -234,7 +234,8 @@ export interface CombatLog {
 
 export interface CombatTurn {
   turn: number;
-  actor: 'character' | 'enemy';
+  actor: 'character' | 'enemy' | 'pet';
+  target?: 'character' | 'enemy' | 'pet';
   damage: number;
   critical: boolean;
   targetHealth: number;

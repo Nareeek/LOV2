@@ -39,6 +39,7 @@ import {
   CharacterSheet,
   CombatStage,
   EnemyInfoPanel,
+  EnemyInfoWindow,
   ExerciseDetailWindow,
   ForgeWindow,
   FountainWindow,
@@ -59,8 +60,8 @@ import { OverlayLayer } from './OverlayLayer.js';
 import { TaskRail } from './TaskRail.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
-const COMBAT_REPLAY_TURN_MS = 1100;
-const COMBAT_REPLAY_REWARD_DELAY_MS = 650;
+const COMBAT_REPLAY_TURN_MS = 2200;
+const COMBAT_REPLAY_REWARD_DELAY_MS = 1200;
 
 export function GameShell({
   state,
@@ -375,7 +376,10 @@ export function GameShell({
           setBaseStage('combat');
           return;
         case 'resolveCombat':
-          await run(() => apiClient.resolveCombat(intent.combatId), 'Дуэль завершена.');
+          await run(
+            () => apiClient.resolveCombat(intent.combatId, petAssistArmed ? { petId: selectedPetId } : {}),
+            'Дуэль завершена.',
+          );
           setReplayTurnCount(0);
           setReplayActive(true);
           setRewardVisible(false);
@@ -444,7 +448,9 @@ export function GameShell({
       openSheet,
       openWorldWindow,
       run,
+      petAssistArmed,
       selectedArenaEnemyId,
+      selectedPetId,
       state.enemies,
       state.questProgress,
       worldLocation,
@@ -463,9 +469,13 @@ export function GameShell({
       return;
     }
 
-    autoResolvedCombatIdRef.current = pendingCombat.id;
-    void handleIntent({ type: 'resolveCombat', combatId: pendingCombat.id });
-  }, [baseStage, handleIntent, pendingCombat, replayActive, rewardVisible]);
+    const combatId = pendingCombat.id;
+    const timer = window.setTimeout(() => {
+      autoResolvedCombatIdRef.current = combatId;
+      void handleIntent({ type: 'resolveCombat', combatId });
+    }, 2600);
+    return () => window.clearTimeout(timer);
+  }, [baseStage, handleIntent, pendingCombat, petAssistArmed, replayActive, rewardVisible, selectedPetId]);
 
   useEffect(() => {
     if (!pendingCombat) {
@@ -531,6 +541,10 @@ export function GameShell({
   const heroInfoContent =
     infoWindow === 'heroInfo'
       ? <HeroInfoWindow state={state} onClose={() => setInfoWindow('none')} onIntent={handleIntentRef.current} />
+      : null;
+  const enemyInfoContent =
+    infoWindow === 'enemyInfo'
+      ? <EnemyInfoWindow enemy={combatEnemy} onClose={() => setInfoWindow('none')} />
       : null;
 
   const infoWindowContent = renderInfoWindow({
@@ -604,7 +618,14 @@ export function GameShell({
                   </div>
                 ) : null}
 
-                {!heroInfoContent && infoWindowContent ? (
+                {enemyInfoContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
+                  </div>
+                ) : null}
+
+                {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
                   <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
                     {infoWindowContent}
                   </OverlayLayer>
@@ -638,7 +659,14 @@ export function GameShell({
                   </div>
                 ) : null}
 
-                {infoWindow !== 'heroInfo' && infoWindowContent ? (
+                {enemyInfoContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
+                  </div>
+                ) : null}
+
+                {infoWindow !== 'heroInfo' && !enemyInfoContent && infoWindowContent ? (
                   <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
                     {infoWindowContent}
                   </OverlayLayer>
@@ -651,13 +679,16 @@ export function GameShell({
             <section className="stage-playfield single-column">
               <section className="stage-main combat-main">
                 <CombatStage
-                  character={state.character}
+                  state={state}
                   enemy={combatEnemy}
                   characterHealth={replayFrame.characterCurrent}
                   characterMaxHealth={replayFrame.characterStart}
                   enemyHealth={replayFrame.enemyCurrent}
                   enemyMaxHealth={replayFrame.enemyStart}
+                  petHealth={replayFrame.petCurrent}
+                  petMaxHealth={replayFrame.petStart}
                   petAssistArmed={petAssistArmed}
+                  selectedPetId={selectedPetId}
                   replayTurns={visibleReplayTurns}
                   onIntent={handleIntent}
                 />
@@ -685,7 +716,14 @@ export function GameShell({
                   </div>
                 ) : null}
 
-                {!heroInfoContent && infoWindowContent ? (
+                {enemyInfoContent ? (
+                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
+                    <div className="shell-reset-scrim" aria-hidden="true" />
+                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
+                  </div>
+                ) : null}
+
+                {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
                   <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
                     {infoWindowContent}
                   </OverlayLayer>

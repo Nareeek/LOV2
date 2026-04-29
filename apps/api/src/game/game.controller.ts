@@ -10,6 +10,7 @@ import {
   ForgeUpgradeDto,
   PurchaseItemDto,
   RefillEnergyDto,
+  ResolveCombatDto,
   StartArenaDto,
   StartTravelDto,
   UnequipItemDto,
@@ -54,8 +55,8 @@ export class GameController {
   }
 
   @Post('combat/:id/resolve')
-  resolveCombat(@CurrentUser() user: RequestWithUser['user'], @Param('id') combatId: string) {
-    return this.commands.resolveCombat(user.id, combatId);
+  resolveCombat(@CurrentUser() user: RequestWithUser['user'], @Param('id') combatId: string, @Body() dto: ResolveCombatDto) {
+    return this.commands.resolveCombat(user.id, combatId, dto);
   }
 
   @Post('inventory/:id/equip')
