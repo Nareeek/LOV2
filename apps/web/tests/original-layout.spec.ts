@@ -25,6 +25,7 @@ for (const viewport of [
     await expect(exercise).toBeVisible();
     await expect(actionDockButton).toBeVisible();
     await expectNoDocumentScroll(page);
+    await expectAlmostFullWidth(bottomTray, page.getByTestId('world-stage'));
     await expect(page.locator('.lov-topbar-actions')).toHaveCount(0);
 
     const exerciseBox = await exercise.boundingBox();
@@ -43,8 +44,22 @@ for (const viewport of [
     await infoButton.click();
     const heroInfoWindow = page.getByTestId('character-info-popup');
     await expect(heroInfoWindow).toBeVisible();
-    await expect(heroInfoWindow.getByText('Здоровье')).toBeVisible();
-    await expect(heroInfoWindow.getByText('Броня')).toBeVisible();
+    await expect(heroInfoWindow.getByTestId('hero-info-stat-health')).toBeVisible();
+    await expect(heroInfoWindow.getByTestId('hero-info-stat-armor')).toBeVisible();
+    await expect(heroInfoWindow.getByTestId('world-window-bottom-close')).toBeVisible();
+    await expect(heroInfoWindow.locator('.lov-profile-header img')).toHaveAttribute(
+      'src',
+      '/assets/generated/characters/character-face-portrait.jpg',
+    );
+    await expectContained(heroInfoWindow, page.getByTestId('world-stage'));
+    await expectWiderThan(
+      heroInfoWindow.getByTestId('hero-info-stat-health'),
+      heroInfoWindow.getByTestId('hero-info-stat-strength'),
+    );
+    await expectWiderThan(
+      heroInfoWindow.getByTestId('hero-info-stat-armor'),
+      heroInfoWindow.getByTestId('hero-info-stat-agility'),
+    );
     await expect(heroInfoWindow.getByText('ATK')).toHaveCount(0);
     await expectContained(
       heroInfoWindow.locator('.lov-paperdoll-hero'),
@@ -216,7 +231,10 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   await page.getByTestId('hotspot-hub-tavern').click();
   const tavernWindow = page.getByTestId('tavern-window');
   const tavernTasks = tavernWindow.locator('[data-testid^="task-ribbon-"]');
+  const stage = page.getByTestId('world-stage');
   await expect(tavernWindow).toBeVisible();
+  await expect(stage).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
+  await expect(stage).not.toHaveClass(/stage-mode-worldWindow/);
   await expectContained(tavernWindow, playfield);
   await expect(tavernTasks).toHaveCount(3);
   await expect(tavernTasks.nth(0)).toBeVisible();
@@ -230,10 +248,14 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   const arenaSwitchButton = arenaWindow.getByTestId('arena-switch-button');
   const arenaStartButton = arenaWindow.getByTestId('arena-start-button');
   await expect(arenaWindow).toBeVisible();
-  await expectContained(arenaWindow, playfield);
+  await expectContained(arenaWindow, page.getByTestId('world-stage'));
+  await expect(arenaWindow.getByText('24 \u0443\u0440\u043e\u0432\u0435\u043d\u044c')).toBeVisible();
+  await expect(arenaWindow.getByText('ATK')).toHaveCount(0);
+  await expect(arenaWindow.getByText('DEX')).toHaveCount(0);
   await expect(arenaStats).toHaveCount(6);
   await expect(arenaSwitchButton).toBeVisible();
   await expect(arenaStartButton).toBeVisible();
+  await expect(arenaWindow.getByTestId('world-window-bottom-close')).toBeVisible();
   await expect(arenaStats.nth(4)).toBeVisible();
   await expect(arenaStats.nth(5)).toBeVisible();
   await expectNoOverlap(arenaStats.nth(2), arenaSwitchButton);
@@ -475,6 +497,22 @@ async function expectBelow(locator: Locator, anchor: Locator, minGap = 0) {
   expect(box).not.toBeNull();
   expect(anchorBox).not.toBeNull();
   expect(box!.y).toBeGreaterThanOrEqual(anchorBox!.y + anchorBox!.height + minGap);
+}
+
+async function expectWiderThan(wide: Locator, narrow: Locator) {
+  const [wideBox, narrowBox] = await Promise.all([wide.boundingBox(), narrow.boundingBox()]);
+
+  expect(wideBox).not.toBeNull();
+  expect(narrowBox).not.toBeNull();
+  expect(wideBox!.width).toBeGreaterThan(narrowBox!.width * 1.55);
+}
+
+async function expectAlmostFullWidth(locator: Locator, container: Locator) {
+  const [box, containerBox] = await Promise.all([locator.boundingBox(), container.boundingBox()]);
+
+  expect(box).not.toBeNull();
+  expect(containerBox).not.toBeNull();
+  expect(box!.width).toBeGreaterThan(containerBox!.width * 0.9);
 }
 
 async function expectNoOverlap(first: Locator, second: Locator) {

@@ -1,13 +1,8 @@
 import type { GameIntent } from '../../game/types.js';
+import { assetPath } from './assets.js';
 import { UiIcon } from './ui.js';
 
 const META_ACTIONS = [
-  {
-    id: 'leaderboard',
-    label: '\u0420\u0435\u0439\u0442\u0438\u043d\u0433',
-    icon: 'trophy' as const,
-    action: { type: 'openWindow', windowId: 'leaderboard' } as const,
-  },
   {
     id: 'journal',
     label: '\u0416\u0443\u0440\u043d\u0430\u043b',
@@ -39,13 +34,13 @@ export function ActionDock({
         <button
           key={entry.id}
           type="button"
-          className="shell-reset-meta-orb"
+          className={`shell-reset-meta-orb action-${entry.id}`}
           data-testid={`action-${entry.id}`}
           aria-label={entry.label}
           title={entry.label}
           onClick={() => onIntent(entry.action)}
         >
-          <UiIcon name={entry.icon} />
+          {entry.id === 'settings' ? <img src={assetPath('icon-onyx')} alt="" /> : <UiIcon name={entry.icon} />}
         </button>
       ))}
     </aside>

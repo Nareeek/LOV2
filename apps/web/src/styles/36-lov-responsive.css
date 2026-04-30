@@ -1,0 +1,214 @@
+@media (max-width: 1280px) {
+  .lov-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-topbar-left {
+    grid-template-columns: 86px minmax(220px, 1fr);
+  }
+
+  .lov-glory-strip {
+    justify-self: start;
+  }
+
+  .lov-resource-strip,
+  .lov-topbar-actions {
+    justify-content: flex-start;
+  }
+
+  .lov-store-layout,
+  .lov-arena-layout,
+  .lov-window-split,
+  .lov-work-main {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-sheet {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+
+  .lov-sheet-right {
+    display: none;
+  }
+
+  .lov-friends-band {
+    grid-template-columns: 46px minmax(0, 1fr) 46px;
+  }
+
+  .lov-invite-card {
+    grid-column: 1 / -1;
+    min-height: 88px;
+  }
+
+  .lov-travel-story {
+    width: min(52%, 460px);
+  }
+}
+
+@media (max-width: 960px) {
+  .lov-auth-shell,
+  .lov-creation-body {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-auth-shell .auth-art {
+    height: 320px;
+  }
+
+  .lov-creation-preview {
+    min-height: 520px;
+  }
+
+  .lov-footer-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lov-friends-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lov-travel-story {
+    left: 20px;
+    right: 20px;
+    bottom: 120px;
+    width: auto;
+  }
+
+  .lov-travel-bottom {
+    width: calc(100% - 40px);
+  }
+
+  .lov-battle-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-skill-bar {
+    justify-self: center;
+  }
+
+  .lov-victory-window {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-victory-left {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 720px) {
+  .lov-creation-shell {
+    padding: 12px;
+  }
+
+  .lov-creation-grid.two,
+  .lov-creation-grid.race,
+  .lov-creation-grid.three,
+  .lov-tower-grid,
+  .lov-achievement-grid,
+  .lov-profile-stats,
+  .lov-pet-feeding {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-sheet {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-sheet-rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lov-sheet-rail button.back {
+    margin-top: 0;
+  }
+
+  .lov-paperdoll-stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lov-paperdoll-center {
+    grid-column: 1 / -1;
+    min-height: 320px;
+  }
+
+  .lov-paperdoll-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lov-bonus-strip,
+  .lov-energy-buy-row,
+  .lov-travel-story,
+  .lov-quest-layout,
+  .lov-boatman-layout,
+  .lov-combat-top,
+  .lov-pet-progress-head,
+  .lov-combat-header,
+  .lov-combat-header.enemy,
+  .lov-battle-stage,
+  .lov-bottom-strip,
+  .lov-window-split,
+  .lov-friends-band {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-friends-nav {
+    display: none;
+  }
+
+  .lov-friends-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lov-topbar-left {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-topbar-portrait {
+    justify-self: start;
+  }
+
+  .lov-travel-sidebar {
+    left: 14px;
+    top: 14px;
+  }
+
+  .lov-travel-sidecard {
+    min-width: 64px;
+    min-height: 64px;
+    font-size: 1.15rem;
+  }
+
+  .lov-combat-header.enemy .lov-combat-meta span,
+  .lov-combat-header.ally .lov-combat-meta span {
+    right: auto;
+    left: auto;
+    justify-self: center;
+  }
+
+  .lov-combat-header.enemy {
+    direction: ltr;
+  }
+
+  .lov-battle-stage {
+    inset: 140px 12px 170px;
+  }
+
+  .lov-fighter {
+    width: min(82%, 260px);
+  }
+
+  .lov-battle-pet {
+    width: 100%;
+  }
+
+  .lov-paperdoll-quickbar,
+  .lov-quick-slots,
+  .lov-skill-bar {
+    grid-template-columns: repeat(4, 54px);
+  }
+
+  .hotspot-label {
+    width: min(220px, calc(100vw - 40px));
+  }
+}
+

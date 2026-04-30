@@ -46,6 +46,7 @@ const RANDOM_NAMES = ['Даррид', 'Нарек', 'Элира', 'Каэл', '�
 
 export function App() {
   const [state, setState] = useState<BootstrapState | null>(null);
+  const [bootstrapped, setBootstrapped] = useState(false);
   const [email, setEmail] = useState('player@example.com');
   const [displayName, setDisplayName] = useState('Игрок');
   const [password, setPassword] = useState('change-me-1234');
@@ -57,7 +58,10 @@ export function App() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    apiClient.bootstrap().then(setState).catch(() => setState(null));
+    apiClient.bootstrap()
+      .then(setState)
+      .catch(() => setState(null))
+      .finally(() => setBootstrapped(true));
   }, []);
 
   const run = useCallback(async <T,>(action: () => Promise<T>, success: string) => {
@@ -120,6 +124,21 @@ export function App() {
       return null;
     }, 'Вы вышли из аккаунта.');
   }, [run]);
+
+  if (!bootstrapped) {
+    return (
+      <main className="lov-loading-screen" data-testid="loading-screen">
+        <section className="lov-loading-card" aria-label="Загрузка">
+          <div className="lov-loading-logo">LOV2</div>
+          <div className="lov-loading-art" />
+          <div className="lov-loading-bar">
+            <span>Загрузка</span>
+            <i />
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   if (!state?.user) {
     return (
@@ -291,14 +310,14 @@ export function App() {
               </button>
             </div>
             <div className="lov-creation-scene">
-              <img src={assetPath('scene-hub')} alt="" />
+              <img src="/assets/original/scene-hub.svg" alt="" />
               <div className="lov-creation-avatar-card">
                 <div className="lov-creation-avatar-meta">
                   <span>{selectedRace?.nameRu ?? 'Раса'}</span>
                   <strong>{selectedClass.label}</strong>
                   <small>{gender === 'male' ? 'Мужчина' : 'Женщина'}</small>
                 </div>
-                <img src={assetPath('hero-nocturne')} alt="" />
+                <img src="/assets/original/hero-nocturne.svg" alt="" />
               </div>
             </div>
           </section>

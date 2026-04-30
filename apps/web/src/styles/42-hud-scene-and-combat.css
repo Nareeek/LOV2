@@ -1,0 +1,1022 @@
+/* Compact top HUD with visible XP and image-backed currency bars. */
+.stage-frame.shell-reset-stage {
+  --stage-topbar-height: 84px;
+}
+
+.lov-topbar {
+  --lov-topbar-resource-lane: 480px;
+  min-height: 72px;
+  padding: 8px calc(var(--lov-topbar-resource-lane) + 16px) 8px 16px;
+  grid-template-columns: 86px minmax(340px, 1fr);
+  gap: 14px;
+}
+
+.lov-topbar-left {
+  display: block;
+  max-width: none;
+}
+
+.lov-topbar-portrait {
+  width: 86px;
+  height: 68px;
+}
+
+.lov-topbar-portrait .shell-reset-portrait {
+  width: 64px;
+  min-height: 64px;
+  font-size: 1.8rem;
+}
+
+.lov-topbar-portrait .shell-reset-level {
+  top: -4px;
+  right: 4px;
+  min-width: 32px;
+  height: 32px;
+  font-size: 1.15rem;
+}
+
+.lov-topbar-badge {
+  left: 22px;
+  bottom: -8px;
+  width: 30px;
+  min-height: 30px;
+}
+
+.lov-topbar-center {
+  min-width: 0;
+}
+
+.lov-xp-strip {
+  display: block;
+  min-width: 0;
+  padding-left: 0;
+}
+
+.lov-xp-strip .meter {
+  grid-template-columns: 42px minmax(180px, 1fr) minmax(112px, auto);
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid rgba(217, 184, 113, 0.7);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(58, 55, 55, 0.96), rgba(35, 33, 35, 0.96));
+}
+
+.lov-xp-strip .meter > span:first-child {
+  display: grid;
+  color: #f5e5b8;
+}
+
+.lov-xp-strip .meter div {
+  height: 18px;
+  border-color: rgba(217, 184, 113, 0.68);
+  background: linear-gradient(180deg, #1e1719, #100d0f);
+}
+
+.lov-xp-strip .meter strong {
+  min-width: 112px;
+  font-size: 0.95rem;
+}
+
+.lov-resource-strip {
+  right: 16px;
+  gap: 8px;
+}
+
+.lov-resource-pill {
+  position: relative;
+  min-width: 116px;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 34px minmax(52px, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  border: 1px solid rgba(217, 184, 113, 0.72);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(70, 64, 60, 0.96), rgba(38, 36, 38, 0.96));
+}
+
+.lov-resource-pill img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.lov-resource-pill span {
+  display: grid;
+  place-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(217, 184, 113, 0.58);
+  border-radius: 999px;
+  background: rgba(12, 12, 15, 0.72);
+  color: #fff0c9;
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+}
+
+.lov-add-button {
+  min-width: 174px;
+  min-height: 44px;
+}
+
+@media (max-width: 1180px) {
+  .lov-topbar {
+    --lov-topbar-resource-lane: 0px;
+    grid-template-columns: 78px minmax(0, 1fr);
+    padding-right: 12px;
+  }
+
+  .lov-resource-strip {
+    position: static;
+    grid-column: 1 / -1;
+    transform: none;
+    justify-self: stretch;
+  }
+}
+
+/* Combat readability and alignment pass. */
+.lov-combat-header {
+  grid-template-columns: 42px 84px minmax(280px, 1fr);
+  align-items: start;
+}
+
+.lov-combat-header.enemy {
+  grid-template-columns: minmax(280px, 1fr) 84px 42px;
+}
+
+.lov-combat-avatar img {
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.lov-combat-avatar.hero img {
+  transform: scale(1.14);
+}
+
+.lov-combat-meta {
+  position: relative;
+}
+
+.lov-combat-meta .lov-health-track {
+  width: 100%;
+  height: 28px;
+}
+
+.lov-combat-meta small {
+  top: 58px;
+  left: 50%;
+  width: max-content;
+  min-width: 44px;
+  text-align: center;
+  font-size: 1.25rem;
+  line-height: 28px;
+  pointer-events: none;
+}
+
+.lov-fighter.hero {
+  transform: translateX(-22%);
+}
+
+.lov-battle-pet-wrap {
+  left: clamp(18%, 27%, 31%);
+  bottom: -24px;
+  width: min(23%, 230px);
+}
+
+.lov-battle-pet-wrap.pet-wyrmlet {
+  bottom: -30px;
+  width: min(25%, 250px);
+}
+
+.lov-pet-battle-health {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 2;
+  width: min(220px, 120%);
+  transform: translateX(-50%);
+}
+
+.lov-pet-battle-health .lov-health-track {
+  width: 100%;
+  height: 16px;
+}
+
+.lov-pet-card {
+  grid-template-columns: 112px;
+  width: 132px;
+}
+
+.lov-pet-card-body {
+  display: block;
+}
+
+.lov-pet-card-image {
+  width: 74px;
+  height: 74px;
+  min-height: 0;
+  margin: 0 auto;
+}
+
+.lov-pet-card-copy {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .lov-combat-header {
+    grid-template-columns: 34px 64px minmax(180px, 1fr);
+  }
+
+  .lov-combat-header.enemy {
+    grid-template-columns: minmax(180px, 1fr) 64px 34px;
+  }
+}
+
+/* Main-scene HUD overlay: XP, gold, pearls, actions. */
+.stage-frame.shell-reset-stage.stage-mode-world,
+.stage-frame.shell-reset-stage.stage-mode-travel {
+  --stage-topbar-height: 0px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-playfield,
+.stage-frame.shell-reset-stage.stage-mode-travel .stage-playfield {
+  grid-row: 1 / 3;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+  position: absolute;
+  top: 12px;
+  left: calc(var(--stage-left-rail-size) + 12px);
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 56px minmax(220px, 1fr) auto;
+  align-items: center;
+  width: min(820px, calc(100% - var(--stage-left-rail-size) - var(--stage-right-rail-size) - 32px));
+  min-height: 50px;
+  padding: 6px 10px;
+  gap: 8px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(80, 66, 58, 0.88), rgba(47, 37, 35, 0.86));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-left,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-left {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-center,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-center {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+  position: static;
+  grid-column: 3;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 8px;
+  align-items: center;
+  justify-content: end;
+  min-width: 0;
+  transform: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-portrait,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-portrait {
+  width: 54px;
+  height: 54px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-portrait,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-portrait {
+  width: 46px;
+  height: 46px;
+  font-size: 1.25rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-level,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-level {
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  font-size: 0.95rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-badge,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-badge {
+  width: 24px;
+  height: 24px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip {
+  display: block;
+  min-width: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
+  height: 32px;
+  min-width: 0;
+  padding: 4px 8px;
+  grid-template-columns: 32px minmax(96px, 1fr) auto;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill {
+  min-width: 104px;
+  height: 34px;
+  padding: 3px 10px 3px 5px;
+  font-size: 1.05rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill img,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill img {
+  width: 28px;
+  height: 28px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-add-button,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-add-button {
+  min-width: 130px;
+  min-height: 36px;
+  padding: 6px 18px;
+  font-size: 1.02rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack,
+.stage-frame.shell-reset-stage.stage-mode-travel .stage-left-stack {
+  padding-top: 72px;
+}
+
+@media (max-width: 1180px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+  .stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+    left: 12px;
+    width: calc(100% - 24px);
+    grid-template-columns: 52px minmax(160px, 1fr);
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
+  .stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+    grid-column: 1 / -1;
+    justify-content: start;
+  }
+}
+
+/* Reference-style HUD row: portrait, XP, gold, pearls, add, leaderboard. */
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+  top: 8px;
+  grid-template-columns: 62px minmax(260px, 360px) auto;
+  width: min(1080px, calc(100% - var(--stage-left-rail-size) - var(--stage-right-rail-size) - 24px));
+  min-height: 58px;
+  padding: 6px 10px;
+  gap: 10px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(158, 146, 121, 0.46), rgba(44, 39, 42, 0.92)),
+    linear-gradient(90deg, rgba(36, 43, 68, 0.94), rgba(58, 54, 49, 0.94));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+  grid-template-columns: auto auto auto 50px;
+  gap: 10px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
+  height: 36px;
+  grid-template-columns: 34px minmax(132px, 1fr) auto;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(236, 232, 203, 0.88), rgba(81, 80, 75, 0.86)),
+    #2f3134;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill {
+  min-width: 118px;
+  height: 36px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(80, 78, 73, 0.98), rgba(38, 37, 39, 0.98)),
+    #242326;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-add-button,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-add-button {
+  min-width: 140px;
+  min-height: 38px;
+  border-radius: 19px;
+}
+
+.lov-leaderboard-button {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  color: #ffeaa6;
+  border: 3px solid rgba(252, 219, 143, 0.9);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(251, 221, 141, 0.95) 0 18%, rgba(158, 54, 45, 0.94) 19% 66%, rgba(74, 30, 35, 0.98) 67%),
+    #713338;
+  box-shadow:
+    inset 0 0 0 3px rgba(69, 34, 32, 0.58),
+    0 4px 10px rgba(0, 0, 0, 0.32);
+}
+
+.lov-leaderboard-button .ui-icon {
+  width: 27px;
+  height: 27px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.38));
+}
+
+.lov-leaderboard-button:hover,
+.lov-leaderboard-button:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+@media (max-width: 1180px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+  .stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+    grid-template-columns: 58px minmax(180px, 1fr);
+    width: calc(100% - 24px);
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
+  .stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+    grid-template-columns: auto auto auto 48px;
+  }
+}
+
+/* World screen scale and sticky scene rails. */
+.game-shell.unified-shell {
+  padding: 14px;
+}
+
+.stage-frame-wrap {
+  width: min(92vw, calc((100vh - 72px) * 16 / 9), 1760px);
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world,
+.stage-frame.shell-reset-stage.stage-mode-travel {
+  --stage-left-rail-size: 0px;
+  --stage-right-rail-size: 0px;
+  padding: 12px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-playfield,
+.stage-frame.shell-reset-stage.stage-mode-travel .stage-playfield {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main,
+.stage-frame.shell-reset-stage.stage-mode-travel .stage-main {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+  left: 112px;
+  right: 92px;
+  width: auto;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-portrait,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-portrait {
+  overflow: hidden;
+  background: #202027;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-portrait img,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: inherit;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack {
+  position: absolute;
+  top: 94px;
+  bottom: 18px;
+  left: 16px;
+  z-index: 7;
+  width: 70px;
+  padding: 0;
+  align-items: start;
+  justify-content: start;
+  pointer-events: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-feed {
+  width: 70px;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-card {
+  min-height: 70px;
+  padding: 7px;
+  border-radius: 18px;
+  place-items: center;
+  text-align: center;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-glyph {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(248, 232, 184, 0.72);
+  border-radius: 50%;
+  font-size: 1.05rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-card small {
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-right-rail,
+.stage-frame.shell-reset-stage.stage-mode-travel .stage-right-rail {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  bottom: 18px;
+  z-index: 7;
+  width: 54px;
+  padding: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  pointer-events: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-rail,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-rail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-orb,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-orb {
+  width: 54px;
+  min-height: 54px;
+  border: 2px solid rgba(229, 192, 103, 0.82);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-orb.action-settings,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-orb.action-settings {
+  margin-top: auto;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-orb.action-settings img,
+.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-orb.action-settings img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 9px;
+}
+
+@media (max-width: 1180px) {
+  .stage-frame-wrap {
+    width: calc(100vw - 24px);
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+  .stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+    left: 88px;
+    right: 76px;
+  }
+}
+
+/* XP number belongs inside the experience bar, matching the original HUD. */
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
+  position: relative;
+  grid-template-columns: 44px minmax(230px, 1fr);
+  gap: 8px;
+  min-width: 360px;
+  padding: 4px 12px;
+  overflow: hidden;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter > span:first-child,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter > span:first-child {
+  display: block;
+  color: #fff1bf;
+  font-family: Georgia, serif;
+  font-size: 1.03rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter div,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter div {
+  position: relative;
+  height: 24px;
+  overflow: hidden;
+  border: 2px solid rgba(36, 31, 29, 0.88);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(16, 15, 14, 0.96)),
+    url('/assets/generated/ui/bars/ui-energy-bar-01.jpg') center / cover no-repeat;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.62),
+    0 1px 0 rgba(255, 238, 179, 0.18);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter i,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter i {
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(125, 206, 176, 0.95), rgba(224, 209, 112, 0.96)),
+    #9ccb7d;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter strong,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter strong {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  z-index: 2;
+  padding: 0;
+  min-width: 118px;
+  color: #fff8e8;
+  text-align: right;
+  line-height: 1;
+  transform: translateY(-50%);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.82),
+    0 0 6px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+/* Original-style friend carousel spread across the bottom tray. */
+.stage-frame.shell-reset-stage.stage-mode-world {
+  --stage-bottom-height: 132px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-bottom-strip {
+  display: grid;
+  grid-template-rows: 74px 42px;
+  gap: 4px;
+  padding: 6px 10px 8px;
+  overflow: hidden;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-band {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 58px 160px;
+  gap: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(196, 167, 91, 0.78);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(83, 76, 68, 0.96), rgba(48, 43, 42, 0.96));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav {
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 6px;
+  align-content: center;
+  padding: 6px;
+  background: linear-gradient(180deg, rgba(92, 81, 65, 0.92), rgba(45, 41, 40, 0.92));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav button {
+  width: 36px;
+  min-height: 0;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff4cf;
+  font-size: 1.25rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  scrollbar-width: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 132px;
+  gap: 0;
+  min-width: max-content;
+  height: 100%;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card {
+  width: 132px;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border-color: rgba(196, 167, 91, 0.86);
+  background: linear-gradient(180deg, rgba(103, 96, 84, 0.94), rgba(61, 56, 54, 0.98));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card small {
+  color: #fff6d5;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-portrait {
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(218, 188, 103, 0.88);
+  border-radius: 11px;
+  font-size: 1rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff0cf;
+  font-size: 0.82rem;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card {
+  width: 160px;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  border-color: rgba(196, 167, 91, 0.86);
+  background: linear-gradient(180deg, rgba(103, 96, 84, 0.94), rgba(61, 56, 54, 0.98));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card span {
+  color: #fff1cf;
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card i {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  min-height: 0;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #a7decd, #699986);
+  color: #21362e;
+  font-size: 1.35rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-footer-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-footer-tabs .shell-reset-news-tab {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+
+/* Compact HUD width: begin with hero portrait and end at leaderboard. */
+.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+  left: 104px;
+  right: auto;
+  width: fit-content;
+  max-width: calc(100% - 188px);
+  grid-template-columns: 62px minmax(250px, 330px) auto;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+  grid-template-columns: auto auto auto 50px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
+  min-width: 320px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill {
+  min-width: 104px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-add-button,
+.stage-frame.shell-reset-stage.stage-mode-travel .lov-add-button {
+  min-width: 128px;
+}
+
+/* Hotspot art should be the visible place marker; the button remains only the hit target. */
+.scene-hotspot-wrap.has-hotspot-art .hotspot-art {
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  max-width: 96%;
+  max-height: 96%;
+  opacity: 1;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 14px rgba(10, 7, 5, 0.36));
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center;
+  transition:
+    filter 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.scene-hotspot-wrap.has-hotspot-art:hover .hotspot-art,
+.scene-hotspot-wrap.has-hotspot-art:focus-within .hotspot-art {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 14px rgba(163, 245, 218, 0.78))
+    drop-shadow(0 10px 20px rgba(10, 7, 5, 0.42));
+  transform: translate(-50%, -50%) scale(1.055);
+}
+
+.scene-hotspot-wrap.has-hotspot-art .scene-hotspot {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.scene-hotspot-wrap.has-hotspot-art .scene-hotspot::before {
+  inset: 6px;
+  border: 2px solid rgba(170, 248, 222, 0);
+  background: transparent;
+  box-shadow: none;
+}
+
+.scene-hotspot-wrap.has-hotspot-art:hover .scene-hotspot::before,
+.scene-hotspot-wrap.has-hotspot-art:focus-within .scene-hotspot::before {
+  border-color: rgba(170, 248, 222, 0.78);
+  box-shadow: 0 0 22px rgba(170, 248, 222, 0.28);
+  opacity: 1;
+}
+
+.scene-hotspot-wrap.has-hotspot-art .hotspot-marker {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scene-hotspot-wrap.has-hotspot-art .hotspot-core {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.lov-loading-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(90deg, rgba(73, 24, 20, 0.95), rgba(28, 13, 20, 0.72), rgba(73, 24, 20, 0.95)),
+    #3b1412;
+}
+
+.lov-loading-card {
+  width: min(900px, 92vw);
+  aspect-ratio: 1.08;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: end;
+  justify-items: center;
+  padding: 22px 34px 36px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(238, 208, 139, 0.44);
+  background:
+    linear-gradient(180deg, rgba(15, 16, 26, 0.18), rgba(59, 10, 15, 0.36)),
+    url('/assets/generated/scenes/scene-character.jpg') center / cover no-repeat,
+    #1d1720;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+}
+
+.lov-loading-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 236, 172, 0.18), transparent 28%),
+    linear-gradient(90deg, rgba(23, 31, 77, 0.44), transparent 48%, rgba(106, 22, 27, 0.44));
+  pointer-events: none;
+}
+
+.lov-loading-logo {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  color: #f9d878;
+  font-family: Georgia, serif;
+  font-size: clamp(3.4rem, 9vw, 6.5rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow:
+    0 4px 0 #4d3022,
+    0 0 18px rgba(255, 223, 126, 0.48),
+    0 12px 24px rgba(0, 0, 0, 0.58);
+}
+
+.lov-loading-bar {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 74vw);
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid rgba(224, 208, 172, 0.84);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(64, 61, 59, 0.98), rgba(24, 22, 24, 0.98));
+  box-shadow:
+    inset 0 0 0 2px rgba(25, 20, 17, 0.66),
+    0 0 0 5px rgba(176, 166, 143, 0.28);
+}
+
+.lov-loading-bar span {
+  position: relative;
+  z-index: 2;
+  color: #fff0d0;
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.72);
+}
+
+.lov-loading-bar i {
+  position: absolute;
+  inset: 6px auto 6px 6px;
+  width: 68%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7aa779, #ead887);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  animation: lov-loading-pulse 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes lov-loading-pulse {
+  from {
+    width: 42%;
+  }
+
+  to {
+    width: 82%;
+  }
+}
+

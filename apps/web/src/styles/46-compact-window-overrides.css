@@ -1,0 +1,798 @@
+/* Place hover polish: glow follows transparent PNG art instead of drawing hit-box rectangles. */
+.scene-hotspot-wrap.has-hotspot-art .scene-hotspot::before,
+.scene-hotspot-wrap.has-hotspot-art:hover .scene-hotspot::before,
+.scene-hotspot-wrap.has-hotspot-art:focus-within .scene-hotspot::before {
+  display: none !important;
+  opacity: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.scene-hotspot-wrap.has-hotspot-art:hover .hotspot-art,
+.scene-hotspot-wrap.has-hotspot-art:focus-within .hotspot-art {
+  filter:
+    drop-shadow(0 0 5px rgba(236, 255, 230, 0.98))
+    drop-shadow(0 0 14px rgba(170, 248, 222, 0.82))
+    drop-shadow(0 10px 18px rgba(10, 7, 5, 0.44));
+}
+
+@media (max-width: 980px), (max-height: 680px) {
+  .lov-arena-shell {
+    --window-height: min(450px, calc(100vh - 56px));
+  }
+
+  .lov-arena-shell .lov-window-header {
+    min-height: 38px;
+  }
+
+  .lov-arena-shell .lov-window-body {
+    grid-template-rows: minmax(0, 1fr) 32px;
+    gap: 5px;
+    padding: 12px 10px 6px;
+  }
+
+  .lov-arena-shell .lov-window-footer {
+    min-height: 40px;
+    padding: 3px 0 5px;
+  }
+
+  .lov-arena-shell .lov-close-button {
+    min-height: 30px;
+  }
+
+  .lov-arena-stats {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .lov-opponent-card {
+    min-height: 42px;
+    padding: 4px 8px;
+  }
+
+  .lov-arena-grid {
+    grid-auto-rows: 30px;
+    gap: 4px;
+  }
+
+  .lov-arena-stat {
+    min-height: 30px;
+    padding: 3px 7px;
+  }
+
+  .lov-arena-primary-actions {
+    gap: 5px;
+  }
+
+  .lov-arena-primary-actions > button,
+  .lov-arena-toggles > button {
+    min-height: 30px;
+  }
+
+  .lov-arena-toggles {
+    gap: 6px;
+  }
+}
+
+/* Compact hero info correction: keep the full footer visible and scale the contents with the window. */
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+  inset: clamp(10px, 2.2vh, 22px) clamp(58px, 8vw, 150px);
+  z-index: 38;
+}
+
+.lov-hero-info-shell {
+  --window-width: min(860px, calc(100vw - 116px));
+  --window-height: min(560px, calc(100vh - 88px));
+}
+
+.lov-hero-info-shell .lov-window-header {
+  min-height: 46px;
+  padding: 6px 12px 6px 16px;
+}
+
+.lov-hero-info-shell .lov-window-header h2 {
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.lov-hero-info-shell .lov-window-close {
+  width: 38px;
+  min-height: 38px;
+}
+
+.lov-hero-info-shell .lov-window-body {
+  min-height: 0;
+  display: grid;
+  overflow: hidden;
+}
+
+.lov-hero-info-shell .lov-window-footer {
+  min-height: 48px;
+  padding: 5px 0 7px;
+}
+
+.lov-hero-info-shell .lov-close-button {
+  min-width: 180px;
+  min-height: 36px;
+  font-size: 1.1rem;
+}
+
+.lov-hero-info-layout {
+  grid-template-columns: minmax(300px, 0.46fr) minmax(360px, 0.54fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.lov-profile-screen-window {
+  gap: 7px;
+  padding: 10px;
+}
+
+.lov-profile-screen-window .lov-profile-header {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-profile-screen-window .lov-profile-header img {
+  width: 56px;
+  height: 56px;
+  object-position: center top;
+}
+
+.lov-profile-screen-window .lov-profile-header strong {
+  font-size: 1.38rem;
+}
+
+.lov-profile-screen-window .lov-profile-header span {
+  font-size: 1rem;
+}
+
+.lov-profile-screen-window .lov-profile-stats {
+  padding-left: 52px;
+  gap: 7px 9px;
+}
+
+.lov-profile-screen-window .lov-profile-stat {
+  min-height: 42px;
+  padding: 5px 12px;
+}
+
+.lov-profile-screen-window .lov-profile-stat::before {
+  left: -50px;
+  width: 34px;
+  height: 34px;
+  font-size: 1.34rem;
+}
+
+.lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(1.12rem, 1.8vw, 1.5rem);
+}
+
+.lov-profile-screen-window .lov-quick-slots {
+  grid-template-columns: repeat(4, 42px);
+  gap: 7px;
+}
+
+.lov-profile-screen-window .lov-quick-slot {
+  width: 42px;
+  height: 42px;
+}
+
+.lov-profile-screen-window .lov-motto-box {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 1rem;
+}
+
+.lov-profile-screen-window .lov-motto-box button {
+  width: 32px;
+  min-height: 32px;
+}
+
+.lov-profile-screen-window .lov-reward-gallery {
+  gap: 5px;
+}
+
+.lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 1rem;
+}
+
+.lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 5px;
+}
+
+.lov-profile-screen-window .lov-profile-reward {
+  min-height: 40px;
+  padding: 4px;
+  font-size: 0.62rem;
+}
+
+.lov-hero-info-side .lov-paperdoll {
+  gap: 6px;
+}
+
+.lov-hero-info-side .lov-paperdoll-header {
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.lov-hero-info-side .lov-paperdoll-header strong {
+  font-size: 1.38rem;
+}
+
+.lov-hero-info-side .lov-paperdoll-header span {
+  font-size: 1rem;
+}
+
+.lov-hero-info-side .lov-paperdoll-stage {
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  gap: 5px;
+}
+
+.lov-hero-info-side .lov-paperdoll-column {
+  gap: 5px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot {
+  min-height: 44px;
+  padding: 2px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+  width: 36px;
+  height: 36px;
+}
+
+.lov-hero-info-side .lov-paperdoll-hero {
+  width: min(86%, 240px);
+  height: 90%;
+  max-height: none;
+}
+
+.lov-hero-info-side .lov-paperdoll-pet {
+  width: 28%;
+  right: -4%;
+}
+
+.lov-hero-info-side .lov-wing-badge {
+  right: 10px;
+  top: 10px;
+  font-size: 2rem;
+}
+
+.lov-hero-info-side .lov-prestige-bar {
+  width: min(100%, 260px);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 1100px), (max-height: 700px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+    inset: 8px 14px;
+  }
+
+  .lov-hero-info-shell {
+    --window-width: min(820px, calc(100vw - 28px));
+    --window-height: min(520px, calc(100vh - 42px));
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(280px, 0.46fr) minmax(320px, 0.54fr);
+    gap: 8px;
+    padding: 8px;
+  }
+}
+
+/* Keep paired hero-info stat icons clear of the neighboring value plates. */
+.lov-profile-screen-window .lov-profile-stats {
+  column-gap: 42px;
+  row-gap: 6px;
+}
+
+.lov-profile-screen-window .lov-profile-stat {
+  min-height: 38px;
+  padding-inline: 9px;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-strength::before,
+.lov-profile-screen-window .lov-profile-stat.stat-intuition::before {
+  left: -46px;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-agility::before,
+.lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+  left: -38px;
+}
+
+.lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(1rem, 1.55vw, 1.32rem);
+}
+
+/* Compact arena duel popup: player-like opponent card with visible actions. */
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+  top: calc(-1 * var(--stage-topbar-height) + 20px);
+  bottom: calc(-1 * var(--stage-bottom-height) + 16px);
+  left: clamp(70px, 9vw, 160px);
+  right: clamp(70px, 9vw, 160px);
+  z-index: 38;
+}
+
+.lov-arena-shell {
+  --window-width: min(760px, calc(100vw - 140px));
+  --window-height: min(560px, calc(100vh - 52px));
+}
+
+.lov-arena-shell .lov-window-header {
+  min-height: 42px;
+  padding: 0 10px;
+}
+
+.lov-arena-shell .lov-window-header h2 {
+  min-width: min(320px, 48vw);
+  margin-bottom: -18px;
+  padding: 6px 26px 7px;
+  font-size: clamp(1.18rem, 1.9vw, 1.55rem);
+}
+
+.lov-arena-shell .lov-window-close {
+  width: 38px;
+  min-height: 38px;
+}
+
+.lov-arena-shell .lov-window-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 38px;
+  gap: 8px;
+  padding: 16px 14px 8px;
+  overflow: hidden;
+}
+
+.lov-arena-shell .lov-window-footer {
+  min-height: 46px;
+  padding: 4px 0 7px;
+}
+
+.lov-arena-shell .lov-close-button {
+  min-width: 172px;
+  min-height: 34px;
+  font-size: 1.05rem;
+}
+
+.lov-arena-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.43fr) minmax(330px, 0.57fr);
+  gap: 10px;
+  min-height: 0;
+  height: 100%;
+}
+
+.lov-arena-stats,
+.lov-arena-preview {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lov-arena-stats {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  gap: 7px;
+  padding: 10px;
+}
+
+.lov-opponent-card {
+  min-height: 56px;
+  padding: 7px 10px;
+  border-radius: 10px;
+}
+
+.lov-opponent-card strong {
+  font-size: clamp(1.04rem, 1.7vw, 1.35rem);
+}
+
+.lov-opponent-card span {
+  font-size: clamp(0.86rem, 1.25vw, 1.05rem);
+}
+
+.lov-arena-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 38px;
+  gap: 6px;
+}
+
+.lov-arena-stat {
+  min-height: 38px;
+  grid-template-columns: minmax(74px, 1fr) auto;
+  gap: 8px;
+  padding: 5px 9px;
+  border-radius: 10px;
+}
+
+.lov-arena-stat:nth-child(1),
+.lov-arena-stat:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+.lov-arena-stat span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #3b2a20;
+  font-size: clamp(0.72rem, 1.05vw, 0.9rem);
+  white-space: nowrap;
+}
+
+.lov-arena-stat strong {
+  min-width: 34px;
+  font-size: clamp(1rem, 1.55vw, 1.28rem);
+  text-align: right;
+}
+
+.lov-arena-primary-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  padding: 0;
+  position: static;
+}
+
+.lov-arena-primary-actions > button {
+  min-height: 36px;
+  border-radius: 10px;
+  font-size: clamp(0.86rem, 1.22vw, 1rem);
+}
+
+.lov-arena-preview {
+  display: grid;
+  place-items: end center;
+  border-radius: 14px;
+}
+
+.lov-arena-preview img {
+  width: auto;
+  max-width: 86%;
+  max-height: 94%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.lov-arena-toggles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+}
+
+.lov-arena-toggles > button {
+  min-height: 38px;
+  font-size: clamp(0.78rem, 1.05vw, 0.92rem);
+}
+
+@media (max-width: 980px), (max-height: 680px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+    inset: 8px 16px;
+  }
+
+  .lov-arena-shell {
+    --window-width: min(720px, calc(100vw - 32px));
+    --window-height: min(520px, calc(100vh - 28px));
+  }
+
+  .lov-arena-layout {
+    grid-template-columns: minmax(260px, 0.46fr) minmax(280px, 0.54fr);
+    gap: 8px;
+  }
+
+  .lov-arena-grid {
+    grid-auto-rows: 34px;
+    gap: 5px;
+  }
+
+  .lov-arena-stat {
+    min-height: 34px;
+    padding: 4px 8px;
+  }
+
+  .lov-arena-primary-actions > button,
+  .lov-arena-toggles > button {
+    min-height: 32px;
+  }
+}
+
+/* Final arena/info polish against the original-game references. */
+.lov-arena-stats {
+  grid-template-rows: auto auto auto !important;
+  align-content: start;
+}
+
+.lov-arena-grid {
+  grid-row: 2;
+}
+
+.lov-arena-primary-actions {
+  grid-row: 3 !important;
+  align-self: start !important;
+  margin: 0 !important;
+  z-index: 1;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+  inset: clamp(8px, 1.8vh, 18px) clamp(18px, 3vw, 44px);
+}
+
+.lov-hero-info-shell {
+  --window-width: min(1200px, calc(100vw - 40px));
+  --window-height: min(740px, calc(100vh - 30px));
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(62, 43, 40, 0.98), rgba(28, 27, 30, 0.98)),
+    #221d1f;
+  box-shadow:
+    0 0 0 2px rgba(210, 181, 105, 0.82),
+    0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+.lov-hero-info-shell .lov-window-header {
+  min-height: 78px;
+  padding: 12px 20px 10px 24px;
+  border-bottom: 1px solid rgba(190, 151, 78, 0.72);
+  background: linear-gradient(180deg, rgba(61, 43, 40, 0.98), rgba(45, 34, 34, 0.98));
+}
+
+.lov-hero-info-shell .lov-window-header h2 {
+  justify-self: start;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: #f5ecd2;
+  font-size: clamp(2rem, 3vw, 3rem);
+  text-align: left;
+}
+
+.lov-hero-info-shell .lov-window-close {
+  width: 58px;
+  min-height: 58px;
+  border-radius: 50%;
+}
+
+.lov-hero-info-shell .lov-window-body {
+  padding: 16px;
+  background: #241e20;
+}
+
+.lov-hero-info-shell .lov-window-footer {
+  min-height: 70px;
+  padding: 10px 0 12px;
+  background: linear-gradient(180deg, #252225, #18181b);
+}
+
+.lov-hero-info-shell .lov-close-button {
+  min-width: 280px;
+  min-height: 48px;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+}
+
+.lov-hero-info-layout {
+  grid-template-columns: minmax(430px, 0.46fr) minmax(500px, 0.54fr);
+  gap: 14px;
+  padding: 0;
+}
+
+.lov-hero-info-main,
+.lov-hero-info-side {
+  border-radius: 18px;
+  background: rgba(29, 25, 27, 0.92);
+}
+
+.lov-profile-screen-window {
+  padding: 34px;
+  gap: 14px;
+}
+
+.lov-profile-screen-window .lov-profile-header {
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.lov-profile-screen-window .lov-profile-header img {
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
+}
+
+.lov-profile-screen-window .lov-profile-header strong {
+  font-size: clamp(1.8rem, 2.8vw, 2.55rem);
+}
+
+.lov-profile-screen-window .lov-profile-header span {
+  font-size: clamp(1.18rem, 1.8vw, 1.52rem);
+}
+
+.lov-profile-screen-window .lov-profile-stats {
+  padding-left: 72px;
+  column-gap: 56px;
+  row-gap: 10px;
+}
+
+.lov-profile-screen-window .lov-profile-stat {
+  min-height: 56px;
+  padding: 8px 16px;
+  border-radius: 18px;
+}
+
+.lov-profile-screen-window .lov-profile-stat::before {
+  left: -68px;
+  width: 48px;
+  height: 48px;
+  font-size: 2rem;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-agility::before,
+.lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+  left: -52px;
+}
+
+.lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(1.55rem, 2.3vw, 2.05rem);
+}
+
+.lov-profile-screen-window .lov-quick-slots {
+  grid-template-columns: repeat(4, 64px);
+  gap: 10px;
+}
+
+.lov-profile-screen-window .lov-quick-slot {
+  width: 64px;
+  height: 64px;
+}
+
+.lov-profile-screen-window .lov-motto-box {
+  min-height: 76px;
+  padding: 14px 18px;
+  font-size: 1.45rem;
+}
+
+.lov-profile-screen-window .lov-motto-box button {
+  width: 48px;
+  min-height: 48px;
+}
+
+.lov-profile-screen-window .lov-reward-gallery {
+  gap: 12px;
+}
+
+.lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 1.55rem;
+}
+
+.lov-profile-screen-window .lov-reward-gallery-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lov-profile-screen-window .lov-profile-reward {
+  min-height: 74px;
+  padding: 8px;
+  border-radius: 14px;
+  font-size: 0.94rem;
+}
+
+.lov-hero-info-side {
+  padding: 20px;
+}
+
+.lov-hero-info-side .lov-paperdoll {
+  gap: 12px;
+}
+
+.lov-hero-info-side .lov-paperdoll-header {
+  padding: 12px 18px;
+  border-radius: 16px;
+}
+
+.lov-hero-info-side .lov-paperdoll-header strong {
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+}
+
+.lov-hero-info-side .lov-paperdoll-header span {
+  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+}
+
+.lov-hero-info-side .lov-paperdoll-stage {
+  grid-template-columns: 72px minmax(0, 1fr) 72px;
+  gap: 10px;
+}
+
+.lov-hero-info-side .lov-paperdoll-column {
+  gap: 10px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot {
+  min-height: 74px;
+  border-radius: 12px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+  width: 58px;
+  height: 58px;
+}
+
+.lov-hero-info-side .lov-paperdoll-center {
+  border-radius: 12px;
+}
+
+.lov-hero-info-side .lov-paperdoll-hero {
+  width: min(86%, 340px);
+  height: 92%;
+}
+
+.lov-hero-info-side .lov-paperdoll-pet {
+  width: min(24%, 118px);
+  right: -2%;
+}
+
+.lov-hero-info-side .lov-prestige-bar {
+  width: min(100%, 410px);
+  min-height: 54px;
+  font-size: 1.3rem;
+}
+
+@media (max-width: 1100px), (max-height: 700px) {
+  .lov-hero-info-shell {
+    --window-width: min(980px, calc(100vw - 28px));
+    --window-height: min(620px, calc(100vh - 22px));
+  }
+
+  .lov-hero-info-shell .lov-window-header {
+    min-height: 58px;
+  }
+
+  .lov-hero-info-shell .lov-window-body {
+    padding: 10px;
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(330px, 0.46fr) minmax(380px, 0.54fr);
+    gap: 10px;
+  }
+
+  .lov-profile-screen-window {
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .lov-profile-screen-window .lov-profile-stats {
+    padding-left: 52px;
+    column-gap: 34px;
+    row-gap: 7px;
+  }
+
+  .lov-profile-screen-window .lov-profile-stat {
+    min-height: 40px;
+  }
+
+  .lov-profile-screen-window .lov-profile-stat::before {
+    left: -50px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.4rem;
+  }
+
+  .lov-profile-screen-window .lov-profile-stat.stat-agility::before,
+  .lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+    left: -34px;
+  }
+
+  .lov-hero-info-side .lov-paperdoll-stage {
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    gap: 6px;
+  }
+
+  .lov-hero-info-side .lov-paperdoll-slot {
+    min-height: 48px;
+  }
+}
+

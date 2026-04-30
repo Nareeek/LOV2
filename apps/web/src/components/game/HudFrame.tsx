@@ -1,5 +1,6 @@
 import type { Character } from '@lov2/shared';
 import type { GameIntent } from '../../game/types.js';
+import { assetPath } from './assets.js';
 import { Meter, UiIcon } from './ui.js';
 
 export function HudFrame({
@@ -23,7 +24,7 @@ export function HudFrame({
             aria-label="Открыть окно героя"
             onClick={() => onIntent({ type: 'openSheet', tab: 'character' })}
           >
-            {character.name.slice(0, 1)}
+            <img src="/assets/generated/characters/character-face-portrait.jpg" alt="" />
           </button>
           <span className="shell-reset-level" data-testid="level-badge">
             {character.level}
@@ -54,11 +55,11 @@ export function HudFrame({
 
       <section className="shell-reset-resource-strip lov-resource-strip" data-testid="hud-resource-strip">
         <div className="lov-resource-pill" data-testid="hud-gold">
-          <i>◌</i>
+          <img src={assetPath('icon-gold-coin')} alt="" />
           <span>{character.gold}</span>
         </div>
         <div className="lov-resource-pill" data-testid="hud-gems">
-          <i>◍</i>
+          <img src={assetPath('icon-moon-gem')} alt="" />
           <span>{character.gems}</span>
         </div>
         <button
@@ -67,6 +68,16 @@ export function HudFrame({
           onClick={() => onIntent({ type: 'openWindow', windowId: 'payments' })}
         >
           Добавить
+        </button>
+        <button
+          type="button"
+          className="lov-leaderboard-button"
+          data-testid="action-leaderboard"
+          aria-label="Рейтинг"
+          title="Рейтинг"
+          onClick={() => onIntent({ type: 'openWindow', windowId: 'leaderboard' })}
+        >
+          <UiIcon name="trophy" />
         </button>
       </section>
     </header>

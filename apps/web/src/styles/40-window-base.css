@@ -1,0 +1,1105 @@
+/* Final hero info and large window alignment pass */
+.shell-reset-window.size-hero {
+  --window-width: 1220px;
+  --window-height: 780px;
+}
+
+.lov-hero-info-shell,
+.lov-store-shell,
+.lov-forge-shell,
+.lov-tavern-shell {
+  --window-width: 1220px;
+  --window-height: 780px;
+}
+
+.stage-frame.shell-reset-stage {
+  --stage-topbar-height: 110px;
+}
+
+.stage-left-stack {
+  padding-top: 42px;
+}
+
+.lov-topbar {
+  --lov-topbar-resource-lane: 520px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 112px minmax(320px, 1fr);
+  align-items: center;
+  justify-content: start;
+  gap: 18px;
+  padding: 12px calc(var(--lov-topbar-resource-lane) + 20px) 10px 20px;
+}
+
+.lov-topbar-left {
+  display: block;
+}
+
+.lov-topbar-center {
+  min-width: 0;
+}
+
+.lov-topbar-portrait {
+  width: 112px;
+  height: 88px;
+}
+
+.lov-topbar-badge {
+  left: 18px;
+  bottom: -18px;
+}
+
+.lov-xp-strip {
+  min-width: 0;
+  padding-left: 6px;
+}
+
+.lov-xp-strip .meter {
+  grid-template-columns: 0 minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.lov-xp-strip .meter > span:first-child {
+  display: none;
+}
+
+.lov-xp-strip .meter div {
+  height: 24px;
+}
+
+.lov-resource-strip {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  min-width: 0;
+  justify-self: end;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding-left: 0;
+  gap: 10px;
+  transform: translateY(-50%);
+}
+
+.lov-resource-pill {
+  min-width: 108px;
+  justify-content: center;
+}
+
+.lov-add-button {
+  min-width: 210px;
+}
+
+.lov-bag-panel .lov-inventory-grid,
+.lov-bag-screen .lov-inventory-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.lov-grid-item .item-chip,
+.lov-merchant-item .item-chip {
+  width: 100%;
+}
+
+.lov-grid-item .item-chip {
+  justify-content: center;
+}
+
+.lov-merchant-item .item-chip {
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lov-grid-item .item-chip > span:last-child {
+  display: none;
+}
+
+.lov-grid-item .item-chip img,
+.lov-merchant-item .item-chip img {
+  width: 46px;
+  height: 46px;
+}
+
+.lov-store-layout {
+  grid-template-columns: minmax(420px, 0.92fr) minmax(520px, 1.08fr);
+  gap: 18px;
+  padding: 16px 18px 18px;
+}
+
+.lov-store-bag-panel::after {
+  font-size: 0.7rem;
+}
+
+.lov-merchant-panel {
+  grid-template-rows: auto minmax(188px, 1fr) auto;
+  gap: 12px;
+}
+
+.lov-store-scene-card {
+  grid-template-columns: minmax(0, 1.02fr) 248px;
+  gap: 12px;
+  min-height: 184px;
+}
+
+.lov-merchant-illustration,
+.lov-forge-illustration {
+  min-height: 160px;
+  max-height: 160px;
+}
+
+.lov-store-hover {
+  gap: 8px;
+}
+
+.lov-store-hover p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.2;
+}
+
+.lov-store-stock-panel {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.lov-store-stock-panel > strong {
+  font-size: 1rem;
+}
+
+.lov-merchant-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(116px, 1fr);
+  gap: 10px;
+  min-height: 0;
+  align-content: start;
+}
+
+.lov-merchant-item {
+  min-height: 116px;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 8px;
+  padding: 10px;
+  text-align: left;
+}
+
+.lov-merchant-item .item-chip > span:last-child {
+  display: block;
+  color: #f6ead3;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.lov-merchant-item-price {
+  color: #f3ddb0;
+  font-family: Georgia, serif;
+  font-size: 0.88rem;
+}
+
+.lov-merchant-item-action {
+  padding: 4px 8px;
+  border: 1px solid rgba(160, 200, 183, 0.4);
+  border-radius: 999px;
+  background: rgba(28, 45, 43, 0.78);
+  color: #d7f5ea;
+  font-size: 0.72rem;
+}
+
+.lov-forge-panel {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  gap: 12px;
+}
+
+.lov-forge-layout {
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.1fr);
+  gap: 14px;
+}
+
+.lov-forge-bag-panel {
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.lov-forge-bag-panel h3 {
+  margin-bottom: 0;
+}
+
+.lov-forge-bag-hint {
+  margin: 0;
+  color: rgba(246, 234, 211, 0.82);
+  font-size: 0.82rem;
+  line-height: 1.16;
+  text-align: center;
+}
+
+.lov-forge-bag-panel .lov-inventory-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.lov-forge-bag-panel .lov-grid-item,
+.lov-forge-bag-panel .lov-grid-empty {
+  min-height: 60px;
+}
+
+.lov-forge-bag-panel .lov-grid-item.active {
+  border-color: rgba(190, 244, 219, 0.96);
+  background: linear-gradient(180deg, rgba(145, 210, 185, 0.62), rgba(46, 67, 62, 0.98));
+  box-shadow: 0 0 0 2px rgba(190, 244, 219, 0.16) inset;
+}
+
+.lov-forge-workbench {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(170px, 0.78fr) minmax(240px, 1.22fr);
+  gap: 12px;
+}
+
+.lov-forge-workbench .lov-forge-illustration {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+}
+
+.lov-forge-upgrade-card {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(104px, 0.7fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-anvil-slot {
+  min-height: 0;
+  padding: 12px;
+}
+
+.lov-anvil-slot .item-chip {
+  min-width: 0;
+  max-width: 100%;
+  justify-content: center;
+}
+
+.lov-anvil-slot .item-chip img {
+  width: 54px;
+  height: 54px;
+}
+
+.lov-anvil-slot .item-chip > span:last-child {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lov-forge-instruction {
+  min-height: 0;
+  gap: 8px;
+  overflow: hidden;
+  align-content: start;
+  text-align: left;
+}
+
+.lov-forge-instruction strong {
+  margin-bottom: 2px;
+  font-size: 1.08rem;
+  line-height: 1.1;
+}
+
+.lov-forge-instruction > span {
+  color: rgba(246, 234, 211, 0.9);
+  font-size: 0.86rem;
+  line-height: 1.14;
+}
+
+.lov-forge-instruction .lov-item-stat-tags {
+  gap: 6px;
+  overflow: hidden;
+}
+
+.lov-forge-instruction .lov-item-stat-tags span {
+  padding: 4px 8px;
+  font-size: 0.76rem;
+}
+
+.lov-forge-upgrade-button {
+  width: min(360px, 100%);
+  justify-self: center;
+}
+
+.lov-forge-shell button:not(.lov-close-button) {
+  min-height: 54px;
+}
+
+.lov-payment-shell {
+  --window-width: 920px;
+  --window-height: 610px;
+}
+
+.lov-payment-layout {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 20px 20px;
+}
+
+.lov-payment-hero-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px solid rgba(194, 156, 92, 0.62);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(78, 54, 43, 0.92), rgba(47, 34, 31, 0.96));
+}
+
+.lov-payment-hero-card strong {
+  color: var(--lov-parchment);
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.lov-payment-hero-card p {
+  margin: 0;
+  color: rgba(245, 232, 208, 0.88);
+  font-size: 1rem;
+  line-height: 1.24;
+}
+
+.lov-payment-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lov-payment-card {
+  min-height: 0;
+  display: grid;
+  align-content: space-between;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(194, 156, 92, 0.62);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(74, 67, 63, 0.92), rgba(38, 34, 37, 0.96));
+}
+
+.lov-payment-card.tone-gold {
+  background:
+    radial-gradient(circle at 75% 28%, rgba(255, 214, 125, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(109, 79, 48, 0.96), rgba(49, 35, 28, 0.98));
+}
+
+.lov-payment-card.tone-pearl {
+  background:
+    radial-gradient(circle at 78% 26%, rgba(181, 211, 255, 0.2), transparent 30%),
+    linear-gradient(180deg, rgba(78, 72, 110, 0.96), rgba(36, 33, 54, 0.98));
+}
+
+.lov-payment-card-top {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lov-payment-card-top strong {
+  color: var(--lov-parchment);
+  font-family: Georgia, serif;
+  font-size: 1.42rem;
+  font-weight: 500;
+  line-height: 1.08;
+}
+
+.lov-payment-card-top span {
+  flex: 0 0 auto;
+  min-width: 74px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid rgba(245, 219, 166, 0.82);
+  border-radius: 999px;
+  background: rgba(26, 24, 31, 0.76);
+  color: #f4e7c8;
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+}
+
+.lov-payment-card p {
+  margin: 0;
+  color: rgba(246, 234, 211, 0.9);
+  font-size: 0.94rem;
+  line-height: 1.24;
+}
+
+.lov-payment-select {
+  min-height: 50px;
+  border-radius: 14px;
+  opacity: 0.8;
+}
+
+.lov-leaderboard-shell {
+  --window-width: 980px;
+  --window-height: 610px;
+}
+
+.lov-leaderboard-shell .lov-window-body {
+  padding: 18px 20px 20px;
+}
+
+.lov-leaderboard-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lov-leaderboard-card {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(194, 156, 92, 0.62);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 80% 14%, rgba(248, 210, 122, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(84, 61, 49, 0.94), rgba(40, 31, 34, 0.98));
+}
+
+.lov-leaderboard-card-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lov-leaderboard-card-header strong {
+  color: var(--lov-parchment);
+  font-family: Georgia, serif;
+  font-size: 1.34rem;
+  font-weight: 500;
+  line-height: 1.08;
+}
+
+.lov-leaderboard-card-header span {
+  flex: 0 0 auto;
+  min-width: 64px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid rgba(245, 219, 166, 0.82);
+  border-radius: 999px;
+  background: rgba(28, 24, 30, 0.78);
+  color: #f5e8cb;
+  font-family: Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.lov-leaderboard-list {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.lov-leaderboard-entry {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(206, 173, 117, 0.54);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(244, 231, 199, 0.98), rgba(228, 204, 155, 0.96));
+  color: #5b3327;
+}
+
+.lov-leaderboard-entry b,
+.lov-leaderboard-entry strong,
+.lov-leaderboard-entry span {
+  min-width: 0;
+}
+
+.lov-leaderboard-entry b {
+  font-family: Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.lov-leaderboard-entry strong {
+  font-size: 1rem;
+  line-height: 1.14;
+}
+
+.lov-leaderboard-entry span {
+  font-family: Georgia, serif;
+  font-size: 1.06rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lov-leaderboard-entry.is-hero {
+  border-color: rgba(168, 217, 188, 0.9);
+  background:
+    radial-gradient(circle at 82% 22%, rgba(183, 243, 226, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(223, 237, 219, 0.98), rgba(184, 222, 205, 0.96));
+}
+
+@media (max-width: 1200px) {
+  .lov-leaderboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .lov-leaderboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lov-tavern-layout {
+  grid-template-columns: minmax(430px, 0.94fr) minmax(480px, 1.06fr);
+}
+
+.lov-tavern-right {
+  gap: 8px;
+  padding: 16px 18px;
+}
+
+.lov-energy-block {
+  gap: 6px;
+}
+
+.lov-energy-block .meter {
+  position: relative;
+  grid-template-columns: 0 minmax(0, 1fr) 0;
+  gap: 0;
+}
+
+.lov-energy-block .meter div {
+  height: 38px;
+}
+
+.lov-energy-block .meter strong {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.22rem;
+}
+
+.lov-energy-block p,
+.lov-tavern-copy p {
+  font-size: 0.88rem;
+  line-height: 1.08;
+}
+
+.lov-energy-buy-row {
+  gap: 8px;
+}
+
+.lov-energy-button {
+  min-height: 56px;
+  gap: 4px;
+}
+
+.lov-energy-button strong {
+  font-size: 1.24rem;
+}
+
+.lov-energy-button span {
+  font-size: 0.78rem;
+  line-height: 1.05;
+}
+
+.lov-tavern-copy {
+  gap: 2px;
+}
+
+.lov-quest-stack {
+  grid-auto-rows: minmax(64px, 1fr);
+  gap: 8px;
+}
+
+.lov-quest-row-title {
+  padding: 7px 10px;
+}
+
+.lov-quest-row-title strong {
+  font-size: 0.96rem;
+}
+
+.lov-quest-row-title span,
+.lov-quest-row-reward {
+  font-size: 0.8rem;
+}
+
+.lov-quest-row-reward {
+  padding: 5px 8px;
+}
+
+.lov-tavern-preview-card {
+  max-width: 280px;
+  padding: 8px 10px;
+}
+
+.lov-tavern-preview-card h3 {
+  font-size: 1rem;
+}
+
+.lov-tavern-preview-card p {
+  -webkit-line-clamp: 3;
+  font-size: 0.84rem;
+}
+
+.lov-travel-story,
+.lov-travel-bottom .lov-skip-button:disabled {
+  display: none;
+}
+
+.lov-hero-info-shell .lov-window-body {
+  display: grid;
+  overflow: hidden;
+}
+
+.lov-hero-info-layout {
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 332px;
+  gap: 14px;
+  padding: 12px;
+}
+
+.lov-hero-info-main,
+.lov-hero-info-side,
+.lov-profile-screen-window {
+  min-height: 0;
+}
+
+.lov-hero-info-main {
+  overflow: hidden;
+}
+
+.lov-profile-screen-window {
+  height: 100%;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.lov-profile-screen-window .lov-profile-header img {
+  width: 72px;
+  height: 72px;
+}
+
+.lov-profile-screen-window .lov-profile-header strong {
+  font-size: 1.82rem;
+}
+
+.lov-profile-screen-window .lov-profile-header span {
+  font-size: 1.28rem;
+}
+
+.lov-profile-screen-window .lov-profile-stat {
+  min-height: 58px;
+  padding: 9px 12px;
+}
+
+.lov-profile-screen-window .lov-profile-stat span {
+  font-size: 1.02rem;
+}
+
+.lov-profile-screen-window .lov-profile-stat strong {
+  font-size: 1.46rem;
+}
+
+.lov-profile-screen-window .lov-motto-box {
+  min-height: 70px;
+  padding: 12px 14px;
+  font-size: 1.18rem;
+}
+
+.lov-profile-screen-window .lov-reward-gallery {
+  gap: 8px;
+  min-height: 0;
+}
+
+.lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 1.3rem;
+}
+
+.lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 8px;
+}
+
+.lov-profile-screen-window .lov-profile-reward {
+  min-height: 66px;
+  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  font-size: 0.76rem;
+  line-height: 1.12;
+  text-align: center;
+}
+
+.lov-hero-info-side {
+  overflow: hidden;
+}
+
+.lov-hero-info-side .lov-paperdoll-stage {
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  gap: 5px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot {
+  min-height: 52px;
+  padding: 2px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+  width: 38px;
+  height: 38px;
+}
+
+.lov-hero-info-side .lov-paperdoll-hero {
+  width: min(78%, 190px);
+  height: 84%;
+  max-height: 218px;
+  bottom: 5px;
+}
+
+.lov-hero-info-side .lov-paperdoll-pet {
+  width: min(15%, 58px);
+  right: -5%;
+}
+
+.lov-hero-info-side .lov-paperdoll-quickbar {
+  grid-template-columns: repeat(7, 34px);
+  gap: 4px;
+}
+
+.lov-hero-info-side .lov-paperdoll-quickbar .lov-quick-slot {
+  width: 34px;
+  height: 34px;
+}
+
+.lov-hero-info-side .lov-prestige-bar {
+  min-width: 0;
+  width: 100%;
+  font-size: 1.18rem;
+}
+
+@media (max-width: 1200px) {
+  .shell-reset-window.size-hero,
+  .lov-hero-info-shell,
+  .lov-store-shell,
+  .lov-forge-shell,
+  .lov-tavern-shell {
+    --window-width: 1120px;
+    --window-height: 740px;
+  }
+
+  .lov-topbar {
+    --lov-topbar-resource-lane: 456px;
+    grid-template-columns: 112px minmax(240px, 1fr);
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(0, 1fr) 286px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .shell-reset-window.size-hero,
+  .lov-hero-info-shell,
+  .lov-store-shell,
+  .lov-forge-shell,
+  .lov-tavern-shell {
+    --window-width: 960px;
+    --window-height: 690px;
+  }
+
+  .lov-topbar {
+    --lov-topbar-resource-lane: 0px;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 10px 14px;
+    padding-right: 20px;
+  }
+
+  .lov-topbar-left {
+    grid-column: 1;
+  }
+
+  .lov-topbar-center {
+    grid-column: 2;
+  }
+
+  .lov-resource-strip {
+    position: static;
+    grid-column: 2;
+    justify-self: center;
+    flex-wrap: wrap;
+    padding-left: 0;
+    transform: none;
+  }
+
+  .lov-payment-layout {
+    gap: 12px;
+    padding: 12px 14px 14px;
+  }
+
+  .lov-payment-grid {
+    gap: 10px;
+  }
+
+  .lov-payment-card {
+    padding: 14px;
+  }
+
+  .lov-payment-card-top strong {
+    font-size: 1.12rem;
+  }
+
+  .lov-payment-card p {
+    font-size: 0.82rem;
+  }
+
+  .lov-forge-layout {
+    grid-template-columns: minmax(310px, 0.82fr) minmax(0, 1.18fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .lov-forge-bag-panel,
+  .lov-forge-panel {
+    padding: 10px;
+  }
+
+  .lov-forge-bag-hint {
+    font-size: 0.74rem;
+  }
+
+  .lov-forge-bag-panel .lov-inventory-grid {
+    gap: 6px;
+  }
+
+  .lov-forge-bag-panel .lov-grid-item,
+  .lov-forge-bag-panel .lov-grid-empty {
+    min-height: 50px;
+  }
+
+  .lov-forge-workbench {
+    grid-template-columns: minmax(130px, 0.62fr) minmax(210px, 1.38fr);
+    gap: 8px;
+  }
+
+  .lov-forge-upgrade-card {
+    grid-template-rows: minmax(88px, 0.62fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .lov-forge-instruction {
+    padding: 10px;
+  }
+
+  .lov-forge-instruction strong {
+    font-size: 0.98rem;
+  }
+
+  .lov-forge-instruction > span,
+  .lov-forge-instruction .lov-item-stat-tags span {
+    font-size: 0.72rem;
+  }
+
+  .lov-forge-shell button:not(.lov-close-button) {
+    min-height: 44px;
+  }
+
+  .lov-arena-layout {
+    height: auto;
+    align-content: start;
+    gap: 6px;
+    padding: 8px 10px 0;
+  }
+
+  .lov-arena-stats,
+  .lov-arena-preview {
+    padding: 6px 8px 8px;
+  }
+
+  .lov-opponent-card {
+    gap: 2px;
+    padding: 5px 8px;
+  }
+
+  .lov-opponent-card strong {
+    font-size: 1rem;
+  }
+
+  .lov-opponent-card span {
+    font-size: 0.82rem;
+  }
+
+  .lov-arena-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .lov-arena-stat {
+    min-height: 42px;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 2px;
+    padding: 3px;
+    text-align: center;
+  }
+
+  .lov-arena-stat span {
+    font-size: 0.88rem;
+  }
+
+  .lov-arena-stat strong {
+    font-size: 0.96rem;
+  }
+
+  .lov-arena-primary-actions {
+    margin-top: 4px;
+    padding: 0 10px 4px;
+  }
+
+  .lov-arena-primary-actions > button {
+    min-height: 34px;
+    font-size: 0.82rem;
+    line-height: 1.08;
+  }
+
+  .lov-arena-toggles {
+    display: none;
+  }
+
+  .lov-arena-preview img {
+    max-height: 120px;
+  }
+
+  .lov-arena-preview {
+    display: none;
+  }
+
+  .lov-arena-shell .lov-window-footer {
+    display: none;
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+}
+
+@media (max-height: 720px) {
+  .shell-reset-window.size-hero,
+  .lov-hero-info-shell,
+  .lov-store-shell,
+  .lov-forge-shell,
+  .lov-tavern-shell {
+    --window-height: 690px;
+  }
+
+  .lov-profile-screen-window .lov-profile-reward {
+    min-height: 72px;
+  }
+
+  .lov-forge-layout {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .lov-forge-bag-panel .lov-grid-item,
+  .lov-forge-bag-panel .lov-grid-empty {
+    min-height: 48px;
+  }
+
+  .lov-forge-workbench {
+    gap: 8px;
+  }
+
+  .lov-forge-upgrade-card {
+    grid-template-rows: minmax(82px, 0.55fr) minmax(0, 1fr);
+  }
+
+  .lov-forge-bag-panel h3 {
+    font-size: 1.2rem;
+  }
+}
+
+.lov-sheet-left.tab-character {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.lov-sheet-left.tab-character .lov-stats-panel {
+  min-height: max-content;
+  padding-bottom: 12px;
+}
+
+.lov-sheet-left.tab-character .lov-core-stat {
+  cursor: help;
+}
+
+.lov-sheet-left.tab-character .lov-currency-row {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.lov-currency-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.lov-currency-pill i {
+  display: none;
+}
+
+.lov-currency-pill img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.lov-currency-pill strong {
+  color: #fff3da;
+  font-family: Georgia, serif;
+  font-size: 1.22rem;
+  font-weight: 500;
+}
+
+.lov-currency-pill.gold i {
+  color: #efc96a;
+}
+
+.lov-currency-pill.pearls i {
+  color: #dfe9ff;
+}
+
+.lov-stat-breakdown {
+  max-height: calc(100% - 124px);
+  overflow: auto;
+}
+

@@ -7,7 +7,6 @@ import {
   type SceneDefinition,
   type SceneHotspot,
   type SceneId,
-  type ScenePanelId,
 } from '@lov2/shared';
 import { apiClient } from '../../lib/api.js';
 import {
@@ -33,28 +32,14 @@ import { SceneViewport } from '../SceneViewport.js';
 import { ActionDock } from './ActionDock.js';
 import { BottomTray } from './BottomTray.js';
 import {
-  ArenaPreviewWindow,
-  BoatmanWindow,
   CombatResultWindow,
   CharacterSheet,
   CombatStage,
-  EnemyInfoPanel,
   EnemyInfoWindow,
-  ExerciseDetailWindow,
-  ForgeWindow,
-  FountainWindow,
   HeroInfoWindow,
-  ItemInfoPanel,
-  JournalWindow,
-  PaymentWindow,
-  PetInfoPanel,
-  SettingsWindow,
-  StoreWindow,
-  TavernWindow,
-  TowerWindow,
   TravelStage,
-  WorldLeaderboardWindow,
 } from './GamePanels.js';
+import { infoWindowTitle, renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindowRouter.js';
 import { HudFrame } from './HudFrame.js';
 import { OverlayLayer } from './OverlayLayer.js';
 import { TaskRail } from './TaskRail.js';
@@ -145,6 +130,7 @@ export function GameShell({
   const activeTravelReady = activeTravel ? isTravelReady(activeTravel, clock) : false;
   const pendingCombat = getPendingCombat(state);
   const latestResolvedCombat = getLatestResolvedCombat(state);
+  const activeCombatLog = pendingCombat ? undefined : latestResolvedCombat?.log;
   const arenaEnemy = state.enemies.find((enemy) => enemy.id === selectedArenaEnemyId) ?? state.enemies[0];
   const combatEnemyId = pendingCombat?.enemyId ?? latestResolvedCombat?.enemyId ?? arenaEnemy?.id;
   const combatEnemy = state.enemies.find((enemy) => enemy.id === combatEnemyId) ?? arenaEnemy;
@@ -155,7 +141,7 @@ export function GameShell({
   const selectedForgeStack = selectedForgeStackId ? state.inventory.find((stack) => stack.id === selectedForgeStackId) : undefined;
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
-  const stageMode: StageMode = baseStage === 'world' && worldWindow !== 'none' ? 'worldWindow' : baseStage;
+  const stageMode: StageMode = baseStage;
 
   const routeStates = useMemo(
     () => Object.fromEntries(state.quests.map((quest) => [quest.id, deriveRouteState(state, quest.id, clock)])),
@@ -163,7 +149,7 @@ export function GameShell({
   ) as Record<string, RouteState>;
 
   useEffect(() => {
-    if (!replayActive || !latestResolvedCombat?.log) {
+    if (!replayActive || !activeCombatLog) {
       return;
     }
 
@@ -173,7 +159,7 @@ export function GameShell({
     const interval = window.setInterval(() => {
       turnIndex += 1;
       setReplayTurnCount(turnIndex);
-      if (turnIndex >= latestResolvedCombat.log!.turns.length) {
+      if (turnIndex >= activeCombatLog.turns.length) {
         window.clearInterval(interval);
         rewardTimer = window.setTimeout(() => {
           setReplayActive(false);
@@ -188,15 +174,15 @@ export function GameShell({
         window.clearTimeout(rewardTimer);
       }
     };
-  }, [latestResolvedCombat, replayActive]);
+  }, [activeCombatLog, replayActive]);
 
   const visibleReplayTurns =
     replayActive
-      ? latestResolvedCombat?.log?.turns.slice(0, replayTurnCount) ?? []
-      : latestResolvedCombat?.log?.turns ?? [];
+      ? activeCombatLog?.turns.slice(0, replayTurnCount) ?? []
+      : activeCombatLog?.turns ?? [];
 
   const replayFrame = getCombatReplayFrame(
-    latestResolvedCombat?.log,
+    activeCombatLog,
     combatEnemy?.health ?? 1,
     state.character?.maxHealth ?? 1,
     replayActive ? replayTurnCount : visibleReplayTurns.length,
@@ -739,151 +725,8 @@ export function GameShell({
   );
 }
 
-function renderWorldWindow({
-  worldWindow,
-  state,
-  selectedQuest,
-  routeStates,
-  selectedStoreItem,
-  selectedItemStackId,
-  selectedForgeStack,
-  selectedArenaEnemy,
-  selectedExerciseId,
-  metaTab,
-  busy,
-  onClose,
-  onIntent,
-}: {
-  worldWindow: WorldWindowId;
-  state: BootstrapState;
-  selectedQuest: BootstrapState['quests'][number] | undefined;
-  routeStates: Record<string, RouteState>;
-  selectedStoreItem: BootstrapState['items'][number] | undefined;
-  selectedItemStackId: string | null;
-  selectedForgeStack: BootstrapState['inventory'][number] | undefined;
-  selectedArenaEnemy: BootstrapState['enemies'][number] | undefined;
-  selectedExerciseId: string | null;
-  metaTab: MetaTab;
-  busy: boolean;
-  onClose: () => void;
-  onIntent: (intent: GameIntent) => void;
-}) {
-  switch (worldWindow) {
-    case 'tavern':
-      return (
-        <TavernWindow
-          state={state}
-          selectedQuest={selectedQuest}
-          routeStates={routeStates}
-          busy={busy}
-          onClose={onClose}
-          onIntent={onIntent}
-        />
-      );
-    case 'arenaPreview':
-      return <ArenaPreviewWindow enemy={selectedArenaEnemy} onClose={onClose} onIntent={onIntent} />;
-    case 'store':
-      return (
-        <StoreWindow
-          state={state}
-          selectedStoreItem={selectedStoreItem}
-          selectedItemStackId={selectedItemStackId}
-          onClose={onClose}
-          onIntent={onIntent}
-        />
-      );
-    case 'payments':
-      return <PaymentWindow onClose={onClose} />;
-    case 'forge':
-      return <ForgeWindow state={state} selectedForgeStack={selectedForgeStack} onClose={onClose} onIntent={onIntent} />;
-    case 'tower':
-      return <TowerWindow state={state} onClose={onClose} />;
-    case 'boatman':
-      return <BoatmanWindow onClose={onClose} />;
-    case 'fountain':
-      return <FountainWindow onClose={onClose} />;
-    case 'exerciseDetail':
-      return <ExerciseDetailWindow exerciseId={selectedExerciseId} onClose={onClose} />;
-    case 'leaderboard':
-      return <WorldLeaderboardWindow state={state} onClose={onClose} />;
-    case 'journal':
-      return <JournalWindow activeTab={metaTab} onClose={onClose} />;
-    case 'settings':
-      return <SettingsWindow onClose={onClose} />;
-    default:
-      return null;
-  }
-}
-
-function renderInfoWindow({
-  infoWindow,
-  state,
-  combatEnemy,
-  selectedItem,
-  selectedItemStack,
-  onIntent,
-}: {
-  infoWindow: InfoWindowId;
-  state: BootstrapState;
-  combatEnemy: BootstrapState['enemies'][number] | undefined;
-  selectedItem: BootstrapState['items'][number] | undefined;
-  selectedItemStack: BootstrapState['inventory'][number] | undefined;
-  onIntent: (intent: GameIntent) => void;
-}) {
-  switch (infoWindow) {
-    case 'heroInfo':
-      return null;
-    case 'enemyInfo':
-      return <EnemyInfoPanel enemy={combatEnemy} />;
-    case 'itemInfo':
-      return <ItemInfoPanel stack={selectedItemStack} item={selectedItem} onIntent={onIntent} />;
-    case 'petInfo':
-      return <PetInfoPanel />;
-    default:
-      return null;
-  }
-}
-
 function isBootstrap(value: unknown): value is BootstrapState {
   return typeof value === 'object' && value !== null && 'races' in value && 'quests' in value;
-}
-
-function windowForPanel(panelId: ScenePanelId): Exclude<WorldWindowId, 'none'> | null {
-  switch (panelId) {
-    case 'contracts':
-      return 'tavern';
-    case 'arena':
-      return 'arenaPreview';
-    case 'store':
-      return 'store';
-    case 'forge':
-      return 'forge';
-    case 'tower':
-      return 'tower';
-    case 'boatman':
-      return 'boatman';
-    case 'fountain':
-      return 'fountain';
-    case 'journal':
-      return 'journal';
-    default:
-      return null;
-  }
-}
-
-function infoWindowTitle(infoWindow: InfoWindowId) {
-  switch (infoWindow) {
-    case 'heroInfo':
-      return 'Сведения о герое';
-    case 'enemyInfo':
-      return 'Сведения о противнике';
-    case 'itemInfo':
-      return 'Сведения о предмете';
-    case 'petInfo':
-      return 'Сведения о питомце';
-    default:
-      return 'Сведения';
-  }
 }
 
 function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'combat' {
@@ -895,3 +738,4 @@ function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'com
   }
   return 'world';
 }
+

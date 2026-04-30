@@ -1,0 +1,348 @@
+/* Final bottom tray pass: span the whole stage and match the original-game friend bar. */
+footer.shell-reset-bottom-strip.lov-bottom-strip {
+  grid-column: 1 / -1;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-bottom-strip,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-bottom-strip {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-rows: 66px 42px;
+  gap: 0;
+  align-self: end;
+  width: 100%;
+  min-width: 0;
+  min-height: 116px;
+  padding: 0 10px 8px;
+  overflow: hidden;
+  border-radius: 0 0 24px 24px;
+  border-color: rgba(195, 166, 86, 0.84);
+  background:
+    linear-gradient(180deg, rgba(83, 78, 67, 0.96), rgba(30, 29, 31, 0.98)),
+    #211f21;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-band,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-band {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 54px 152px;
+  gap: 0;
+  min-width: 0;
+  min-height: 66px;
+  overflow: hidden;
+  border: 1px solid rgba(195, 166, 86, 0.86);
+  border-radius: 12px 12px 4px 4px;
+  background: linear-gradient(180deg, rgba(92, 85, 72, 0.98), rgba(51, 47, 45, 0.98));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-nav {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 6px;
+  align-content: center;
+  padding: 6px;
+  border-right: 1px solid rgba(195, 166, 86, 0.6);
+  background: linear-gradient(180deg, rgba(89, 82, 67, 0.96), rgba(48, 43, 41, 0.96));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav.right,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-nav.right {
+  border-right: 0;
+  border-left: 1px solid rgba(195, 166, 86, 0.6);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav button,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-nav button {
+  width: 36px;
+  height: 26px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff3d1;
+  font-size: 1.18rem;
+  line-height: 1;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards-viewport,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-cards-viewport {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards-viewport::-webkit-scrollbar,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-cards-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(108px, 1fr);
+  gap: 0;
+  min-width: max-content;
+  height: 100%;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friend-card {
+  width: clamp(108px, 8.8vw, 132px);
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 16px 30px 16px;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  border-color: rgba(195, 166, 86, 0.84);
+  background:
+    linear-gradient(180deg, rgba(104, 98, 84, 0.96), rgba(61, 57, 54, 0.98)),
+    #443d39;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 245, 210, 0.12),
+    inset -1px 0 0 rgba(35, 29, 27, 0.54);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card small,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friend-card small {
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff4d4;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-portrait,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friend-portrait {
+  width: 30px;
+  height: 30px;
+  border: 2px solid rgba(218, 188, 103, 0.94);
+  border-radius: 9px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card strong,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-friend-card strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff0cf;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-invite-card {
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 5px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  border-color: rgba(195, 166, 86, 0.86);
+  background: linear-gradient(180deg, rgba(104, 98, 84, 0.96), rgba(61, 57, 54, 0.98));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card span,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-invite-card span {
+  color: #fff4d4;
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card i,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-invite-card i {
+  width: 34px;
+  height: 34px;
+  min-height: 0;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #b7e6d8, #75a996);
+  color: #1d3a30;
+  font-size: 1.25rem;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-footer-tabs,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-footer-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-footer-tabs .shell-reset-news-tab,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-footer-tabs .shell-reset-news-tab {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+@media (max-width: 1100px), (max-height: 680px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-bottom-strip,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-bottom-strip {
+    grid-template-rows: 58px 36px;
+    min-height: 100px;
+    padding: 0 8px 6px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-band,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-band {
+    grid-template-columns: 48px minmax(0, 1fr) 48px 132px;
+    min-height: 58px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-nav {
+    padding: 5px;
+    gap: 4px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav button,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-nav button {
+    width: 32px;
+    height: 22px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-friends-cards {
+    grid-auto-columns: 96px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-friend-card {
+    width: 96px;
+    grid-template-rows: 14px 26px 14px;
+    padding: 4px 6px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-friend-portrait,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-friend-portrait {
+    width: 26px;
+    height: 26px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-footer-tabs .shell-reset-news-tab,
+  .stage-frame.shell-reset-stage.stage-mode-combat .lov-footer-tabs .shell-reset-news-tab {
+    min-height: 30px;
+    font-size: 0.86rem;
+  }
+}
+
+/* Keep the compact arena card fully inside short desktop viewports. */
+@media (max-width: 1100px), (max-height: 680px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+    inset: 2px 34px 8px;
+  }
+
+  .lov-arena-shell {
+    --window-width: min(680px, calc(100vw - 68px));
+    --window-height: min(456px, calc(100vh - 96px));
+  }
+
+  .lov-arena-shell .lov-window-header {
+    min-height: 38px;
+    padding: 4px 12px;
+  }
+
+  .lov-arena-shell .lov-window-body {
+    grid-template-rows: minmax(0, 1fr) 28px;
+    gap: 5px;
+    padding: 8px 10px 5px;
+  }
+
+  .lov-arena-shell .lov-window-footer {
+    display: flex;
+    justify-content: center;
+    min-height: 38px;
+    padding: 3px 0 5px;
+  }
+
+  .lov-arena-shell .lov-close-button {
+    min-width: 172px;
+    min-height: 30px;
+    font-size: 1rem;
+  }
+
+  .lov-arena-layout {
+    grid-template-columns: minmax(220px, 0.46fr) minmax(250px, 0.54fr);
+    gap: 7px;
+    min-height: 0;
+  }
+
+  .lov-arena-stats {
+    gap: 4px;
+    padding: 6px;
+    min-height: 0;
+  }
+
+  .lov-opponent-card {
+    min-height: 38px;
+    padding: 4px 8px;
+  }
+
+  .lov-opponent-card strong {
+    font-size: 1rem;
+  }
+
+  .lov-opponent-card span {
+    font-size: 0.82rem;
+  }
+
+  .lov-arena-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 28px;
+    gap: 4px;
+  }
+
+  .lov-arena-stat:nth-child(1),
+  .lov-arena-stat:nth-child(2) {
+    grid-column: auto;
+  }
+
+  .lov-arena-stat {
+    min-height: 28px;
+    padding: 3px 7px;
+  }
+
+  .lov-arena-stat span {
+    font-size: 0.72rem;
+  }
+
+  .lov-arena-stat strong {
+    font-size: 0.96rem;
+  }
+
+  .lov-arena-primary-actions {
+    gap: 5px;
+    margin-top: 6px !important;
+  }
+
+  .lov-arena-primary-actions > button,
+  .lov-arena-toggles > button {
+    min-height: 28px;
+    font-size: 0.76rem;
+  }
+
+  .lov-arena-preview img {
+    max-width: 82%;
+    max-height: 90%;
+  }
+}

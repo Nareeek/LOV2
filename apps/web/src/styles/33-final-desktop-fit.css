@@ -1,0 +1,830 @@
+/* Final desktop fit pass */
+.stage-frame.shell-reset-stage {
+  --stage-topbar-height: 94px;
+  --stage-bottom-height: 126px;
+}
+
+.stage-left-stack {
+  padding-top: 22px;
+}
+
+.shell-reset-message {
+  display: none !important;
+}
+
+.lov-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px 8px 16px;
+  gap: 18px;
+}
+
+.lov-topbar-left {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 330px);
+  grid-template-columns: 118px minmax(360px, 1fr);
+  gap: 22px;
+}
+
+.lov-topbar-portrait {
+  width: 108px;
+  height: 84px;
+}
+
+.lov-topbar-portrait .shell-reset-level {
+  right: 2px;
+}
+
+.lov-topbar-badge {
+  left: 8px;
+  bottom: -8px;
+}
+
+.lov-xp-strip {
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.lov-xp-strip .meter {
+  grid-template-columns: minmax(0, 1fr) 150px;
+}
+
+.lov-xp-strip .meter strong {
+  min-width: 136px;
+}
+
+.lov-resource-strip {
+  justify-self: end;
+  padding-left: 28px;
+  gap: 12px;
+}
+
+.lov-resource-pill {
+  min-width: 92px;
+  justify-content: center;
+}
+
+.lov-add-button {
+  min-width: 196px;
+}
+
+.stage-frame.shell-reset-stage .lov-bottom-strip {
+  padding: 6px calc(var(--stage-right-rail-size) + 14px) 10px calc(var(--stage-left-rail-size) + 18px);
+  gap: 8px;
+}
+
+.lov-bottom-strip {
+  grid-template-rows: 72px 36px;
+}
+
+.lov-friends-band {
+  grid-template-columns: 30px minmax(0, 1fr) 30px 110px;
+  align-items: stretch;
+}
+
+.lov-friends-cards {
+  grid-auto-columns: 82px;
+  gap: 6px;
+}
+
+.lov-friend-card,
+.lov-invite-card {
+  min-height: 64px;
+}
+
+.lov-footer-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lov-footer-tabs .shell-reset-news-tab {
+  min-width: 0;
+}
+
+.scene-hotspot::before {
+  inset: 0;
+}
+
+.hotspot-label {
+  width: min(220px, calc(100vw - 84px));
+  padding: 10px 12px;
+  z-index: 3;
+}
+
+.hotspot-label strong {
+  font-size: 1.18rem;
+}
+
+.hotspot-label small {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.lov-quest-shell {
+  --window-width: 760px;
+  --window-height: 450px;
+}
+
+.lov-quest-layout {
+  grid-template-columns: minmax(250px, 0.88fr) minmax(0, 1fr);
+}
+
+.lov-quest-copy {
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.lov-quest-copy h3 {
+  font-size: 1.1rem;
+}
+
+.lov-quest-copy p {
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.lov-quest-objective {
+  gap: 4px;
+}
+
+.lov-quest-objective span,
+.lov-quest-objective strong {
+  font-size: 0.98rem;
+}
+
+.lov-tavern-shell {
+  --window-width: 1040px;
+  --window-height: 730px;
+}
+
+.lov-tavern-layout {
+  min-height: 0;
+  grid-template-columns: minmax(370px, 0.98fr) minmax(350px, 1.02fr);
+}
+
+.lov-tavern-right {
+  gap: 10px;
+  padding: 18px 18px 16px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.lov-tavern-preview-card {
+  left: 14px;
+  right: auto;
+  bottom: 14px;
+  max-width: 320px;
+  padding: 10px 12px;
+  gap: 4px;
+}
+
+.lov-tavern-preview-card h3 {
+  font-size: 1rem;
+}
+
+.lov-energy-block {
+  gap: 6px;
+}
+
+.lov-energy-block .meter {
+  grid-template-columns: 0 minmax(0, 1fr) auto;
+}
+
+.lov-energy-block .meter div {
+  height: 34px;
+}
+
+.lov-energy-block .meter strong {
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.15rem;
+}
+
+.lov-energy-block p,
+.lov-tavern-copy p {
+  font-size: 0.9rem;
+  line-height: 1.15;
+}
+
+.lov-energy-buy-row {
+  gap: 10px;
+}
+
+.lov-energy-button {
+  min-height: 56px;
+  gap: 4px;
+}
+
+.lov-energy-button strong {
+  font-size: 1.35rem;
+}
+
+.lov-energy-button span {
+  font-size: 0.85rem;
+}
+
+.lov-quest-stack {
+  grid-auto-rows: minmax(52px, auto);
+  align-content: start;
+  gap: 8px;
+}
+
+.lov-quest-row {
+  min-height: 0;
+}
+
+.lov-quest-row-title {
+  padding: 8px 10px;
+}
+
+.lov-quest-row-title strong {
+  font-size: 0.98rem;
+}
+
+.lov-quest-row-title span,
+.lov-quest-row-reward {
+  font-size: 0.82rem;
+}
+
+.lov-quest-row-reward {
+  padding: 6px 10px;
+}
+
+.lov-store-shell {
+  --window-width: 920px;
+  --window-height: 690px;
+}
+
+.lov-store-layout {
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+  gap: 12px;
+  padding: 12px 14px 14px;
+}
+
+.lov-store-bag-panel {
+  position: relative;
+}
+
+.lov-store-bag-panel::after {
+  content: "Перетащи товар сюда, чтобы купить";
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 6px 10px;
+  border: 1px solid rgba(148, 192, 174, 0.44);
+  border-radius: 999px;
+  background: rgba(22, 34, 33, 0.82);
+  color: #dff4ec;
+  font-size: 0.74rem;
+  pointer-events: none;
+}
+
+.lov-merchant-panel {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.lov-store-scene-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 10px;
+  min-height: 0;
+}
+
+.lov-merchant-illustration {
+  min-height: 132px;
+  max-height: 150px;
+}
+
+.lov-store-hover {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.lov-store-hover h4 {
+  font-size: 1rem;
+}
+
+.lov-store-hover p {
+  font-size: 0.84rem;
+  line-height: 1.25;
+}
+
+.lov-store-stock-panel {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+
+.lov-store-stock-panel > strong {
+  color: #f0e1c3;
+  font-family: Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.lov-merchant-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  overflow: hidden;
+}
+
+.lov-merchant-item {
+  min-height: 70px;
+  padding: 6px;
+}
+
+.lov-fountain-shell {
+  --window-width: 780px;
+  --window-height: 520px;
+}
+
+.lov-fountain-layout {
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 14px 16px;
+}
+
+.lov-fountain-rules {
+  padding: 12px 14px;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.lov-fountain-main {
+  min-height: 0;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+}
+
+.lov-fountain-glow {
+  inset: 44% 28% auto;
+  height: 96px;
+}
+
+.lov-fountain-main h3 {
+  font-size: 1.58rem;
+  line-height: 1.08;
+}
+
+.lov-fountain-main p,
+.lov-fountain-timer span {
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.lov-fountain-timer {
+  margin-top: 54px;
+}
+
+.lov-fountain-timer strong {
+  font-size: 1.92rem;
+}
+
+.lov-donation-button {
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 1rem;
+}
+
+.lov-sheet {
+  width: min(100%, 1230px);
+  grid-template-columns: 118px minmax(0, 1fr) 294px;
+  gap: 10px;
+  padding: 12px;
+}
+
+.lov-sheet-rail {
+  grid-auto-rows: minmax(52px, auto);
+}
+
+.lov-sheet-rail button {
+  min-height: 60px;
+  padding: 8px 6px;
+  font-size: 0.82rem;
+}
+
+.lov-sheet-left,
+.lov-sheet-right {
+  padding: 12px;
+  min-width: 0;
+}
+
+.lov-sheet-left.tab-profile {
+  overflow: hidden;
+}
+
+.lov-sheet-right {
+  overflow: hidden;
+}
+
+.lov-profile-screen {
+  height: 100%;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.lov-profile-stats {
+  gap: 8px;
+}
+
+.lov-profile-stat {
+  min-height: 56px;
+  grid-template-columns: 24px 1fr;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.lov-profile-stat span,
+.lov-profile-stat strong {
+  font-size: 1.35rem;
+}
+
+.lov-profile-screen .lov-profile-stat,
+.lov-profile-screen-window .lov-profile-stat {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.lov-profile-screen .lov-profile-stat span,
+.lov-profile-screen-window .lov-profile-stat span {
+  min-width: 0;
+  font-size: 1rem;
+  line-height: 1.05;
+}
+
+.lov-profile-screen .lov-profile-stat strong,
+.lov-profile-screen-window .lov-profile-stat strong {
+  justify-self: end;
+  font-size: 1.42rem;
+  line-height: 1;
+}
+
+.lov-sheet-left.tab-character {
+  overflow: hidden;
+}
+
+.lov-sheet-left.tab-character .lov-stats-panel {
+  gap: 8px;
+}
+
+.lov-sheet-left.tab-character .lov-panel-header h2 {
+  font-size: 1.55rem;
+}
+
+.lov-sheet-left.tab-character .lov-core-stat {
+  position: relative;
+  min-height: 58px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.lov-sheet-left.tab-character .lov-core-stat-icon {
+  font-size: 1.36rem;
+}
+
+.lov-sheet-left.tab-character .lov-core-stat-body strong {
+  font-size: 1.08rem;
+}
+
+.lov-sheet-left.tab-character .lov-core-stat-body span {
+  font-size: 1.36rem;
+}
+
+.lov-sheet-left.tab-character .lov-stat-group {
+  gap: 4px 8px;
+  padding: 7px 9px;
+}
+
+.lov-sheet-left.tab-character .lov-primary-stat {
+  min-height: 46px;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  padding: 6px 8px;
+}
+
+.lov-sheet-left.tab-character .lov-primary-stat-main span {
+  font-size: 1.12rem;
+}
+
+.lov-sheet-left.tab-character .lov-primary-stat-main strong {
+  font-size: 1.36rem;
+}
+
+.lov-sheet-left.tab-character .lov-stat-add-button {
+  width: 32px;
+  min-height: 32px;
+}
+
+.lov-sheet-left.tab-character .lov-primary-stat i {
+  font-size: 1.5rem;
+}
+
+.lov-sheet-left.tab-character .lov-secondary-stat {
+  font-size: 0.86rem;
+}
+
+.lov-sheet-left.tab-character .lov-damage-row,
+.lov-sheet-left.tab-character .lov-currency-row {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 0.92rem;
+}
+
+.lov-quick-slots {
+  grid-template-columns: repeat(4, 46px);
+  gap: 8px;
+}
+
+.lov-quick-slots .lov-quick-slot {
+  width: 46px;
+  height: 46px;
+}
+
+.lov-motto-box {
+  min-height: 64px;
+  padding: 10px 12px;
+  font-size: 1.08rem;
+}
+
+.lov-reward-gallery {
+  gap: 8px;
+}
+
+.lov-reward-gallery > strong {
+  font-size: 1.28rem;
+}
+
+.lov-reward-gallery-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lov-profile-reward {
+  min-height: 72px;
+  aspect-ratio: auto;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  font-size: 0.78rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.lov-paperdoll-header {
+  padding: 10px 12px;
+}
+
+.lov-paperdoll-header strong {
+  font-size: 1.52rem;
+}
+
+.lov-paperdoll-header span {
+  font-size: 1.1rem;
+}
+
+.lov-paperdoll-stage {
+  grid-template-columns: 58px minmax(0, 1fr) 58px;
+  gap: 6px;
+}
+
+.lov-paperdoll-slot {
+  min-height: 58px;
+  padding: 3px;
+}
+
+.lov-paperdoll-slot .item-chip img {
+  width: 38px;
+  height: 38px;
+}
+
+.lov-paperdoll-hero {
+  width: min(82%, 300px);
+  height: 86%;
+  max-height: 218px;
+}
+
+.lov-paperdoll-pet {
+  width: min(16%, 62px);
+  right: -5%;
+}
+
+.lov-paperdoll-quickbar {
+  grid-template-columns: repeat(7, 34px);
+  gap: 4px;
+}
+
+.lov-paperdoll-quickbar .lov-quick-slot {
+  width: 34px;
+  height: 34px;
+}
+
+.lov-combat-header {
+  position: relative;
+  align-items: center;
+}
+
+.lov-combat-info-button {
+  width: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(221, 182, 106, 0.84);
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(49, 44, 44, 0.94), rgba(32, 28, 29, 0.94));
+  color: #f0e0bd;
+}
+
+.lov-combat-header.ally .lov-combat-info-button {
+  order: -1;
+}
+
+.lov-combat-header.enemy .lov-combat-info-button {
+  order: 3;
+}
+
+.lov-battle-stage {
+  inset: 86px 18px 72px;
+}
+
+.lov-battle-bottom {
+  left: 14px;
+  right: auto;
+  bottom: 12px;
+  grid-template-columns: minmax(220px, 280px);
+  gap: 0;
+}
+
+.lov-pet-card {
+  gap: 8px;
+  padding: 8px;
+}
+
+.lov-pet-card-body {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.lov-pet-card-image {
+  min-height: 68px;
+}
+
+.lov-pet-card-copy strong {
+  font-size: 1rem;
+}
+
+.lov-pet-card-copy span,
+.lov-pet-card-copy small {
+  font-size: 0.82rem;
+}
+
+.lov-battle-actions,
+.lov-skill-bar {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .lov-topbar {
+    gap: 14px;
+  }
+
+  .lov-topbar-left {
+    max-width: calc(100% - 300px);
+    grid-template-columns: 110px minmax(260px, 1fr);
+    gap: 16px;
+  }
+
+  .stage-frame.shell-reset-stage .lov-bottom-strip {
+    padding-left: calc(var(--stage-left-rail-size) + 12px);
+    padding-right: calc(var(--stage-right-rail-size) + 10px);
+  }
+
+  .lov-store-scene-card {
+    grid-template-columns: 1fr;
+  }
+
+  .lov-sheet {
+    width: min(100%, 1140px);
+    grid-template-columns: 112px minmax(0, 1fr) 276px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .lov-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .lov-topbar-left {
+    max-width: none;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .lov-resource-strip {
+    justify-self: start;
+    padding-left: 126px;
+  }
+
+  .stage-frame.shell-reset-stage {
+    --stage-bottom-height: 118px;
+  }
+
+  .lov-tavern-layout {
+    grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  }
+
+  .stage-frame.shell-reset-stage .lov-bottom-strip {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-height: 720px) {
+  .stage-frame.shell-reset-stage {
+    --stage-topbar-height: 86px;
+    --stage-bottom-height: 116px;
+  }
+
+  .lov-bottom-strip {
+    grid-template-rows: 66px 34px;
+  }
+
+  .lov-tavern-shell {
+    --window-height: 680px;
+  }
+
+  .lov-tavern-right {
+    gap: 6px;
+    padding: 12px 14px 12px;
+  }
+
+  .lov-energy-block .meter div {
+    height: 30px;
+  }
+
+  .lov-energy-block .meter strong {
+    font-size: 1rem;
+  }
+
+  .lov-energy-block p,
+  .lov-tavern-copy p {
+    font-size: 0.8rem;
+  }
+
+  .lov-energy-button {
+    min-height: 46px;
+    gap: 2px;
+  }
+
+  .lov-energy-button strong {
+    font-size: 1.1rem;
+  }
+
+  .lov-energy-button span {
+    font-size: 0.76rem;
+  }
+
+  .lov-quest-stack {
+    gap: 6px;
+  }
+
+  .lov-quest-row-title {
+    padding: 6px 8px;
+  }
+
+  .lov-quest-row-title strong {
+    font-size: 0.88rem;
+  }
+
+  .lov-quest-row-title span,
+  .lov-quest-row-reward {
+    font-size: 0.74rem;
+  }
+
+  .lov-quest-row-reward {
+    padding: 5px 8px;
+  }
+
+  .lov-fountain-shell {
+    --window-height: 480px;
+  }
+
+  .lov-sheet {
+    height: min(100%, 548px);
+  }
+}
+

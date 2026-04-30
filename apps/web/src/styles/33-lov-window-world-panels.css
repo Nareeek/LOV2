@@ -1,0 +1,1105 @@
+.lov-window-shell {
+  width: min(1180px, 100%);
+  max-height: 100%;
+  border-color: rgba(219, 180, 103, 0.86);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(67, 47, 44, 0.98), rgba(30, 27, 31, 0.96)),
+    #231d1f;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.5);
+}
+
+.lov-window-header {
+  padding: 18px 26px 16px;
+  border-bottom-color: rgba(199, 154, 85, 0.42);
+}
+
+.lov-window-header h2 {
+  font-size: 2.1rem;
+}
+
+.lov-window-close {
+  width: 54px;
+  min-height: 54px;
+  border-radius: 50%;
+  border-color: rgba(219, 180, 103, 0.8);
+  background: linear-gradient(180deg, #edcf7d, #c4923d);
+  color: #4a2b18;
+}
+
+.lov-window-body {
+  scrollbar-color: rgba(216, 175, 97, 0.72) rgba(34, 30, 32, 0.84);
+}
+
+.lov-window-footer {
+  padding: 18px 22px 22px;
+  border-top-color: rgba(199, 154, 85, 0.42);
+}
+
+.lov-close-button {
+  min-width: 184px;
+  min-height: 56px;
+  border-radius: 999px;
+  border-color: rgba(185, 55, 47, 0.84);
+  background: linear-gradient(180deg, #bf4b3c, #7b251f);
+  color: #fff2de;
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.lov-window-split {
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
+}
+
+.lov-illustration-panel {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: #1d1718;
+}
+
+.lov-illustration-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lov-speech-bubble {
+  position: absolute;
+  max-width: 220px;
+  padding: 12px 20px;
+  border: 1px solid rgba(215, 187, 139, 0.84);
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fff9ee, #ecddc0);
+  color: #23150f;
+  font-family: Georgia, serif;
+  font-size: 1.8rem;
+  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.24);
+}
+
+.lov-speech-bubble::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: inherit;
+  border-right: 1px solid rgba(215, 187, 139, 0.84);
+  border-bottom: 1px solid rgba(215, 187, 139, 0.84);
+  transform: rotate(45deg);
+}
+
+.lov-speech-bubble.tavernkeeper {
+  left: 20px;
+  top: 26px;
+}
+
+.lov-speech-bubble.tavernkeeper::after,
+.lov-speech-bubble.boatman::after,
+.lov-speech-bubble.forge::after,
+.lov-speech-bubble.merchant::after {
+  left: 28px;
+  bottom: -9px;
+}
+
+.lov-speech-bubble.boatman {
+  left: 22px;
+  top: 52px;
+}
+
+.lov-speech-bubble.forge,
+.lov-speech-bubble.merchant {
+  right: 18px;
+  top: 18px;
+}
+
+.lov-window-copy {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  padding: 26px;
+}
+
+.lov-window-copy p,
+.lov-journal-card p,
+.lov-work-card p,
+.lov-store-hover p,
+.lov-quest-copy p {
+  margin: 0;
+  color: #efe3cd;
+  line-height: 1.38;
+}
+
+.lov-tavern-shell .lov-window-body {
+  overflow: hidden;
+}
+
+.lov-tavern-layout {
+  min-height: 650px;
+  grid-template-columns: minmax(420px, 1.02fr) minmax(420px, 0.98fr);
+}
+
+.lov-tavern-illustration::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(30, 21, 22, 0.1), rgba(30, 21, 22, 0.34));
+  pointer-events: none;
+}
+
+.lov-tavern-right {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(93, 73, 56, 0.92), rgba(58, 44, 42, 0.95));
+}
+
+.lov-energy-block,
+.lov-work-card,
+.lov-store-hover,
+.lov-quest-hover-card,
+.lov-journal-card,
+.lov-achievement-grid .lov-journal-card,
+.lov-profile-screen,
+.lov-bag-screen,
+.lov-pet-screen,
+.lov-appearance-screen,
+.lov-profile-screen,
+.lov-sheet-right,
+.lov-sheet-left {
+  position: relative;
+}
+
+.lov-energy-block {
+  display: grid;
+  gap: 10px;
+}
+
+.lov-energy-block .meter {
+  grid-template-columns: 0 minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.lov-energy-block .meter > span:first-child {
+  display: none;
+}
+
+.lov-energy-block .meter div {
+  height: 54px;
+  border-width: 2px;
+  border-color: rgba(91, 95, 99, 0.84);
+  background: linear-gradient(180deg, #363434, #232122);
+}
+
+.lov-energy-block .meter i {
+  background: linear-gradient(180deg, #8bc4ff, #4f8bd5);
+}
+
+.lov-energy-block .meter strong {
+  position: absolute;
+  left: 50%;
+  top: 13px;
+  transform: translateX(-50%);
+  color: #fff8e6;
+  font-family: Georgia, serif;
+  font-size: 1.55rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.36);
+}
+
+.lov-energy-block p,
+.lov-tavern-copy p {
+  color: #f1e0bf;
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.lov-energy-buy-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.lov-energy-button {
+  min-height: 92px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  border-color: rgba(198, 154, 82, 0.82);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f6e1a7, #cb9348);
+  color: #412513;
+}
+
+.lov-energy-button strong {
+  font-size: 2rem;
+}
+
+.lov-energy-button span {
+  font-size: 1rem;
+}
+
+.lov-quest-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.lov-quest-row {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.lov-quest-row-title,
+.lov-contract-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid rgba(195, 145, 72, 0.84);
+  border-radius: 16px 16px 10px 10px;
+  background: linear-gradient(180deg, #f6e2a9, #cf9748);
+  color: #492b19;
+}
+
+.lov-quest-row-title strong,
+.lov-contract-top strong {
+  color: #4c2d1b;
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.lov-quest-row-title span,
+.lov-contract-top span {
+  color: #5f3922;
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+}
+
+.lov-quest-row-reward,
+.lov-contract-bottom {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 16px;
+  margin-top: -2px;
+  border: 1px solid rgba(109, 96, 94, 0.86);
+  border-radius: 0 0 14px 14px;
+  background: linear-gradient(180deg, #595554, #413d3d);
+  color: #f0e3c7;
+}
+
+.lov-quest-row-reward strong,
+.lov-contract-bottom strong {
+  color: #fff4de;
+  font-family: Georgia, serif;
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+
+.lov-quest-row.can-travel:hover .lov-quest-row-title,
+.lov-quest-row.can-travel:focus-visible .lov-quest-row-title,
+.lov-quest-row.active .lov-quest-row-title {
+  border-color: rgba(255, 237, 176, 0.98);
+  background: linear-gradient(180deg, #fbefc6, #d7a45a);
+}
+
+.lov-quest-row.locked {
+  opacity: 0.66;
+}
+
+.lov-quest-hover-card {
+  width: min(310px, 100%);
+  justify-self: end;
+  padding: 16px 18px;
+  border: 1px solid rgba(226, 192, 133, 0.82);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f5e7c9, #ead8b5);
+  color: #3e291e;
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.26);
+}
+
+.lov-quest-hover-card h3 {
+  margin: 0 0 8px;
+  color: #8b4134;
+  font-family: Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+}
+
+.lov-quest-hover-card p,
+.lov-quest-hover-card small {
+  color: #3f2d22;
+}
+
+.lov-quest-hover-card small {
+  display: block;
+  margin-top: 10px;
+}
+
+.lov-store-shell .lov-window-body,
+.lov-forge-shell .lov-window-body {
+  overflow: hidden;
+}
+
+.lov-store-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, max-content) 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px 0;
+}
+
+.lov-store-tabs button {
+  min-height: 60px;
+  padding: 0 26px;
+  border-radius: 18px 18px 0 0;
+  border-bottom: none;
+  background: linear-gradient(180deg, #ead7ae, #c49a5c);
+  color: #4a2b18;
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+}
+
+.lov-store-tabs button.active {
+  background: linear-gradient(180deg, #f4ead0, #dfbe87);
+}
+
+.lov-store-currency,
+.lov-forge-currency {
+  display: flex;
+  flex-wrap: wrap;
+  justify-self: end;
+  gap: 10px;
+}
+
+.lov-store-currency span,
+.lov-forge-currency span {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border: 1px solid rgba(210, 170, 100, 0.8);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #5b5451, #3d3938);
+  color: var(--lov-parchment);
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.lov-store-layout {
+  min-height: 620px;
+  display: grid;
+  grid-template-columns: minmax(340px, 0.95fr) minmax(420px, 1.05fr);
+  gap: 18px;
+  padding: 18px 22px 22px;
+}
+
+.lov-bag-panel,
+.lov-merchant-panel,
+.lov-forge-panel {
+  min-height: 0;
+  padding: 16px;
+  border: 1px solid rgba(197, 157, 90, 0.62);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(95, 82, 72, 0.9), rgba(55, 45, 43, 0.94));
+}
+
+.lov-bag-panel h3 {
+  margin: 0 0 14px;
+  color: var(--lov-parchment);
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.lov-merchant-panel,
+.lov-forge-panel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.lov-merchant-illustration,
+.lov-forge-illustration {
+  position: relative;
+  min-height: 240px;
+  overflow: hidden;
+  border: 1px solid rgba(169, 129, 74, 0.58);
+  border-radius: 18px;
+  background: #1d1717;
+}
+
+.lov-merchant-illustration img,
+.lov-forge-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.88) brightness(0.72);
+}
+
+.lov-refresh-button,
+.lov-dice-button,
+.lov-donation-button,
+.lov-skip-button,
+.lov-skip-battle,
+.lov-toggle-chip,
+.lov-work-card button,
+.lov-danger-button {
+  border-radius: 14px;
+  font-family: Georgia, serif;
+}
+
+.lov-refresh-button {
+  min-height: 52px;
+  border-color: rgba(200, 154, 85, 0.78);
+  color: #4b2c18;
+  background: linear-gradient(180deg, #f4e0a9, #c99348);
+}
+
+.lov-merchant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lov-merchant-item {
+  min-height: 88px;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border-color: rgba(133, 109, 86, 0.84);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(55, 51, 50, 0.92), rgba(36, 33, 34, 0.94));
+}
+
+.lov-merchant-item.active,
+.lov-merchant-item:hover:not(:disabled),
+.lov-merchant-item:focus-visible {
+  border-color: rgba(255, 235, 184, 0.96);
+  background: linear-gradient(180deg, rgba(88, 78, 68, 0.96), rgba(47, 42, 42, 0.96));
+}
+
+.lov-store-hover,
+.lov-forge-instruction,
+.lov-overlay-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(193, 153, 87, 0.56);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(30, 27, 30, 0.95), rgba(19, 18, 21, 0.96));
+}
+
+.lov-store-hover h4,
+.lov-overlay-card h3,
+.lov-forge-instruction strong {
+  margin: 0 0 8px;
+  color: var(--lov-parchment);
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.lov-item-stat-tags,
+.lov-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lov-item-stat-tags span {
+  padding: 6px 10px;
+  border: 1px solid rgba(166, 204, 185, 0.42);
+  border-radius: 999px;
+  background: rgba(39, 55, 53, 0.72);
+  color: #ddf6f0;
+  font-size: 0.84rem;
+}
+
+.lov-work-layout,
+.lov-contracts-layout {
+  display: grid;
+  gap: 18px;
+  padding: 18px 22px 22px;
+}
+
+.lov-work-banner {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(182, 150, 97, 0.7);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #59524e, #413b3b);
+}
+
+.lov-work-banner p,
+.lov-contracts-layout p {
+  margin: 0;
+  color: #f0e1c0;
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+}
+
+.lov-bonus-strip {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) minmax(200px, 1.6fr);
+  gap: 8px;
+}
+
+.lov-bonus-strip span,
+.lov-bonus-strip strong {
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(160, 140, 115, 0.78);
+  border-radius: 12px;
+  color: #eadab9;
+  background: linear-gradient(180deg, #58504b, #373334);
+  font-family: Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.lov-bonus-strip strong {
+  background: linear-gradient(180deg, #925146, #5f302c);
+  color: #fff0dc;
+}
+
+.lov-friends-bonus {
+  min-height: 50px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(180, 87, 28, 0.84);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #c96b2d, #94421a);
+  color: #fff2de;
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.lov-work-main {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
+  gap: 18px;
+}
+
+.lov-work-illustration,
+.lov-contracts-layout::before {
+  border: 1px solid rgba(185, 150, 99, 0.66);
+  border-radius: 20px;
+}
+
+.lov-work-illustration {
+  overflow: hidden;
+  background: #221d1d;
+}
+
+.lov-work-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.84) brightness(0.8);
+}
+
+.lov-work-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid rgba(188, 154, 101, 0.72);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #d0d0cd, #b7b3ad);
+  color: #4d3425;
+  text-align: center;
+}
+
+.lov-work-card strong {
+  color: #513726;
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.lov-progress-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(120, 102, 92, 0.78);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #59504c, #3d3738);
+  color: #f1e4c7;
+}
+
+.lov-contracts-layout {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #6d7952, #536045);
+}
+
+.lov-contracts-layout h3 {
+  margin: 0;
+  color: #f5ead1;
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.lov-contract-list {
+  width: min(580px, 100%);
+  justify-self: end;
+  display: grid;
+  gap: 16px;
+}
+
+.lov-contract-card {
+  display: grid;
+  gap: 0;
+}
+
+.lov-contract-bottom {
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+}
+
+.lov-forge-panel {
+  grid-template-rows: auto auto auto auto auto;
+}
+
+.lov-anvil-slot {
+  min-height: 210px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border: 1px dashed rgba(223, 188, 124, 0.62);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 72%, rgba(93, 109, 137, 0.24), transparent 18%),
+    linear-gradient(180deg, rgba(43, 40, 40, 0.96), rgba(28, 27, 29, 0.96));
+  color: #e9dbbe;
+  text-align: center;
+}
+
+.lov-anvil-slot.filled {
+  border-style: solid;
+}
+
+.lov-forge-instruction {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+
+.lov-tower-shell {
+  width: min(1220px, 100%);
+}
+
+.lov-tower-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 22px;
+}
+
+.lov-tower-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(193, 154, 92, 0.72);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #9c7a59, #765b46);
+}
+
+.lov-tower-card h3 {
+  margin: 0;
+  color: #f9eccf;
+  font-family: Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.lov-tower-card-image {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border: 1px solid rgba(103, 86, 73, 0.78);
+  border-radius: 6px;
+}
+
+.lov-tower-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lov-tower-mark,
+.lov-tower-lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: Georgia, serif;
+  font-size: 8rem;
+  color: rgba(213, 246, 138, 0.88);
+}
+
+.lov-tower-lock {
+  color: #f1d076;
+  font-size: 6rem;
+}
+
+.lov-tower-progress {
+  position: relative;
+  min-height: 58px;
+  overflow: hidden;
+  border: 1px solid rgba(111, 90, 74, 0.84);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #595554, #3d3939);
+}
+
+.lov-tower-progress i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(180deg, #e39c52, #a44e1c);
+}
+
+.lov-tower-progress span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: #fff1d6;
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.lov-tower-progress.locked {
+  display: grid;
+  place-items: center;
+}
+
+.lov-boatman-layout {
+  min-height: 520px;
+  grid-template-columns: minmax(440px, 1.05fr) minmax(340px, 0.95fr);
+}
+
+.lov-boatman-illustration .lov-dice-button {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  min-width: 240px;
+}
+
+.lov-dice-button {
+  border-color: rgba(194, 150, 77, 0.82);
+  color: #4d2c18;
+  background: linear-gradient(180deg, #f2e1a9, #cb9447);
+}
+
+.lov-boatman-copy {
+  align-content: center;
+  background:
+    linear-gradient(180deg, rgba(34, 32, 52, 0.58), rgba(26, 23, 31, 0.86)),
+    #221e24;
+}
+
+.lov-boatman-lead {
+  color: #f1dfbe;
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.lov-boatman-card {
+  display: grid;
+  gap: 8px;
+}
+
+.lov-boatman-card button {
+  min-height: 60px;
+  justify-content: space-between;
+  border-radius: 16px 16px 10px 10px;
+  background: linear-gradient(180deg, #f6e2a8, #ce9648);
+  color: #4d2b18;
+  font-family: Georgia, serif;
+  font-size: 1.55rem;
+}
+
+.lov-boatman-card small {
+  padding: 12px 16px;
+  border: 1px solid rgba(116, 102, 100, 0.86);
+  border-radius: 0 0 14px 14px;
+  background: linear-gradient(180deg, #595554, #3d3939);
+  color: #f0e3c7;
+  text-align: center;
+}
+
+.lov-fountain-layout {
+  display: grid;
+  gap: 18px;
+  min-height: 560px;
+  padding: 18px 22px 24px;
+}
+
+.lov-fountain-rules {
+  padding: 16px 18px;
+  border: 1px solid rgba(152, 54, 50, 0.5);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #5c2122, #43181b);
+  color: #f1dfc6;
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.lov-fountain-main {
+  position: relative;
+  overflow: hidden;
+  min-height: 380px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid rgba(202, 125, 84, 0.46);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(252, 214, 145, 0.2), transparent 20%),
+    linear-gradient(180deg, #8b3328, #541d20);
+}
+
+.lov-fountain-glow {
+  position: absolute;
+  inset: 18% 18% auto;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 245, 181, 0.96), rgba(255, 171, 87, 0.42), transparent 60%);
+  filter: blur(2px);
+}
+
+.lov-fountain-main h3 {
+  margin: 0;
+  color: #fff3da;
+  font-family: Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.lov-fountain-main p,
+.lov-fountain-timer span {
+  color: #f7e4c6;
+  font-family: Georgia, serif;
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.lov-fountain-timer {
+  display: grid;
+  gap: 6px;
+  margin-top: 122px;
+}
+
+.lov-fountain-timer strong {
+  color: #ffe57f;
+  font-family: Georgia, serif;
+  font-size: 3rem;
+  font-weight: 500;
+}
+
+.lov-donation-button {
+  min-height: 62px;
+  padding: 0 26px;
+  border-color: rgba(228, 197, 136, 0.9);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f8e7b9, #d2a14d);
+  color: #4a2b18;
+  font-size: 1.35rem;
+}
+
+.lov-journal-shell .lov-window-body,
+.lov-quest-shell .lov-window-body {
+  background: linear-gradient(180deg, rgba(42, 37, 43, 0.94), rgba(30, 29, 37, 0.96));
+}
+
+.lov-journal-cards {
+  display: grid;
+  gap: 16px;
+  padding: 20px 22px;
+}
+
+.lov-journal-card {
+  padding: 16px 18px;
+  border: 1px solid rgba(191, 156, 96, 0.62);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(73, 65, 67, 0.94), rgba(36, 34, 37, 0.96));
+}
+
+.lov-quest-layout {
+  min-height: 560px;
+  grid-template-columns: minmax(420px, 1fr) minmax(360px, 0.96fr);
+}
+
+.lov-quest-copy {
+  background: linear-gradient(180deg, #2f3446, #232837);
+}
+
+.lov-quest-copy h3 {
+  font-size: 2.35rem;
+  text-align: center;
+}
+
+.lov-quest-objective {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  color: #f5e5ca;
+  text-align: center;
+}
+
+.lov-quest-objective span {
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+}
+
+.lov-quest-objective strong {
+  color: #fff1d8;
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.lov-arena-shell {
+  width: min(1040px, 100%);
+}
+
+.lov-arena-layout {
+  min-height: 620px;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(360px, 1.1fr);
+  gap: 18px;
+  padding: 20px 22px 12px;
+}
+
+.lov-arena-stats,
+.lov-arena-preview {
+  min-height: 0;
+  padding: 16px;
+  border: 1px solid rgba(192, 154, 94, 0.66);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #b6b2af, #8f8a89);
+}
+
+.lov-arena-stats {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.lov-opponent-card {
+  display: grid;
+  gap: 4px;
+  padding: 18px 22px;
+  border: 1px solid rgba(111, 98, 96, 0.74);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #645f61, #4b4748);
+  color: #f6e9d0;
+  text-align: center;
+}
+
+.lov-opponent-card strong {
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.lov-arena-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lov-arena-stat {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(182, 155, 109, 0.78);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f4e5c0, #edd6a5);
+  color: #4a2b18;
+}
+
+.lov-arena-stat span {
+  font-size: 1.8rem;
+}
+
+.lov-arena-stat strong {
+  color: #9a4334;
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.lov-danger-button {
+  min-height: 62px;
+  padding: 0 22px;
+  border-color: rgba(170, 48, 38, 0.92);
+  background: linear-gradient(180deg, #bf4b3d, #7b251e);
+  color: #fff2de;
+  font-size: 1.5rem;
+}
+
+.lov-arena-preview {
+  overflow: hidden;
+  background: linear-gradient(180deg, #7d241a, #4b241d 58%, #7e6b4b);
+}
+
+.lov-arena-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 28px rgba(0, 0, 0, 0.42));
+}
+
+.lov-arena-toggles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 22px 18px;
+}
+
+.lov-toggle-chip {
+  min-height: 54px;
+  border-color: rgba(134, 119, 109, 0.72);
+  background: linear-gradient(180deg, #5a504d, #403939);
+  color: #d6c4a3;
+  font-size: 1.25rem;
+}
+
+.lov-toggle-chip.active {
+  border-color: rgba(156, 214, 197, 0.84);
+  background: linear-gradient(180deg, #4a6863, #2b3b3e);
+  color: #edfef8;
+}
+
+.lov-toggle-chip.disabled {
+  opacity: 0.72;
+}
+

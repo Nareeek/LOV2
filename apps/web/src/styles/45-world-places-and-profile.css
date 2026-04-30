@@ -1,0 +1,295 @@
+/* Larger world-place markers: the art should read as buildings/locations, not tiny buttons. */
+.scene-hotspot-wrap.has-hotspot-art {
+  --place-art-fill: 1.08;
+  --place-art-scale: 1;
+  --place-art-hover-scale: 1.04;
+}
+
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='hub-tavern'] {
+  --place-art-fill: 1.12;
+  --place-art-scale: 1.08;
+  z-index: 3;
+}
+
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='hub-arena'] {
+  --place-art-fill: 1.14;
+  --place-art-scale: 1.1;
+  z-index: 5;
+}
+
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='hub-store'] {
+  --place-art-fill: 1.12;
+  --place-art-scale: 1.08;
+  z-index: 4;
+}
+
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='hub-fountain'] {
+  --place-art-fill: 1.18;
+  --place-art-scale: 1.12;
+  z-index: 4;
+}
+
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='map-forge'],
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='map-tower'],
+.scene-hotspot-wrap.has-hotspot-art[data-hotspot-id='map-boatman'] {
+  --place-art-fill: 1.16;
+  --place-art-scale: 1.1;
+  z-index: 4;
+}
+
+.scene-hotspot-wrap.has-hotspot-art .hotspot-art {
+  width: calc(100% * var(--place-art-fill));
+  height: calc(100% * var(--place-art-fill));
+  max-width: none;
+  max-height: none;
+  transform: translate(-50%, -50%) scale(var(--place-art-scale));
+}
+
+.scene-hotspot-wrap.has-hotspot-art:hover .hotspot-art,
+.scene-hotspot-wrap.has-hotspot-art:focus-within .hotspot-art {
+  transform: translate(-50%, -50%) scale(var(--place-art-hover-scale));
+}
+
+/* Hero info window: let it use the friends-tray space like the original profile popup. */
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+  top: calc(-1 * var(--stage-topbar-height) + 18px);
+  bottom: calc(-1 * var(--stage-bottom-height) + 16px);
+  left: clamp(16px, 3vw, 42px);
+  right: clamp(16px, 3vw, 42px);
+  z-index: 38;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) .shell-reset-scrim {
+  background: rgba(10, 8, 9, 0.58);
+  backdrop-filter: none;
+}
+
+.lov-hero-info-shell {
+  --window-width: min(1280px, calc(100vw - 48px));
+  --window-height: min(860px, calc(100vh - 24px));
+}
+
+.lov-hero-info-shell .lov-window-body {
+  min-height: 0;
+  display: grid;
+  overflow: hidden;
+}
+
+.lov-hero-info-layout {
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(390px, 0.44fr) minmax(520px, 0.56fr);
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+.lov-hero-info-main,
+.lov-hero-info-side,
+.lov-profile-screen-window {
+  min-height: 0;
+}
+
+.lov-profile-screen-window {
+  height: 100%;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.lov-profile-screen-window .lov-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 10px;
+  padding: 0 0 0 60px;
+}
+
+.lov-profile-screen-window .lov-profile-stat {
+  position: relative;
+  min-height: 54px;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  padding: 7px 12px;
+  border: 2px solid rgba(117, 91, 57, 0.74);
+  border-radius: 13px;
+  background:
+    linear-gradient(90deg, rgba(255, 247, 217, 0.8), transparent 16%, transparent 84%, rgba(160, 112, 49, 0.26)),
+    linear-gradient(180deg, #fff3c9, #dfb970);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 3px 0 rgba(72, 58, 44, 0.48);
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-health,
+.lov-profile-screen-window .lov-profile-stat.stat-armor {
+  grid-column: 1 / -1;
+}
+
+.lov-profile-screen-window .lov-profile-stat::before {
+  content: "";
+  position: absolute;
+  left: -58px;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  color: #f2dcc0;
+  font-family: Georgia, serif;
+  font-size: 1.75rem;
+  line-height: 1;
+  text-shadow: 0 2px 2px rgba(28, 20, 16, 0.6);
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-health::before {
+  content: "\2665";
+  color: #c84035;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-armor::before {
+  content: "\25C6";
+  color: #dce8f1;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-strength::before {
+  content: "\2694";
+  color: #f0c16d;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-agility::before {
+  content: "\2197";
+  color: #d9c195;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-intuition::before {
+  content: "\270E";
+  color: #c98d5f;
+}
+
+.lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+  content: "\2663";
+  color: #83bd66;
+}
+
+.lov-profile-screen-window .lov-profile-stat span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.lov-profile-screen-window .lov-profile-stat strong {
+  color: #9d302d;
+  font-size: clamp(1.32rem, 2.1vw, 1.86rem);
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 1px 0 rgba(255, 244, 209, 0.76),
+    0 2px 2px rgba(54, 28, 23, 0.34);
+}
+
+.lov-profile-screen-window .lov-profile-header img {
+  width: 74px;
+  height: 74px;
+}
+
+.lov-profile-screen-window .lov-motto-box {
+  min-height: 62px;
+}
+
+.lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 8px;
+}
+
+.lov-hero-info-side .lov-paperdoll {
+  gap: 10px;
+}
+
+.lov-hero-info-side .lov-paperdoll-stage {
+  grid-template-columns: 82px minmax(0, 1fr) 82px;
+  gap: 8px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot {
+  min-height: 74px;
+  border-radius: 8px;
+}
+
+.lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+  width: 62px;
+  height: 62px;
+}
+
+.lov-hero-info-side .lov-paperdoll-center {
+  border-radius: 8px;
+}
+
+.lov-hero-info-side .lov-paperdoll-hero {
+  width: min(88%, 420px);
+  height: 94%;
+  max-height: none;
+}
+
+.lov-hero-info-side .lov-paperdoll-pet {
+  width: min(24%, 150px);
+  right: -2%;
+}
+
+.lov-hero-info-side .lov-prestige-bar {
+  width: min(100%, 420px);
+  min-width: 0;
+  justify-self: center;
+}
+
+@media (max-width: 1100px), (max-height: 700px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+    top: calc(-1 * var(--stage-topbar-height) + 10px);
+    bottom: calc(-1 * var(--stage-bottom-height) + 10px);
+    left: 10px;
+    right: 10px;
+  }
+
+  .lov-hero-info-shell {
+    --window-width: calc(100vw - 20px);
+    --window-height: calc(100vh - 20px);
+  }
+
+  .lov-hero-info-layout {
+    grid-template-columns: minmax(330px, 0.45fr) minmax(410px, 0.55fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .lov-profile-screen-window .lov-profile-stats {
+    padding-left: 48px;
+    gap: 7px;
+  }
+
+  .lov-profile-screen-window .lov-profile-stat {
+    min-height: 46px;
+  }
+
+  .lov-profile-screen-window .lov-profile-stat::before {
+    left: -46px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.42rem;
+  }
+
+  .lov-hero-info-side .lov-paperdoll-stage {
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
+    gap: 6px;
+  }
+
+  .lov-hero-info-side .lov-paperdoll-slot {
+    min-height: 52px;
+  }
+
+  .lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+    width: 44px;
+    height: 44px;
+  }
+}
+

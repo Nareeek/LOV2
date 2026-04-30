@@ -15,6 +15,17 @@ type HotspotTone = 'neutral' | 'available' | 'traveling' | 'ready' | 'locked' | 
 
 const WIDTH = 908;
 const HEIGHT = 498;
+const HOTSPOT_ASSET_BY_ID: Record<string, string> = {
+  'hub-tavern': 'ui-hotspot-hub-tavern',
+  'hub-arena': 'ui-hotspot-hub-arena',
+  'hub-store': 'ui-hotspot-hub-store',
+  'hub-sign': 'ui-hotspot-hub-sign',
+  'hub-fountain': 'ui-hotspot-hub-fountain',
+  'map-town': 'ui-hotspot-map-town',
+  'map-forge': 'ui-hotspot-map-forge',
+  'map-tower': 'ui-hotspot-map-tower',
+  'map-boatman': 'ui-hotspot-map-boatman',
+};
 
 export function SceneViewport({
   scene,
@@ -122,6 +133,7 @@ export function SceneViewport({
           const kind = hotspot.visual?.kind ?? 'portal';
           const accent = hotspot.visual?.accent ?? 'gold';
           const labelSide = hotspot.visual?.labelSide ?? 'top';
+          const overlayAssetId = HOTSPOT_ASSET_BY_ID[hotspot.id];
           const style = {
             left: `${hotspot.rect.x * 100}%`,
             top: `${hotspot.rect.y * 100}%`,
@@ -130,25 +142,33 @@ export function SceneViewport({
           } as CSSProperties;
 
           return (
-            <button
+            <span
               key={hotspot.id}
-              type="button"
-              className={`scene-hotspot ${tone} kind-${kind} accent-${accent}`}
+              className={`scene-hotspot-wrap ${overlayAssetId ? 'has-hotspot-art' : ''}`}
+              data-hotspot-id={hotspot.id}
               style={style}
-              disabled={disabled}
-              aria-label={hotspot.labelRu}
-              data-testid={`hotspot-${hotspot.id}`}
-              onClick={() => clickRef.current(hotspot.action, hotspot)}
             >
-              <span className="hotspot-marker" aria-hidden="true">
-                <span className="hotspot-core" />
-              </span>
-              <span className={`hotspot-label side-${labelSide}`}>
-                <strong>{hotspot.labelRu}</strong>
-                <small>{hotspot.descriptionRu}</small>
-              </span>
-              {hotspotBadges?.[hotspot.id] ? <strong className="hotspot-badge">{hotspotBadges[hotspot.id]}</strong> : null}
-            </button>
+              {overlayAssetId ? (
+                <img className="hotspot-art" src={assetPath(overlayAssetId)} alt="" aria-hidden="true" />
+              ) : null}
+              <button
+                type="button"
+                className={`scene-hotspot ${tone} kind-${kind} accent-${accent}`}
+                disabled={disabled}
+                aria-label={hotspot.labelRu}
+                data-testid={`hotspot-${hotspot.id}`}
+                onClick={() => clickRef.current(hotspot.action, hotspot)}
+              >
+                <span className="hotspot-marker" aria-hidden="true">
+                  <span className="hotspot-core" />
+                </span>
+                <span className={`hotspot-label side-${labelSide}`}>
+                  <strong>{hotspot.labelRu}</strong>
+                  <small>{hotspot.descriptionRu}</small>
+                </span>
+                {hotspotBadges?.[hotspot.id] ? <strong className="hotspot-badge">{hotspotBadges[hotspot.id]}</strong> : null}
+              </button>
+            </span>
           );
         })}
       </div>
@@ -165,11 +185,6 @@ export function SceneViewport({
 
 function drawSceneFrame(layer: Graphics) {
   layer.clear();
-  layer
-    .roundRect(10, 10, WIDTH - 20, HEIGHT - 20, 22)
-    .stroke({ color: '#8a6a42', width: 2.2, alpha: 0.52 })
-    .roundRect(20, 20, WIDTH - 40, HEIGHT - 40, 18)
-    .stroke({ color: '#21171a', width: 1.4, alpha: 0.54 });
 }
 
 function drawAmbient(layer: Graphics, sceneId: SceneDefinition['id'], tick: number) {
