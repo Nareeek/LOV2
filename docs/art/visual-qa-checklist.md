@@ -10,4 +10,15 @@
 - Assets have no watermarks, logos, or visible generator artifacts.
 - Assets are not screenshots or copies from other original games.
 - Generated art direction remains visually consistent with the existing LOV2 UI.
-
+- Hover and keyboard focus reveal a clear clickable effect for the tavern hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the arena hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the shop hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the fountain hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the harbor sign hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the forge hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the boatman hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the boss tower hotspot without blocking clicks.
+- Hover and keyboard focus reveal a clear clickable effect for the town return hotspot without blocking clicks.
+- Hotspot overlay art stays aligned to the intended place on desktop and mobile viewports.
+- Hotspot overlay images use `pointer-events: none` and never block the underlying hotspot action.
+- Touch/mobile hotspot behavior remains acceptable even without hover.
