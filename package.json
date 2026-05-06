@@ -14,7 +14,18 @@
     "prebuild": "pnpm --filter @lov2/api prisma:generate",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
-    "assets:check": "node scripts/validate-assets.mjs"
+    "assets:check": "node scripts/validate-assets.mjs",
+
+    "codex:check": "powershell -ExecutionPolicy Bypass -File scripts/codex-check.ps1 all",
+    "codex:check:web": "powershell -ExecutionPolicy Bypass -File scripts/codex-check.ps1 web",
+    "codex:check:api": "powershell -ExecutionPolicy Bypass -File scripts/codex-check.ps1 api",
+    "codex:check:shared": "powershell -ExecutionPolicy Bypass -File scripts/codex-check.ps1 shared",
+    "codex:check:game-data": "powershell -ExecutionPolicy Bypass -File scripts/codex-check.ps1 game-data",
+    "codex:check:worker": "powershell -ExecutionPolicy Bypass -File scripts/codex-check.ps1 worker",
+
+    "codex:check:bash": "bash scripts/codex-check.sh all",
+    "codex:check:web:bash": "bash scripts/codex-check.sh web",
+    "codex:check:api:bash": "bash scripts/codex-check.sh api"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

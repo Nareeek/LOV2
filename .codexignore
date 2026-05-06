@@ -1,12 +1,52 @@
-node_modules
-**/node_modules
-dist
-build
-coverage
-test-results
-playwright-report
-.pnpm-store
-.git
+# dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
+pnpm-store/
+
+# build outputs
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+**/coverage/
+*.tsbuildinfo
+
+# test/browser artifacts
+test-results/
+playwright-report/
+**/test-results/
+**/playwright-report/
+
+# caches
+.turbo/
+.cache/
+**/.cache/
+apps/web/.vite/
+**/.vite/
+
+# git/env/logs
+.git/
 .env
 .env.*
+!.env.example
 *.log
+
+# local DB/dev artifacts
+apps/api/prisma/migrations/dev.db*
+*.db
+*.sqlite
+*.sqlite3
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# temporary files
+tmp/
+temp/
+.tmp/

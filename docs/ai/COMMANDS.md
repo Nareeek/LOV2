@@ -25,6 +25,19 @@ pnpm test
 pnpm build
 ```
 
+## Codex Windows Checks
+
+Preferred on Windows:
+
+```powershell
+pnpm codex:check:web
+pnpm codex:check:api
+pnpm codex:check:shared
+pnpm codex:check:game-data
+pnpm codex:check:worker
+pnpm codex:check
+```
+
 ## E2E
 
 ```bash
