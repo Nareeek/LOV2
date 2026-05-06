@@ -3,6 +3,7 @@ import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
 import { GameShellModalLayer } from './GameShellModalLayer.js';
 import { GameShellSheetStage } from './GameShellSheetStage.js';
 import { GameShellCombatStage } from './GameShellCombatStage.js';
+import { GameShellWorldStage } from './GameShellWorldStage.js';
 import {
   experienceForLevel,
   type BootstrapState,
@@ -31,18 +32,13 @@ import type {
   WorldLocation,
   WorldWindowId,
 } from '../../game/types.js';
-import { SceneViewport } from '../SceneViewport.js';
-import { ActionDock } from './ActionDock.js';
 import { BottomTray } from './BottomTray.js';
 import {
   EnemyInfoWindow,
   HeroInfoWindow,
-  TravelStage,
 } from './GamePanels.js';
-import { infoWindowTitle, renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindowRouter.js';
+import { renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindowRouter.js';
 import { HudFrame } from './HudFrame.js';
-import { OverlayLayer } from './OverlayLayer.js';
-import { TaskRail } from './TaskRail.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
 const COMBAT_REPLAY_TURN_MS = 2200;
@@ -565,62 +561,26 @@ export function GameShell({
           ) : null}
 
           {(baseStage === 'world' || baseStage === 'travel') && (
-            <section className={`stage-playfield ${baseStage === 'travel' ? 'travel-layout' : ''}`}>
-                {baseStage === 'world' ? (
-                  <aside className="stage-left-stack">
-                    <TaskRail activeExerciseId={selectedExerciseId} onIntent={handleIntent} />
-                  </aside>
-                ) : null}
-
-              <section className="stage-main">
-                {baseStage === 'world' ? (
-                  <SceneViewport
-                    scene={activeScene}
-                    hotspotBadges={hotspotBadges}
-                    hotspotToneById={hotspotToneById}
-                    onHotspotClick={handleHotspotClick}
-                  />
-                ) : (
-                  <TravelStage
-                    state={state}
-                    activeTravel={activeTravel}
-                    activeTravelReady={activeTravelReady}
-                    clock={clock}
-                    onIntent={handleIntent}
-                  />
-                )}
-
-                {worldWindowContent ? (
-                  <GameShellModalLayer testId="world-window-layer">
-                    {worldWindowContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {heroInfoContent ? (
-                  <GameShellModalLayer testId="hero-info-layer">
-                    {heroInfoContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {enemyInfoContent ? (
-                  <GameShellModalLayer testId="enemy-info-layer">
-                    {enemyInfoContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
-                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-                    {infoWindowContent}
-                  </OverlayLayer>
-                ) : null}
-              </section>
-
-              {showActionDock ? (
-                <aside className="stage-right-rail">
-                  <ActionDock onIntent={handleIntent} />
-                </aside>
-              ) : null}
-            </section>
+            <GameShellWorldStage
+              baseStage={baseStage}
+              selectedExerciseId={selectedExerciseId}
+              onIntent={handleIntent}
+              activeScene={activeScene}
+              hotspotBadges={hotspotBadges}
+              hotspotToneById={hotspotToneById}
+              onHotspotClick={handleHotspotClick}
+              state={state}
+              activeTravel={activeTravel}
+              activeTravelReady={activeTravelReady}
+              clock={clock}
+              worldWindowContent={worldWindowContent}
+              heroInfoContent={heroInfoContent}
+              enemyInfoContent={enemyInfoContent}
+              infoWindow={infoWindow}
+              infoWindowContent={infoWindowContent}
+              showActionDock={showActionDock}
+              onCloseInfo={() => setInfoWindow('none')}
+            />
           )}
 
           {baseStage === 'sheet' ? (
