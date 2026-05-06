@@ -2,6 +2,14 @@
 
 LOV2 is a Russian-first, browser-based fantasy social RPG inspired by classic 2D social RPGs. It is not a clone and does not ship copyrighted source art, names, writing, or content from the reference game.
 
+## Status
+
+This project is an educational/portfolio browser RPG prototype. It is under active development and not production-ready.
+
+## Security
+
+The checked-in configuration is development-only. Do not use the sample secrets or local Docker credentials in production.
+
 ## Stack
 
 - `apps/web`: React, Vite, TypeScript, PixiJS.
