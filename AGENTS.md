@@ -17,8 +17,6 @@ Main areas:
 
 Before scanning the repo, check these files first:
 
-Before scanning the repo, check these files first:
-
 1. `docs/ai/TASK_ROUTER.md`
 2. `docs/ai/REPO_MAP.md`
 3. `docs/ai/COMMANDS.md`
