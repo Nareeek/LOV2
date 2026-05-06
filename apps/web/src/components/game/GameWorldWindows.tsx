@@ -40,10 +40,6 @@ import {
   RIGHT_SLOTS,
   SLOT_HINTS,
   SLOT_LABELS,
-  STAT_AGILITY,
-  STAT_INTUITION,
-  STAT_LUCK,
-  STAT_STRENGTH,
   STORE_CONTRACTS,
   TOWER_HALLS,
   type AppearanceKey,
@@ -77,6 +73,7 @@ import {
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
 import { InventoryGrid } from './GameCharacterPanels.js';
+import { enemyAssetId, enemyDisplayName, enemyStatRows } from './enemyPresentation.js';
 export function TavernWindow({
   state,
   selectedQuest,
@@ -215,12 +212,10 @@ export function TavernWindow({
 }
 
 export function ArenaPreviewWindow({
-  state,
   enemy,
   onClose,
   onIntent,
 }: {
-  state: BootstrapState;
   enemy: EnemyDefinition | undefined;
   onClose: () => void;
   onIntent: (intent: GameIntent) => void;
@@ -229,24 +224,9 @@ export function ArenaPreviewWindow({
     return null;
   }
 
-  const character = state.character;
-  const opponentNames: Record<string, string> = {
-    'mist-bandit': 'Роман',
-    'harbor-wraith': 'Алексей',
-    'baron-of-ashes': 'Ашен',
-  };
-  const displayLevel = character?.level ?? enemy.level;
-  const statScale = character ? Math.max(1, character.level / Math.max(1, enemy.level)) : 1;
-  const displayHealth = character ? Math.max(enemy.health, Math.round(character.maxHealth * 0.92)) : enemy.health;
-  const stats = [
-    { label: 'Здоровье', value: displayHealth },
-    { label: 'Броня', value: Math.max(enemy.armor, Math.round(enemy.armor * statScale)) },
-    { label: 'Сила', value: Math.max(enemy.stats[STAT_STRENGTH], Math.round(enemy.stats[STAT_STRENGTH] * statScale)) },
-    { label: 'Ловкость', value: Math.max(enemy.stats[STAT_AGILITY], Math.round(enemy.stats[STAT_AGILITY] * statScale)) },
-    { label: 'Интуиция', value: Math.max(enemy.stats[STAT_INTUITION], Math.round(enemy.stats[STAT_INTUITION] * statScale)) },
-    { label: 'Удача', value: Math.max(enemy.stats[STAT_LUCK], Math.round(enemy.stats[STAT_LUCK] * statScale)) },
-  ];
-  const opponentName = opponentNames[enemy.id] ?? enemy.nameRu;
+  const stats = enemyStatRows(enemy);
+  const opponentName = enemyDisplayName(enemy);
+  const opponentAsset = enemyAssetId(enemy);
 
   return (
     <WorldWindowShell
@@ -256,16 +236,17 @@ export function ArenaPreviewWindow({
       className="lov-arena-shell"
       size="standard"
       bodyScroll="none"
+      showHeaderClose={false}
     >
       <div className="lov-arena-layout">
         <section className="lov-arena-stats">
           <div className="lov-opponent-card">
             <strong>{opponentName}</strong>
-            <span>{displayLevel} уровень</span>
+            <span>{enemy.level} уровень</span>
           </div>
           <div className="lov-arena-grid">
             {stats.map((entry) => (
-              <div key={`${entry.label}-${entry.value}`} className="lov-arena-stat">
+              <div key={entry.id} className="lov-arena-stat" data-testid={`arena-stat-${entry.id}`}>
                 <span>{entry.label}</span>
                 <strong>{entry.value}</strong>
               </div>
@@ -292,7 +273,7 @@ export function ArenaPreviewWindow({
         </section>
 
         <section className="lov-arena-preview">
-          <img src={assetPath('hero-nocturne')} alt="" />
+          <img src={assetPath(opponentAsset)} alt="" />
         </section>
       </div>
 

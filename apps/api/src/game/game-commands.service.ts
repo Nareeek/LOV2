@@ -330,7 +330,7 @@ export class GameCommandsService {
     return this.bootstrap(userId);
   }
 
-  async claimTravel(userId: string, travelId: string) {
+  async claimTravel(userId: string, travelId: string, input: { rush?: boolean } = {}) {
     const character = await this.requireCharacter(userId);
     const travel = await this.prisma.travelTask.findFirst({
       where: { id: travelId, characterId: character.id },
@@ -338,8 +338,13 @@ export class GameCommandsService {
     if (!travel) {
       throw new NotFoundException('Путешествие не найдено');
     }
-    if (travel.completesAt > new Date()) {
+    const now = new Date();
+    const rushCostGems = travel.completesAt > now && input.rush ? 1 : 0;
+    if (travel.completesAt > now && !input.rush) {
       throw new BadRequestException('Путешествие еще не завершено');
+    }
+    if (rushCostGems > 0 && character.gems < rushCostGems) {
+      throw new BadRequestException('Недостаточно жемчужин для ускорения');
     }
     if (travel.status === 'claimed') {
       throw new ConflictException('Путешествие уже получено');
@@ -350,23 +355,38 @@ export class GameCommandsService {
       : gameData.quests.find((entry) => entry.locationId === travel.locationId);
     const enemyId = quest?.enemyId ?? 'mist-bandit';
 
-    await this.prisma.$transaction([
-      this.prisma.travelTask.update({ where: { id: travel.id }, data: { status: 'claimed' } }),
-      this.prisma.combatEncounter.create({
+    await this.prisma.$transaction(async (tx) => {
+      if (rushCostGems > 0) {
+        await tx.character.update({
+          where: { id: character.id },
+          data: { gems: { decrement: rushCostGems } },
+        });
+        await tx.currencyLedgerEntry.create({
+          data: {
+            characterId: character.id,
+            currency: 'gems',
+            amount: -rushCostGems,
+            reason: 'travel.rush',
+          },
+        });
+      }
+
+      await tx.travelTask.update({ where: { id: travel.id }, data: { status: 'claimed' } });
+      await tx.combatEncounter.create({
         data: {
           characterId: character.id,
           questId: quest?.id ?? null,
           enemyId,
         },
-      }),
-      this.prisma.gameEvent.create({
+      });
+      await tx.gameEvent.create({
         data: {
           characterId: character.id,
           type: 'travel.completed',
-          payload: { travelId, enemyId },
+          payload: { travelId, enemyId, rushed: rushCostGems > 0, gemsSpent: rushCostGems },
         },
-      }),
-    ]);
+      });
+    });
 
     this.notifications.emitCharacterEvent(character.id, 'travel.completed', { travelId, enemyId });
     return this.bootstrap(userId);
@@ -419,6 +439,7 @@ export class GameCommandsService {
       ...(input.petId
         ? {
             pet: {
+              id: input.petId,
               level: input.petId === 'kitten' ? 17 : input.petId === 'wyrmlet' ? 14 : 12,
               health: input.petId === 'kitten' ? 2100 : input.petId === 'wyrmlet' ? 1950 : 1800,
             },

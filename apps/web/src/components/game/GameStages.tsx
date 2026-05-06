@@ -76,6 +76,7 @@ import {
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
 import { paperDollHeroAssetId } from './GameCharacterPanels.js';
+import { enemyAssetId, enemyDisplayName } from './enemyPresentation.js';
 export function TravelStage({
   state,
   activeTravel,
@@ -91,9 +92,15 @@ export function TravelStage({
 }) {
   const activeQuest = activeTravel?.questId ? state.quests.find((quest) => quest.id === activeTravel.questId) : undefined;
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
+  const progressPercent = progress?.percent ?? 0;
+  const canRushTravel = Boolean(activeTravel && (activeTravelReady || (state.character?.gems ?? 0) >= 1));
 
   return (
-    <section className="shell-reset-travel-stage lov-travel-stage" data-testid="travel-screen">
+    <section
+      className="shell-reset-travel-stage lov-travel-stage"
+      data-testid="travel-screen"
+      style={{ '--travel-progress': progressPercent } as CSSProperties}
+    >
       <div className="shell-reset-travel-art">
         <img src={assetPath('scene-map')} alt="" />
       </div>
@@ -105,38 +112,21 @@ export function TravelStage({
       </aside>
 
       <div className="lov-travel-pin">
-        <img src={assetPath('hero-nocturne')} alt="" />
+        <img src="/assets/generated/characters/character-face-portrait.jpg" alt="" />
       </div>
-
-      <section className="lov-travel-story">
-        <div className="lov-travel-portrait">
-          <img src={assetPath('hero-nocturne')} alt="" />
-        </div>
-        <div className="lov-travel-story-copy">
-          <p>«Зачем Солнце подарило мне ожерелье? Ведь я не смогла сберечь его. А теперь что? И что будет дальше?»</p>
-          {activeTravelReady && activeTravel ? (
-            <button type="button" onClick={() => onIntent({ type: 'claimTravel', travelId: activeTravel.id })}>
-              Я учту это
-            </button>
-          ) : (
-            <button type="button" disabled>
-              Я учту это
-            </button>
-          )}
-        </div>
-      </section>
 
       <div className="lov-travel-bottom">
         <div className="shell-reset-travel-progress lov-travel-progress">
           <span style={{ width: `${progress?.percent ?? 0}%` }} />
         </div>
         <strong>{progress ? formatDuration(progress.secondsLeft) : '00:01:50'}</strong>
-        {activeTravelReady && activeTravel ? (
-          <button type="button" className="lov-skip-button" onClick={() => onIntent({ type: 'claimTravel', travelId: activeTravel.id })}>
-            Завершить путь
-          </button>
-        ) : null}
-        <button type="button" className="lov-skip-button" disabled>
+        <button
+          type="button"
+          className="lov-skip-button"
+          data-testid="travel-rush-button"
+          disabled={!canRushTravel}
+          onClick={() => activeTravel && onIntent({ type: 'claimTravel', travelId: activeTravel.id, rush: !activeTravelReady })}
+        >
           Не хочу ждать! · 1 жемчужина
         </button>
       </div>
@@ -162,6 +152,8 @@ export function CombatStage({
   petMaxHealth,
   petAssistArmed,
   selectedPetId,
+  battlePetId,
+  combatLocked,
   replayTurns,
   onIntent,
 }: {
@@ -175,6 +167,8 @@ export function CombatStage({
   petMaxHealth: number;
   petAssistArmed: boolean;
   selectedPetId: string;
+  battlePetId: string | null;
+  combatLocked: boolean;
   replayTurns: CombatTurn[] | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
@@ -185,14 +179,23 @@ export function CombatStage({
 
   const equippedBySlot = getEquippedBySlot(state);
   const heroAssetId = paperDollHeroAssetId(equippedBySlot);
-  const selectedPet = PET_VARIANTS.find((pet) => pet.id === selectedPetId) ?? PET_VARIANTS[2]!;
-  const recentTurns = replayTurns?.slice(-2) ?? [];
+  const displayedEnemyName = enemyDisplayName(enemy);
+  const displayedEnemyAssetId = enemyAssetId(enemy);
+  const activePetId = battlePetId ?? selectedPetId;
+  const selectedPet = PET_VARIANTS.find((pet) => pet.id === activePetId) ?? PET_VARIANTS[2]!;
   const latestReplayTurn = replayTurns?.[replayTurns.length - 1];
-  const petSummoned = petAssistArmed;
+  const recentTurns = latestReplayTurn ? [latestReplayTurn] : [];
+  const petSummoned = Boolean(battlePetId || petAssistArmed);
   const petActing = petSummoned && latestReplayTurn?.actor === 'pet';
-  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPet.name, enemy.nameRu, character.name) : null;
+  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPet.name, displayedEnemyName, character.name) : null;
   const displayedPetHealth = petMaxHealth > 0 ? petHealth : selectedPet.hp;
   const displayedPetMaxHealth = petMaxHealth > 0 ? petMaxHealth : selectedPet.hp;
+  const latestTarget = targetForTurn(latestReplayTurn);
+  const turnPulseClass = latestReplayTurn ? `turn-${latestReplayTurn.turn % 2}` : '';
+  const heroMotionClass = fighterMotionClass(latestReplayTurn, latestTarget, 'character', turnPulseClass);
+  const enemyMotionClass = fighterMotionClass(latestReplayTurn, latestTarget, 'enemy', turnPulseClass);
+  const petMotionClass = fighterMotionClass(latestReplayTurn, latestTarget, 'pet', turnPulseClass);
+  const petButtonActive = Boolean(petAssistArmed || battlePetId);
 
   return (
     <section className="shell-reset-combat-stage lov-combat-stage" data-testid="combat-screen">
@@ -235,7 +238,7 @@ export function CombatStage({
 
         <div className="lov-combat-header enemy">
           <div className="lov-combat-meta">
-            <strong>{enemy.nameRu}</strong>
+            <strong>{displayedEnemyName}</strong>
             <span>{enemy.level}</span>
             <div className="lov-health-track">
               <i style={{ width: `${Math.round((enemyHealth / Math.max(1, enemyMaxHealth)) * 100)}%` }} />
@@ -243,7 +246,7 @@ export function CombatStage({
             <small>{enemyHealth}</small>
           </div>
           <div className="lov-combat-avatar enemy">
-            <img src={assetPath('enemy-ash-baron')} alt="" />
+            <img src={assetPath(displayedEnemyAssetId)} alt="" />
           </div>
           <button
             type="button"
@@ -258,12 +261,12 @@ export function CombatStage({
       </div>
 
       <div className="lov-battle-stage">
-        <img className="lov-fighter hero" src={assetPath(heroAssetId)} alt="" />
-        <img className="lov-fighter enemy" src={assetPath('enemy-ash-baron')} alt="" />
+        <img className={`lov-fighter hero ${heroMotionClass}`} src={assetPath(heroAssetId)} alt="" />
+        <img className={`lov-fighter enemy ${enemyMotionClass}`} src={assetPath(displayedEnemyAssetId)} alt="" />
         {petSummoned ? (
           <div className={`lov-battle-pet-wrap pet-${selectedPet.id}`}>
             <img
-              className={`lov-battle-pet summoned armed ${petActing ? 'assisting' : ''}`}
+              className={`lov-battle-pet summoned armed ${petMotionClass} ${petActing ? 'assisting' : ''}`}
               data-testid="combat-summoned-pet"
               src={assetPath(selectedPet.assetId)}
               alt=""
@@ -291,8 +294,9 @@ export function CombatStage({
         <div className="lov-pet-card">
           <button
             type="button"
-            className={`lov-toggle-chip ${petAssistArmed ? 'active' : ''}`}
+            className={`lov-toggle-chip ${petButtonActive ? 'active' : ''}`}
             data-testid="pet-assist-button"
+            disabled={combatLocked}
             onClick={() => onIntent({ type: 'togglePetAssist' })}
           >
             Вызывать питомца
@@ -321,7 +325,7 @@ export function CombatStage({
               className={`shell-reset-damage ${damageTargetClass(turn)} actor-${turn.actor} ${turn.critical ? 'critical' : ''}`}
               style={{ '--float-index': `${index}` } as CSSProperties}
             >
-              {turn.actor === 'pet' ? selectedPet.name : turn.actor === 'character' ? character.name : enemy.nameRu}: -{turn.damage}
+              -{turn.damage}
             </span>
           ))}
         </div>
@@ -340,20 +344,62 @@ function damageTargetClass(turn: CombatTurn) {
   return 'to-hero';
 }
 
+type CombatTarget = NonNullable<CombatTurn['target']>;
+
+function targetForTurn(turn: CombatTurn | undefined): CombatTarget | null {
+  if (!turn) {
+    return null;
+  }
+  if (turn.target) {
+    return turn.target;
+  }
+  return turn.actor === 'enemy' ? 'character' : 'enemy';
+}
+
+function fighterMotionClass(
+  turn: CombatTurn | undefined,
+  target: CombatTarget | null,
+  fighter: CombatTarget,
+  pulseClass: string,
+) {
+  if (!turn) {
+    return '';
+  }
+
+  const classes = [];
+  if (target === fighter) {
+    classes.push('hit', pulseClass);
+  }
+  if (turn.actor === fighter) {
+    classes.push('attacking', pulseClass);
+  }
+  return classes.join(' ');
+}
+
 function combatTurnLabel(turn: CombatTurn, petName: string, enemyName: string, heroName: string) {
   const actor = turn.actor === 'pet' ? petName : turn.actor === 'character' ? heroName : enemyName;
-  const target = turn.target === 'pet' ? petName : turn.target === 'enemy' ? enemyName : heroName;
+  const turnTarget = targetForTurn(turn);
+  const target = turnTarget === 'pet' ? petName : turnTarget === 'enemy' ? enemyName : heroName;
   return {
     title: turn.critical ? 'Критический удар' : 'Удар',
     detail: `${actor} → ${target}: ${turn.damage}`,
   };
 }
 
+function rewardPetForCombat(latestResolvedCombat: CombatEncounter | undefined, battlePetId?: string | null) {
+  const petId = latestResolvedCombat?.log?.petId ?? battlePetId;
+  const pet = PET_VARIANTS.find((entry) => entry.id === petId);
+  const petTookTurn = Boolean(latestResolvedCombat?.log?.turns.some((turn) => turn.actor === 'pet'));
+  return pet && petTookTurn ? pet : null;
+}
+
 export function RewardWindow({
   latestResolvedCombat,
+  battlePetId,
   onContinue,
 }: {
   latestResolvedCombat: CombatEncounter | undefined;
+  battlePetId?: string | null;
   onContinue: () => void;
 }) {
   const reward = latestResolvedCombat?.log?.reward;
@@ -361,6 +407,7 @@ export function RewardWindow({
     latestResolvedCombat?.status === 'won'
     || latestResolvedCombat?.log?.winner === 'character';
   const showRewardValues = didWin && Boolean((reward?.gold ?? 0) > 0 || (reward?.experience ?? 0) > 0);
+  const rewardPet = rewardPetForCombat(latestResolvedCombat, battlePetId);
 
   return (
     <section className={`lov-victory-window ${didWin ? 'is-victory' : 'is-defeat'}`} data-testid="reward-screen">
@@ -376,10 +423,12 @@ export function RewardWindow({
           <strong>{reward?.experience ?? 0} XP</strong>
         </div>
         <div className="lov-reward-drop" aria-hidden="true" />
-        <div className="lov-pet-xp">
-          <img src={assetPath('pet-wyvern')} alt="" />
-          <strong>1 XP</strong>
-        </div>
+        {showRewardValues && rewardPet ? (
+          <div className="lov-pet-xp">
+            <img src={assetPath(rewardPet.assetId)} alt="" />
+            <strong>1 XP</strong>
+          </div>
+        ) : null}
         <button type="button" data-testid="reward-continue-button" onClick={onContinue}>
           Закрыть
         </button>
@@ -390,9 +439,11 @@ export function RewardWindow({
 
 export function CombatResultWindow({
   latestResolvedCombat,
+  battlePetId,
   onContinue,
 }: {
   latestResolvedCombat: CombatEncounter | undefined;
+  battlePetId?: string | null;
   onContinue: () => void;
 }) {
   const reward = latestResolvedCombat?.log?.reward;
@@ -400,6 +451,7 @@ export function CombatResultWindow({
     latestResolvedCombat?.status === 'won'
     || latestResolvedCombat?.log?.winner === 'character';
   const showRewardValues = didWin && Boolean((reward?.gold ?? 0) > 0 || (reward?.experience ?? 0) > 0);
+  const rewardPet = rewardPetForCombat(latestResolvedCombat, battlePetId);
 
   return (
     <section className={`lov-victory-window ${didWin ? 'is-victory' : 'is-defeat'}`} data-testid="reward-screen">
@@ -421,10 +473,12 @@ export function CombatResultWindow({
               <strong>{reward?.experience ?? 0} XP</strong>
             </div>
             <div className="lov-reward-drop" aria-hidden="true" />
-            <div className="lov-pet-xp">
-              <img src={assetPath('pet-wyvern')} alt="" />
-              <strong>1 XP</strong>
-            </div>
+            {rewardPet ? (
+              <div className="lov-pet-xp">
+                <img src={assetPath(rewardPet.assetId)} alt="" />
+                <strong>1 XP</strong>
+              </div>
+            ) : null}
           </>
         ) : null}
         <button type="button" data-testid="reward-continue-button" onClick={onContinue}>

@@ -59,7 +59,7 @@ export function renderWorldWindow({
         />
       );
     case 'arenaPreview':
-      return <ArenaPreviewWindow state={state} enemy={selectedArenaEnemy} onClose={onClose} onIntent={onIntent} />;
+      return <ArenaPreviewWindow enemy={selectedArenaEnemy} onClose={onClose} onIntent={onIntent} />;
     case 'store':
       return (
         <StoreWindow

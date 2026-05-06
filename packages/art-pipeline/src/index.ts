@@ -105,6 +105,20 @@ export const artManifest: ArtAssetRecord[] = [
     promptOrSource: generatedSource('_incoming_assets_transparent/enemies/enemy-ash-baron.png'),
   },
   {
+    id: 'enemy-mist-bandit',
+    path: '/assets/generated/enemies/enemy-mist-bandit.png',
+    kind: 'enemy',
+    license: GENERATED_LICENSE,
+    promptOrSource: generatedSource('_incoming_assets_transparent/enemies/enemy-mist-bandit.png'),
+  },
+  {
+    id: 'enemy-harbor-wraith',
+    path: '/assets/generated/enemies/enemy-harbor-wraith.png',
+    kind: 'enemy',
+    license: GENERATED_LICENSE,
+    promptOrSource: generatedSource('_incoming_assets_transparent/enemies/enemy-harbor-wraith.png'),
+  },
+  {
     id: 'pet-wyvern',
     path: '/assets/generated/pets/pet-wyvern.png',
     kind: 'pet',

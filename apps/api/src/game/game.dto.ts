@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsInt, IsOptional, IsString, Length, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Length, Min } from 'class-validator';
 import { STAT_KEYS } from '@lov2/game-data';
 import type { CharacterClassId, CharacterGender, StatKey } from '@lov2/shared';
 
@@ -41,6 +41,13 @@ export class StartTravelDto {
   @IsOptional()
   @IsString()
   questId?: string;
+}
+
+export class ClaimTravelDto {
+  @ApiProperty({ example: true, required: false })
+  @IsOptional()
+  @IsBoolean()
+  rush?: boolean;
 }
 
 export class EquipItemDto {

@@ -13,3 +13,4 @@ playwright-report/
 test-results/
 apps/web/.vite/
 apps/api/prisma/migrations/dev.db*
+_incoming_assets/
