@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
-import { GameShellModalLayer } from './GameShellModalLayer.js';
 import { GameShellSheetStage } from './GameShellSheetStage.js';
 import { GameShellCombatStage } from './GameShellCombatStage.js';
 import { GameShellWorldStage } from './GameShellWorldStage.js';
