@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
 import { GameShellModalLayer } from './GameShellModalLayer.js';
 import { GameShellSheetStage } from './GameShellSheetStage.js';
+import { GameShellCombatStage } from './GameShellCombatStage.js';
 import {
   experienceForLevel,
   type BootstrapState,
@@ -34,8 +35,6 @@ import { SceneViewport } from '../SceneViewport.js';
 import { ActionDock } from './ActionDock.js';
 import { BottomTray } from './BottomTray.js';
 import {
-  CombatResultWindow,
-  CombatStage,
   EnemyInfoWindow,
   HeroInfoWindow,
   TravelStage,
@@ -641,54 +640,24 @@ export function GameShell({
           ) : null}
 
           {baseStage === 'combat' && state.character ? (
-            <section className="stage-playfield single-column">
-              <section className="stage-main combat-main">
-                <CombatStage
-                  state={state}
-                  enemy={combatEnemy}
-                  characterHealth={replayFrame.characterCurrent}
-                  characterMaxHealth={replayFrame.characterStart}
-                  enemyHealth={replayFrame.enemyCurrent}
-                  enemyMaxHealth={replayFrame.enemyStart}
-                  petHealth={replayFrame.petCurrent}
-                  petMaxHealth={replayFrame.petStart}
-                  petAssistArmed={petAssistArmed}
-                  selectedPetId={selectedPetId}
-                  replayTurns={visibleReplayTurns}
-                  onIntent={handleIntent}
-                />
-
-                {worldWindowContent ? (
-                  <GameShellModalLayer testId="world-window-layer">
-                    {worldWindowContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {rewardVisible ? (
-                  <GameShellModalLayer reward>
-                    <CombatResultWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
-                  </GameShellModalLayer>
-                ) : null}
-
-                {heroInfoContent ? (
-                  <GameShellModalLayer testId="hero-info-layer">
-                    {heroInfoContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {enemyInfoContent ? (
-                  <GameShellModalLayer testId="enemy-info-layer">
-                    {enemyInfoContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
-                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-                    {infoWindowContent}
-                  </OverlayLayer>
-                ) : null}
-              </section>
-            </section>
+            <GameShellCombatStage
+              state={state}
+              combatEnemy={combatEnemy}
+              replayFrame={replayFrame}
+              petAssistArmed={petAssistArmed}
+              selectedPetId={selectedPetId}
+              visibleReplayTurns={visibleReplayTurns}
+              onIntent={handleIntent}
+              worldWindowContent={worldWindowContent}
+              rewardVisible={rewardVisible}
+              latestResolvedCombat={latestResolvedCombat}
+              onCloseReward={closeReward}
+              heroInfoContent={heroInfoContent}
+              enemyInfoContent={enemyInfoContent}
+              infoWindow={infoWindow}
+              infoWindowContent={infoWindowContent}
+              onCloseInfo={() => setInfoWindow('none')}
+            />
           ) : null}
 
           {showBottomTray ? <BottomTray activeTab={metaTab} onSelectTab={handleMetaTabSelect} /> : null}
