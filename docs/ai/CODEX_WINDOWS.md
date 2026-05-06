@@ -10,9 +10,10 @@ Before editing code, read:
 
 1. `AGENTS.md`
 2. `docs/ai/TASK_ROUTER.md`
-3. `docs/ai/REPO_MAP.md`
-4. `docs/ai/COMMANDS.md`
-5. Relevant folder-level `AGENTS.md`
+3. `docs/ai/CODEX_CONTEXT_BUDGET.md`
+4. `docs/ai/REPO_MAP.md`
+5. `docs/ai/COMMANDS.md`
+6. Relevant folder-level `AGENTS.md`
 
 For Windows command execution, also read this file.
 
@@ -82,3 +83,5 @@ Do not scan generated or irrelevant folders unless the task explicitly requires 
 - local database files
 - logs
 - temporary files
+
+Also respect `.codexignore`.

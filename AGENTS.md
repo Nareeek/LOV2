@@ -18,15 +18,18 @@ Main areas:
 Before scanning the repo, check these files first:
 
 1. `docs/ai/TASK_ROUTER.md`
-2. `docs/ai/REPO_MAP.md`
-3. `docs/ai/COMMANDS.md`
-4. Relevant folder-level `AGENTS.md`
+2. `docs/ai/CODEX_CONTEXT_BUDGET.md`
+3. `docs/ai/REPO_MAP.md`
+4. `docs/ai/COMMANDS.md`
+5. Relevant folder-level `AGENTS.md`
 
 For Windows/Codex command execution, also read:
 
 - `docs/ai/CODEX_WINDOWS.md`
 
 Do not scan the whole repo unless necessary.
+
+Use `docs/ai/CODEX_CONTEXT_BUDGET.md` to choose the smallest useful set of files before reading source code.
 
 Prefer reading specific files by path.
 
