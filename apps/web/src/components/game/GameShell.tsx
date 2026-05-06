@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
+import { GameShellSheetStage } from './GameShellSheetStage.js';
+import { GameShellCombatStage } from './GameShellCombatStage.js';
+import { GameShellWorldStage } from './GameShellWorldStage.js';
 import {
   experienceForLevel,
   type BootstrapState,
@@ -28,21 +31,13 @@ import type {
   WorldLocation,
   WorldWindowId,
 } from '../../game/types.js';
-import { SceneViewport } from '../SceneViewport.js';
-import { ActionDock } from './ActionDock.js';
 import { BottomTray } from './BottomTray.js';
 import {
-  CombatResultWindow,
-  CharacterSheet,
-  CombatStage,
   EnemyInfoWindow,
   HeroInfoWindow,
-  TravelStage,
 } from './GamePanels.js';
-import { infoWindowTitle, renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindowRouter.js';
+import { renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindowRouter.js';
 import { HudFrame } from './HudFrame.js';
-import { OverlayLayer } from './OverlayLayer.js';
-import { TaskRail } from './TaskRail.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
 const COMBAT_REPLAY_TURN_MS = 2200;
@@ -565,157 +560,63 @@ export function GameShell({
           ) : null}
 
           {(baseStage === 'world' || baseStage === 'travel') && (
-            <section className={`stage-playfield ${baseStage === 'travel' ? 'travel-layout' : ''}`}>
-                {baseStage === 'world' ? (
-                  <aside className="stage-left-stack">
-                    <TaskRail activeExerciseId={selectedExerciseId} onIntent={handleIntent} />
-                  </aside>
-                ) : null}
-
-              <section className="stage-main">
-                {baseStage === 'world' ? (
-                  <SceneViewport
-                    scene={activeScene}
-                    hotspotBadges={hotspotBadges}
-                    hotspotToneById={hotspotToneById}
-                    onHotspotClick={handleHotspotClick}
-                  />
-                ) : (
-                  <TravelStage
-                    state={state}
-                    activeTravel={activeTravel}
-                    activeTravelReady={activeTravelReady}
-                    clock={clock}
-                    onIntent={handleIntent}
-                  />
-                )}
-
-                {worldWindowContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
-                  </div>
-                ) : null}
-
-                {heroInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="hero-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{heroInfoContent}</div>
-                  </div>
-                ) : null}
-
-                {enemyInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
-                  </div>
-                ) : null}
-
-                {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
-                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-                    {infoWindowContent}
-                  </OverlayLayer>
-                ) : null}
-              </section>
-
-              {showActionDock ? (
-                <aside className="stage-right-rail">
-                  <ActionDock onIntent={handleIntent} />
-                </aside>
-              ) : null}
-            </section>
+            <GameShellWorldStage
+              baseStage={baseStage}
+              selectedExerciseId={selectedExerciseId}
+              onIntent={handleIntent}
+              activeScene={activeScene}
+              hotspotBadges={hotspotBadges}
+              hotspotToneById={hotspotToneById}
+              onHotspotClick={handleHotspotClick}
+              state={state}
+              activeTravel={activeTravel}
+              activeTravelReady={activeTravelReady}
+              clock={clock}
+              worldWindowContent={worldWindowContent}
+              heroInfoContent={heroInfoContent}
+              enemyInfoContent={enemyInfoContent}
+              infoWindow={infoWindow}
+              infoWindowContent={infoWindowContent}
+              showActionDock={showActionDock}
+              onCloseInfo={() => setInfoWindow('none')}
+            />
           )}
 
           {baseStage === 'sheet' ? (
-            <section className="stage-playfield single-column">
-              <section className="stage-main sheet-main">
-                <CharacterSheet
-                  state={state}
-                  activeTab={sheetTab}
-                  selectedItemStackId={selectedItemStackId}
-                  selectedPetId={selectedPetId}
-                  onSelectPet={setSelectedPetId}
-                  onIntent={handleIntent}
-                />
-
-                {worldWindowContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
-                  </div>
-                ) : null}
-
-                {enemyInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
-                  </div>
-                ) : null}
-
-                {infoWindow !== 'heroInfo' && !enemyInfoContent && infoWindowContent ? (
-                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-                    {infoWindowContent}
-                  </OverlayLayer>
-                ) : null}
-              </section>
-            </section>
+            <GameShellSheetStage
+              state={state}
+              sheetTab={sheetTab}
+              selectedItemStackId={selectedItemStackId}
+              selectedPetId={selectedPetId}
+              onSelectPet={setSelectedPetId}
+              onIntent={handleIntent}
+              worldWindowContent={worldWindowContent}
+              enemyInfoContent={enemyInfoContent}
+              infoWindow={infoWindow}
+              infoWindowContent={infoWindowContent}
+              onCloseInfo={() => setInfoWindow('none')}
+            />
           ) : null}
 
           {baseStage === 'combat' && state.character ? (
-            <section className="stage-playfield single-column">
-              <section className="stage-main combat-main">
-                <CombatStage
-                  state={state}
-                  enemy={combatEnemy}
-                  characterHealth={replayFrame.characterCurrent}
-                  characterMaxHealth={replayFrame.characterStart}
-                  enemyHealth={replayFrame.enemyCurrent}
-                  enemyMaxHealth={replayFrame.enemyStart}
-                  petHealth={replayFrame.petCurrent}
-                  petMaxHealth={replayFrame.petStart}
-                  petAssistArmed={petAssistArmed}
-                  selectedPetId={selectedPetId}
-                  replayTurns={visibleReplayTurns}
-                  onIntent={handleIntent}
-                />
-
-                {worldWindowContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
-                  </div>
-                ) : null}
-
-                {rewardVisible ? (
-                  <div className="shell-reset-modal-layer reward">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">
-                      <CombatResultWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
-                    </div>
-                  </div>
-                ) : null}
-
-                {heroInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="hero-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{heroInfoContent}</div>
-                  </div>
-                ) : null}
-
-                {enemyInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
-                  </div>
-                ) : null}
-
-                {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
-                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-                    {infoWindowContent}
-                  </OverlayLayer>
-                ) : null}
-              </section>
-            </section>
+            <GameShellCombatStage
+              state={state}
+              combatEnemy={combatEnemy}
+              replayFrame={replayFrame}
+              petAssistArmed={petAssistArmed}
+              selectedPetId={selectedPetId}
+              visibleReplayTurns={visibleReplayTurns}
+              onIntent={handleIntent}
+              worldWindowContent={worldWindowContent}
+              rewardVisible={rewardVisible}
+              latestResolvedCombat={latestResolvedCombat}
+              onCloseReward={closeReward}
+              heroInfoContent={heroInfoContent}
+              enemyInfoContent={enemyInfoContent}
+              infoWindow={infoWindow}
+              infoWindowContent={infoWindowContent}
+              onCloseInfo={() => setInfoWindow('none')}
+            />
           ) : null}
 
           {showBottomTray ? <BottomTray activeTab={metaTab} onSelectTab={handleMetaTabSelect} /> : null}
