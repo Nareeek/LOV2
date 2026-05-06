@@ -44,6 +44,7 @@ Before running broad searches or full checks, read:
 
 ```txt
 docs/ai/CODEX_CONTEXT_BUDGET.md
+```
 
 ## E2E
 
@@ -112,6 +113,7 @@ pnpm --filter @lov2/game-data build
 ```bash
 pnpm --filter @lov2/art-pipeline check
 pnpm --filter @lov2/art-pipeline build
+pnpm assets:check
 ```
 
 ## Agent Rule

@@ -48,6 +48,9 @@ Thumbs.db
 
 # local/reference asset intake
 _incoming_assets/
+_incoming_assets_hotspots/
+_incoming_assets_missing/
+_incoming_assets_transparent/
 
 # temporary files
 tmp/
