@@ -13,5 +13,6 @@
 - `36-lov-responsive.css` — responsive rules from the reference surface pass.
 - `40-*` — later visual polish passes grouped by feature.
 - `50-bottom-tray-and-overrides.css` — final bottom tray and short-viewport arena overrides.
+- `51-world-window-containment.css` — world/modal containment, compact arena, and enemy info window overrides.
 
 When adding new styles, prefer the most specific feature file. Use `50-*` only for deliberate final overrides.
