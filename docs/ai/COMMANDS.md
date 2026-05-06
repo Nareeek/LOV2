@@ -38,6 +38,13 @@ pnpm codex:check:worker
 pnpm codex:check
 ```
 
+## Context Budget
+
+Before running broad searches or full checks, read:
+
+```txt
+docs/ai/CODEX_CONTEXT_BUDGET.md
+
 ## E2E
 
 ```bash

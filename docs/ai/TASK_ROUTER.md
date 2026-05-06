@@ -1,6 +1,7 @@
 # LOV2 Task Router
 
 Use this file before scanning the repo.
+For token-efficient work, read `docs/ai/CODEX_CONTEXT_BUDGET.md` after this file.
 
 ## Task: Understand repo structure
 
