@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
+import { GameShellModalLayer } from './GameShellModalLayer.js';
 import {
   experienceForLevel,
   type BootstrapState,
@@ -591,24 +592,21 @@ export function GameShell({
                 )}
 
                 {worldWindowContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="world-window-layer">
+                    {worldWindowContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {heroInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="hero-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{heroInfoContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="hero-info-layer">
+                    {heroInfoContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {enemyInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="enemy-info-layer">
+                    {enemyInfoContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
@@ -639,17 +637,15 @@ export function GameShell({
                 />
 
                 {worldWindowContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="world-window-layer">
+                    {worldWindowContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {enemyInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="enemy-info-layer">
+                    {enemyInfoContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {infoWindow !== 'heroInfo' && !enemyInfoContent && infoWindowContent ? (
@@ -680,33 +676,27 @@ export function GameShell({
                 />
 
                 {worldWindowContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="world-window-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{worldWindowContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="world-window-layer">
+                    {worldWindowContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {rewardVisible ? (
-                  <div className="shell-reset-modal-layer reward">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">
-                      <CombatResultWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
-                    </div>
-                  </div>
+                  <GameShellModalLayer reward>
+                    <CombatResultWindow latestResolvedCombat={latestResolvedCombat} onContinue={closeReward} />
+                  </GameShellModalLayer>
                 ) : null}
 
                 {heroInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="hero-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{heroInfoContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="hero-info-layer">
+                    {heroInfoContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {enemyInfoContent ? (
-                  <div className="shell-reset-modal-layer" data-testid="enemy-info-layer">
-                    <div className="shell-reset-scrim" aria-hidden="true" />
-                    <div className="shell-reset-modal-card">{enemyInfoContent}</div>
-                  </div>
+                  <GameShellModalLayer testId="enemy-info-layer">
+                    {enemyInfoContent}
+                  </GameShellModalLayer>
                 ) : null}
 
                 {!heroInfoContent && !enemyInfoContent && infoWindowContent ? (
