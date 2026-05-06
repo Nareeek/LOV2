@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { exerciseDefinitions, sceneDefinitions } from '@lov2/game-data';
 import { GameShellModalLayer } from './GameShellModalLayer.js';
+import { GameShellSheetStage } from './GameShellSheetStage.js';
 import {
   experienceForLevel,
   type BootstrapState,
@@ -34,7 +35,6 @@ import { ActionDock } from './ActionDock.js';
 import { BottomTray } from './BottomTray.js';
 import {
   CombatResultWindow,
-  CharacterSheet,
   CombatStage,
   EnemyInfoWindow,
   HeroInfoWindow,
@@ -625,36 +625,19 @@ export function GameShell({
           )}
 
           {baseStage === 'sheet' ? (
-            <section className="stage-playfield single-column">
-              <section className="stage-main sheet-main">
-                <CharacterSheet
-                  state={state}
-                  activeTab={sheetTab}
-                  selectedItemStackId={selectedItemStackId}
-                  selectedPetId={selectedPetId}
-                  onSelectPet={setSelectedPetId}
-                  onIntent={handleIntent}
-                />
-
-                {worldWindowContent ? (
-                  <GameShellModalLayer testId="world-window-layer">
-                    {worldWindowContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {enemyInfoContent ? (
-                  <GameShellModalLayer testId="enemy-info-layer">
-                    {enemyInfoContent}
-                  </GameShellModalLayer>
-                ) : null}
-
-                {infoWindow !== 'heroInfo' && !enemyInfoContent && infoWindowContent ? (
-                  <OverlayLayer title={infoWindowTitle(infoWindow)} placement="info" onClose={() => setInfoWindow('none')}>
-                    {infoWindowContent}
-                  </OverlayLayer>
-                ) : null}
-              </section>
-            </section>
+            <GameShellSheetStage
+              state={state}
+              sheetTab={sheetTab}
+              selectedItemStackId={selectedItemStackId}
+              selectedPetId={selectedPetId}
+              onSelectPet={setSelectedPetId}
+              onIntent={handleIntent}
+              worldWindowContent={worldWindowContent}
+              enemyInfoContent={enemyInfoContent}
+              infoWindow={infoWindow}
+              infoWindowContent={infoWindowContent}
+              onCloseInfo={() => setInfoWindow('none')}
+            />
           ) : null}
 
           {baseStage === 'combat' && state.character ? (
