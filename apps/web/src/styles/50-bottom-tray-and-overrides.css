@@ -358,6 +358,14 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
 
 /* Keep the compact arena card fully inside short desktop viewports. */
 @media (max-width: 1100px), (max-height: 680px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-tower-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-quest-shell {
+    --window-width: calc(100% - 64px) !important;
+    max-width: calc(100% - 64px) !important;
+  }
+
   .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-store-shell),
   .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-forge-shell),
   .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-tower-shell),

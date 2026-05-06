@@ -12,8 +12,14 @@ const ENEMY_ASSETS: Record<string, string> = {
   'baron-of-ashes': 'enemy-ash-baron',
 };
 
+const ENEMY_DISPLAY_NAMES: Record<string, string> = {
+  'mist-bandit': 'Роман',
+  'harbor-wraith': 'Алексей',
+  'baron-of-ashes': 'Женя',
+};
+
 export function enemyDisplayName(enemy: EnemyDefinition) {
-  return enemy.nameRu;
+  return ENEMY_DISPLAY_NAMES[enemy.id] ?? enemy.nameRu;
 }
 
 export function enemyAssetId(enemy: EnemyDefinition) {

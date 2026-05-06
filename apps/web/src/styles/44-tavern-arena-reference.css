@@ -69,13 +69,13 @@
 }
 
 .lov-tavern-shell {
-  width: 900px !important;
-  height: 85vh !important;
+  width: min(900px, calc(100% - 32px)) !important;
+  height: min(85vh, calc(100% - 32px)) !important;
 
-  --window-width: 900px !important;
-  --window-height: 85vh !important;
+  --window-width: min(900px, calc(100% - 32px)) !important;
+  --window-height: min(85vh, calc(100% - 32px)) !important;
 
-  transform: translate(-120px, -30px);
+  transform: none;
   background-image: url('/assets/generated/scenes/scene-tavern.jpg');
   background-size: cover;
   background-position: center;
