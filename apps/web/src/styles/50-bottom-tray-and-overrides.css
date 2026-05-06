@@ -246,15 +246,139 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
   }
 }
 
+/* Arena popup: taller, narrower, and slightly left of center like the reference layout. */
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main:has(> .shell-reset-modal-layer .lov-arena-shell) {
+  overflow: visible;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+  top: calc(-1 * var(--stage-topbar-height) + 12px);
+  bottom: calc(-1 * var(--stage-bottom-height) + 12px);
+  left: clamp(24px, 4vw, 72px);
+  right: clamp(72px, 9vw, 168px);
+}
+
+.lov-arena-shell {
+  --window-width: min(700px, 100%);
+  --window-height: min(660px, 100%);
+}
+
+.lov-arena-shell .lov-window-header {
+  grid-template-columns: 1fr;
+}
+
+.lov-arena-shell .lov-window-header h2 {
+  margin-left: 0;
+}
+
+.lov-arena-shell .lov-window-body {
+  grid-template-rows: minmax(0, 1fr) 36px;
+  padding: 12px 14px 7px;
+}
+
+.lov-arena-shell .lov-window-footer {
+  min-height: 44px;
+  padding: 4px 0 7px;
+}
+
+.lov-arena-shell .lov-close-button {
+  min-height: 32px;
+}
+
+.lov-arena-preview img {
+  max-width: 80%;
+  max-height: 96%;
+}
+
+.lov-enemy-info-shell {
+  --window-width: min(980px, calc(100vw - 56px));
+  --window-height: min(620px, calc(100vh - 120px));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .stage-main > .shell-reset-modal-layer:has(.lov-enemy-info-shell),
+.stage-frame.shell-reset-stage.stage-mode-sheet .stage-main > .shell-reset-modal-layer:has(.lov-enemy-info-shell) {
+  inset: 12px 18px;
+}
+
+.lov-enemy-info-shell .lov-hero-info-layout {
+  grid-template-columns: minmax(330px, 0.42fr) minmax(380px, 0.58fr);
+}
+
+.lov-enemy-info-shell .lov-profile-screen-window {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.lov-enemy-info-shell .lov-profile-screen-window .lov-profile-stats {
+  padding-left: 0;
+  column-gap: 10px;
+  row-gap: 10px;
+}
+
+.lov-enemy-info-shell .lov-profile-screen-window .lov-profile-stat {
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-items: stretch;
+}
+
+.lov-enemy-info-shell .lov-profile-screen-window .lov-profile-stat::before {
+  content: none;
+}
+
+.lov-enemy-info-shell .lov-profile-screen-window .lov-profile-stat span {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  color: #4b3727;
+  font-size: 0.94rem;
+  font-weight: 900;
+  line-height: 1.05;
+  white-space: normal;
+}
+
+.lov-enemy-info-portrait {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #7d2e22, #6d3f29 54%, #2a201d);
+}
+
+.lov-enemy-info-portrait img {
+  width: auto;
+  height: 96%;
+  max-width: 88%;
+  max-height: 96%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
 /* Keep the compact arena card fully inside short desktop viewports. */
 @media (max-width: 1100px), (max-height: 680px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-store-shell),
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-forge-shell),
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-tower-shell),
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-quest-shell) {
+    inset: 56px 24px 8px;
+  }
+
+  .lov-quest-shell {
+    --window-height: min(420px, 100%);
+  }
+
   .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
-    inset: 2px 34px 8px;
+    top: calc(-1 * var(--stage-topbar-height) + 42px);
+    bottom: calc(-1 * var(--stage-bottom-height) + 10px);
+    left: 22px;
+    right: 58px;
   }
 
   .lov-arena-shell {
-    --window-width: min(680px, calc(100vw - 68px));
-    --window-height: min(456px, calc(100vh - 96px));
+    --window-width: min(620px, 100%);
+    --window-height: min(540px, 100%);
   }
 
   .lov-arena-shell .lov-window-header {
@@ -263,22 +387,22 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
   }
 
   .lov-arena-shell .lov-window-body {
-    grid-template-rows: minmax(0, 1fr) 28px;
-    gap: 5px;
-    padding: 8px 10px 5px;
+    grid-template-rows: minmax(0, 1fr) 24px;
+    gap: 4px;
+    padding: 6px 8px 4px;
   }
 
   .lov-arena-shell .lov-window-footer {
     display: flex;
     justify-content: center;
-    min-height: 38px;
-    padding: 3px 0 5px;
+    min-height: 34px;
+    padding: 3px 0 4px;
   }
 
   .lov-arena-shell .lov-close-button {
     min-width: 172px;
-    min-height: 30px;
-    font-size: 1rem;
+    min-height: 26px;
+    font-size: 0.9rem;
   }
 
   .lov-arena-layout {
@@ -288,14 +412,14 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
   }
 
   .lov-arena-stats {
-    gap: 4px;
-    padding: 6px;
+    gap: 3px;
+    padding: 5px;
     min-height: 0;
   }
 
   .lov-opponent-card {
-    min-height: 38px;
-    padding: 4px 8px;
+    min-height: 32px;
+    padding: 3px 8px;
   }
 
   .lov-opponent-card strong {
@@ -308,8 +432,8 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
 
   .lov-arena-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 28px;
-    gap: 4px;
+    grid-auto-rows: 24px;
+    gap: 3px;
   }
 
   .lov-arena-stat:nth-child(1),
@@ -318,7 +442,7 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
   }
 
   .lov-arena-stat {
-    min-height: 28px;
+    min-height: 24px;
     padding: 3px 7px;
   }
 
@@ -331,18 +455,40 @@ footer.shell-reset-bottom-strip.lov-bottom-strip {
   }
 
   .lov-arena-primary-actions {
-    gap: 5px;
-    margin-top: 6px !important;
+    gap: 4px;
+    margin-top: 3px !important;
   }
 
   .lov-arena-primary-actions > button,
   .lov-arena-toggles > button {
-    min-height: 28px;
-    font-size: 0.76rem;
+    min-height: 24px;
+    font-size: 0.72rem;
   }
 
   .lov-arena-preview img {
     max-width: 82%;
     max-height: 90%;
+  }
+
+  .lov-enemy-info-shell {
+    --window-width: min(940px, calc(100vw - 24px));
+    --window-height: min(520px, calc(100vh - 112px));
+  }
+
+  .lov-enemy-info-shell .lov-hero-info-layout {
+    grid-template-columns: minmax(300px, 0.48fr) minmax(320px, 0.52fr);
+  }
+
+  .lov-enemy-info-shell .lov-profile-screen-window .lov-profile-stats {
+    row-gap: 7px;
+  }
+
+  .lov-enemy-info-shell .lov-profile-screen-window .lov-profile-stat span {
+    font-size: 0.82rem;
+  }
+
+  .lov-enemy-info-portrait img {
+    max-width: 82%;
+    max-height: 94%;
   }
 }

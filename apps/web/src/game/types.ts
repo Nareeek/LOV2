@@ -61,7 +61,7 @@ export type GameIntent =
   | { type: 'selectArenaEnemy'; enemyId: string }
   | { type: 'acceptTask'; questId: string }
   | { type: 'startTravel'; questId: string; locationId: string }
-  | { type: 'claimTravel'; travelId: string }
+  | { type: 'claimTravel'; travelId: string; rush?: boolean }
   | { type: 'startArena'; enemyId: string }
   | { type: 'resolveCombat'; combatId: string }
   | { type: 'togglePetAssist' }

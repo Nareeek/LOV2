@@ -9,6 +9,7 @@ export function WorldWindowShell({
   className = '',
   size = 'standard',
   bodyScroll = 'body',
+  showHeaderClose = true,
 }: {
   title: string;
   onClose: () => void;
@@ -17,6 +18,7 @@ export function WorldWindowShell({
   className?: string;
   size?: WindowSize;
   bodyScroll?: WindowBodyScroll;
+  showHeaderClose?: boolean;
 }) {
   return (
     <section
@@ -25,14 +27,16 @@ export function WorldWindowShell({
     >
       <header className="shell-reset-window-header lov-window-header">
         <h2>{title}</h2>
-        <button
-          className="shell-reset-icon-button lov-window-close"
-          aria-label="Закрыть"
-          data-testid="world-window-close-button"
-          onClick={onClose}
-        >
-          <UiIcon name="close" />
-        </button>
+        {showHeaderClose ? (
+          <button
+            className="shell-reset-icon-button lov-window-close"
+            aria-label="Закрыть"
+            data-testid="world-window-close-button"
+            onClick={onClose}
+          >
+            <UiIcon name="close" />
+          </button>
+        ) : null}
       </header>
       <div className={`shell-reset-window-body lov-window-body body-scroll-${bodyScroll}`}>{children}</div>
       <footer className="shell-reset-window-footer lov-window-footer">

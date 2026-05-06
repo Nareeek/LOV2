@@ -230,6 +230,7 @@ export interface CombatLog {
   winner: 'character' | 'enemy';
   turns: CombatTurn[];
   reward: Reward;
+  petId?: string;
 }
 
 export interface CombatTurn {

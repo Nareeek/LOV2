@@ -5,6 +5,7 @@ import { SessionGuard, type RequestWithUser } from '../auth/session.guard.js';
 import {
   AcceptQuestDto,
   AllocateStatsDto,
+  ClaimTravelDto,
   CreateCharacterDto,
   EquipItemDto,
   ForgeUpgradeDto,
@@ -50,8 +51,8 @@ export class GameController {
   }
 
   @Post('travel/:id/claim')
-  claimTravel(@CurrentUser() user: RequestWithUser['user'], @Param('id') travelId: string) {
-    return this.commands.claimTravel(user.id, travelId);
+  claimTravel(@CurrentUser() user: RequestWithUser['user'], @Param('id') travelId: string, @Body() dto: ClaimTravelDto) {
+    return this.commands.claimTravel(user.id, travelId, dto);
   }
 
   @Post('combat/:id/resolve')

@@ -40,8 +40,9 @@ import { renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindo
 import { HudFrame } from './HudFrame.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
-const COMBAT_REPLAY_TURN_MS = 2200;
-const COMBAT_REPLAY_REWARD_DELAY_MS = 1200;
+const COMBAT_AUTO_RESOLVE_DELAY_MS = 5200;
+const COMBAT_REPLAY_TURN_MS = 2400;
+const COMBAT_REPLAY_REWARD_DELAY_MS = 1800;
 
 export function GameShell({
   state,
@@ -72,6 +73,7 @@ export function GameShell({
   const [, setMessage] = useState('Добро пожаловать в ночной двор.');
   const [clock, setClock] = useState(() => Date.now());
   const [petAssistArmed, setPetAssistArmed] = useState(false);
+  const [battlePetId, setBattlePetId] = useState<string | null>(null);
   const [replayTurnCount, setReplayTurnCount] = useState(0);
   const [replayActive, setReplayActive] = useState(false);
   const [rewardVisible, setRewardVisible] = useState(false);
@@ -126,6 +128,8 @@ export function GameShell({
   const pendingCombat = getPendingCombat(state);
   const latestResolvedCombat = getLatestResolvedCombat(state);
   const activeCombatLog = pendingCombat ? undefined : latestResolvedCombat?.log;
+  const resolvedBattlePetId = battlePetId ?? activeCombatLog?.petId ?? null;
+  const activeBattlePetId = resolvedBattlePetId ?? (petAssistArmed ? selectedPetId : null);
   const arenaEnemy = state.enemies.find((enemy) => enemy.id === selectedArenaEnemyId) ?? state.enemies[0];
   const combatEnemyId = pendingCombat?.enemyId ?? latestResolvedCombat?.enemyId ?? arenaEnemy?.id;
   const combatEnemy = state.enemies.find((enemy) => enemy.id === combatEnemyId) ?? arenaEnemy;
@@ -235,6 +239,7 @@ export function GameShell({
     setRewardVisible(false);
     setReplayActive(false);
     setPetAssistArmed(false);
+    setBattlePetId(null);
   }, []);
 
   const openWorldWindow = useCallback((windowId: Exclude<WorldWindowId, 'none'>) => {
@@ -263,6 +268,7 @@ export function GameShell({
     setRewardVisible(false);
     setReplayActive(false);
     setPetAssistArmed(false);
+    setBattlePetId(null);
     setWorldWindow('none');
     setInfoWindow('none');
     setBaseStage('world');
@@ -334,16 +340,24 @@ export function GameShell({
           setRewardVisible(false);
           setReplayActive(false);
           setPetAssistArmed(false);
+          setBattlePetId(null);
           setBaseStage('travel');
           return;
         }
         case 'claimTravel':
-          await run(() => apiClient.claimTravel(intent.travelId), 'Вы добрались до места.');
+        await run(
+          () => apiClient.claimTravel(
+            intent.travelId,
+            intent.rush === undefined ? {} : { rush: intent.rush },
+          ),
+          'Вы добрались до места.',
+        );
           setWorldWindow('none');
           setInfoWindow('none');
           setRewardVisible(false);
           setReplayActive(false);
           setPetAssistArmed(false);
+          setBattlePetId(null);
           setBaseStage('combat');
           return;
         case 'startArena':
@@ -354,26 +368,49 @@ export function GameShell({
           setRewardVisible(false);
           setReplayActive(false);
           setPetAssistArmed(false);
+          setBattlePetId(null);
           setBaseStage('combat');
           return;
-        case 'resolveCombat':
-          await run(
-            () => apiClient.resolveCombat(intent.combatId, petAssistArmed ? { petId: selectedPetId } : {}),
+        case 'resolveCombat': {
+          const usedPetId = petAssistArmed ? selectedPetId : null;
+          const resolved = await run(
+            () => apiClient.resolveCombat(intent.combatId, usedPetId ? { petId: usedPetId } : {}),
             'Дуэль завершена.',
           );
+          if (!resolved) {
+            return;
+          }
+          setBattlePetId(usedPetId);
           setReplayTurnCount(0);
           setReplayActive(true);
           setRewardVisible(false);
           setPetAssistArmed(false);
           setBaseStage('combat');
           return;
+        }
         case 'togglePetAssist':
+          if (replayActive || rewardVisible || battlePetId) {
+            return;
+          }
           setPetAssistArmed((value) => !value);
           return;
-        case 'showReward':
+        case 'showReward': {
+          if (pendingCombat) {
+            const usedPetId = petAssistArmed ? selectedPetId : null;
+            const resolved = await run(
+              () => apiClient.resolveCombat(pendingCombat.id, usedPetId ? { petId: usedPetId } : {}),
+              'Дуэль завершена.',
+            );
+            if (!resolved) {
+              return;
+            }
+            setBattlePetId(usedPetId);
+            setPetAssistArmed(false);
+          }
           setReplayActive(false);
           setRewardVisible(true);
           return;
+        }
         case 'closeReward':
           closeReward();
           return;
@@ -425,11 +462,15 @@ export function GameShell({
       closeReward,
       closeSheet,
       closeWorldWindow,
+      battlePetId,
       openLocation,
       openSheet,
       openWorldWindow,
       run,
+      pendingCombat,
       petAssistArmed,
+      replayActive,
+      rewardVisible,
       selectedArenaEnemyId,
       selectedPetId,
       state.enemies,
@@ -454,7 +495,7 @@ export function GameShell({
     const timer = window.setTimeout(() => {
       autoResolvedCombatIdRef.current = combatId;
       void handleIntent({ type: 'resolveCombat', combatId });
-    }, 2600);
+    }, COMBAT_AUTO_RESOLVE_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [baseStage, handleIntent, pendingCombat, petAssistArmed, replayActive, rewardVisible, selectedPetId]);
 
@@ -605,11 +646,14 @@ export function GameShell({
               replayFrame={replayFrame}
               petAssistArmed={petAssistArmed}
               selectedPetId={selectedPetId}
+              battlePetId={resolvedBattlePetId ?? selectedPetId}
+              combatLocked={replayActive || rewardVisible || Boolean(activeCombatLog)}
               visibleReplayTurns={visibleReplayTurns}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
               rewardVisible={rewardVisible}
               latestResolvedCombat={latestResolvedCombat}
+              rewardBattlePetId={activeBattlePetId}
               onCloseReward={closeReward}
               heroInfoContent={heroInfoContent}
               enemyInfoContent={enemyInfoContent}

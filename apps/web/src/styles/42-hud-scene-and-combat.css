@@ -1,19 +1,40 @@
-/* Compact top HUD with visible XP and image-backed currency bars. */
+/* ============================================================================
+   HUD / Scene / Combat Reference Styles
+   ----------------------------------------------------------------------------
+   Scope:
+   - compact top HUD
+   - world/travel HUD overlay
+   - combat readability tweaks
+   - world scene rails and bottom friends tray
+   - hotspot art overlays
+   - loading screen
+   ============================================================================ */
+
+/* --------------------------------------------------------------------------
+   1. Base compact top HUD
+   -------------------------------------------------------------------------- */
+
 .stage-frame.shell-reset-stage {
   --stage-topbar-height: 84px;
 }
 
 .lov-topbar {
   --lov-topbar-resource-lane: 480px;
+
   min-height: 72px;
-  padding: 8px calc(var(--lov-topbar-resource-lane) + 16px) 8px 16px;
   grid-template-columns: 86px minmax(340px, 1fr);
   gap: 14px;
+  padding: 8px calc(var(--lov-topbar-resource-lane) + 16px) 8px 16px;
 }
 
 .lov-topbar-left {
   display: block;
   max-width: none;
+}
+
+.lov-topbar-center,
+.lov-xp-strip {
+  min-width: 0;
 }
 
 .lov-topbar-portrait {
@@ -42,13 +63,8 @@
   min-height: 30px;
 }
 
-.lov-topbar-center {
-  min-width: 0;
-}
-
 .lov-xp-strip {
   display: block;
-  min-width: 0;
   padding-left: 0;
 }
 
@@ -85,12 +101,12 @@
 
 .lov-resource-pill {
   position: relative;
-  min-width: 116px;
-  min-height: 42px;
   display: grid;
   grid-template-columns: 34px minmax(52px, 1fr);
   align-items: center;
   gap: 8px;
+  min-width: 116px;
+  min-height: 42px;
   padding: 5px 9px;
   border: 1px solid rgba(217, 184, 113, 0.72);
   border-radius: 999px;
@@ -125,6 +141,7 @@
 @media (max-width: 1180px) {
   .lov-topbar {
     --lov-topbar-resource-lane: 0px;
+
     grid-template-columns: 78px minmax(0, 1fr);
     padding-right: 12px;
   }
@@ -132,12 +149,15 @@
   .lov-resource-strip {
     position: static;
     grid-column: 1 / -1;
-    transform: none;
     justify-self: stretch;
+    transform: none;
   }
 }
 
-/* Combat readability and alignment pass. */
+/* --------------------------------------------------------------------------
+   2. Combat readability and alignment
+   -------------------------------------------------------------------------- */
+
 .lov-combat-header {
   grid-template-columns: 42px 84px minmax(280px, 1fr);
   align-items: start;
@@ -170,9 +190,9 @@
   left: 50%;
   width: max-content;
   min-width: 44px;
-  text-align: center;
   font-size: 1.25rem;
   line-height: 28px;
+  text-align: center;
   pointer-events: none;
 }
 
@@ -235,75 +255,115 @@
   }
 }
 
-/* Main-scene HUD overlay: XP, gold, pearls, actions. */
-.stage-frame.shell-reset-stage.stage-mode-world,
-.stage-frame.shell-reset-stage.stage-mode-travel {
+/* --------------------------------------------------------------------------
+   3. World / travel stage layout
+   -------------------------------------------------------------------------- */
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) {
   --stage-topbar-height: 0px;
+  --stage-left-rail-size: 0px;
+  --stage-right-rail-size: 0px;
+
+  padding: 12px;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .stage-playfield,
-.stage-frame.shell-reset-stage.stage-mode-travel .stage-playfield {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .stage-playfield {
+  position: relative;
   grid-row: 1 / 3;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
-  position: absolute;
-  top: 12px;
-  left: calc(var(--stage-left-rail-size) + 12px);
-  z-index: 8;
-  display: grid;
-  grid-template-columns: 56px minmax(220px, 1fr) auto;
-  align-items: center;
-  width: min(820px, calc(100% - var(--stage-left-rail-size) - var(--stage-right-rail-size) - 32px));
-  min-height: 50px;
-  padding: 6px 10px;
-  gap: 8px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(80, 66, 58, 0.88), rgba(47, 37, 35, 0.86));
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-left,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-left {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .stage-main {
   grid-column: 1;
   min-width: 0;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-center,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-center {
+.game-shell.unified-shell {
+  padding: 14px;
+}
+
+.stage-frame-wrap {
+  width: min(92vw, calc((100vh - 72px) * 16 / 9), 1760px);
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 1180px) {
+  .stage-frame-wrap {
+    width: calc(100vw - 24px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. World / travel HUD overlay
+   -------------------------------------------------------------------------- */
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
+  position: absolute;
+  top: 8px;
+  left: 104px;
+  right: auto;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 62px minmax(250px, 330px) auto;
+  align-items: center;
+  width: fit-content;
+  max-width: calc(100% - 188px);
+  min-height: 58px;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(158, 146, 121, 0.46), rgba(44, 39, 42, 0.92)),
+    linear-gradient(90deg, rgba(36, 43, 68, 0.94), rgba(58, 54, 49, 0.94));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-left {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-center {
   grid-column: 2;
   min-width: 0;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-strip {
   position: static;
   grid-column: 3;
   display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 8px;
+  grid-template-columns: auto auto auto 50px;
   align-items: center;
   justify-content: end;
+  gap: 10px;
   min-width: 0;
   transform: none;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-portrait,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-portrait {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-portrait {
   width: 54px;
   height: 54px;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-portrait,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-portrait {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-portrait {
   width: 46px;
   height: 46px;
+  overflow: hidden;
+  background: #202027;
   font-size: 1.25rem;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-level,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-level {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: inherit;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-level {
   top: -8px;
   right: -8px;
   width: 28px;
@@ -311,114 +371,33 @@
   font-size: 0.95rem;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar-badge,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar-badge {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-badge {
   width: 24px;
   height: 24px;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip {
-  display: block;
-  min-width: 0;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
-  height: 32px;
-  min-width: 0;
-  padding: 4px 8px;
-  grid-template-columns: 32px minmax(96px, 1fr) auto;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-pill {
   min-width: 104px;
-  height: 34px;
+  height: 36px;
   padding: 3px 10px 3px 5px;
-  font-size: 1.05rem;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill img,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill img {
-  width: 28px;
-  height: 28px;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-add-button,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-add-button {
-  min-width: 130px;
-  min-height: 36px;
-  padding: 6px 18px;
-  font-size: 1.02rem;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack,
-.stage-frame.shell-reset-stage.stage-mode-travel .stage-left-stack {
-  padding-top: 72px;
-}
-
-@media (max-width: 1180px) {
-  .stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-  .stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
-    left: 12px;
-    width: calc(100% - 24px);
-    grid-template-columns: 52px minmax(160px, 1fr);
-  }
-
-  .stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
-  .stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
-    grid-column: 1 / -1;
-    justify-content: start;
-  }
-}
-
-/* Reference-style HUD row: portrait, XP, gold, pearls, add, leaderboard. */
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
-  top: 8px;
-  grid-template-columns: 62px minmax(260px, 360px) auto;
-  width: min(1080px, calc(100% - var(--stage-left-rail-size) - var(--stage-right-rail-size) - 24px));
-  min-height: 58px;
-  padding: 6px 10px;
-  gap: 10px;
-  border-radius: 20px;
-  background:
-    linear-gradient(180deg, rgba(158, 146, 121, 0.46), rgba(44, 39, 42, 0.92)),
-    linear-gradient(90deg, rgba(36, 43, 68, 0.94), rgba(58, 54, 49, 0.94));
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
-  grid-template-columns: auto auto auto 50px;
-  gap: 10px;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
-  height: 36px;
-  grid-template-columns: 34px minmax(132px, 1fr) auto;
-  border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(236, 232, 203, 0.88), rgba(81, 80, 75, 0.86)),
-    #2f3134;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill {
-  min-width: 118px;
-  height: 36px;
   border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(80, 78, 73, 0.98), rgba(38, 37, 39, 0.98)),
     #242326;
+  font-size: 1.05rem;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-add-button,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-add-button {
-  min-width: 140px;
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-pill img {
+  width: 28px;
+  height: 28px;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-add-button {
+  min-width: 128px;
   min-height: 38px;
+  padding: 6px 18px;
   border-radius: 19px;
+  font-size: 1.02rem;
 }
 
 .lov-leaderboard-button {
@@ -427,12 +406,12 @@
   width: 50px;
   height: 50px;
   padding: 0;
-  color: #ffeaa6;
   border: 3px solid rgba(252, 219, 143, 0.9);
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 38%, rgba(251, 221, 141, 0.95) 0 18%, rgba(158, 54, 45, 0.94) 19% 66%, rgba(74, 30, 35, 0.98) 67%),
     #713338;
+  color: #ffeaa6;
   box-shadow:
     inset 0 0 0 3px rgba(69, 34, 32, 0.58),
     0 4px 10px rgba(0, 0, 0, 0.32);
@@ -446,75 +425,96 @@
 
 .lov-leaderboard-button:hover,
 .lov-leaderboard-button:focus-visible {
-  transform: translateY(-1px);
   filter: brightness(1.06);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 1180px) {
-  .stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-  .stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
     grid-template-columns: 58px minmax(180px, 1fr);
     width: calc(100% - 24px);
   }
 
-  .stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
-  .stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-strip {
+    grid-column: 1 / -1;
     grid-template-columns: auto auto auto 48px;
+    justify-content: start;
   }
 }
 
-/* World screen scale and sticky scene rails. */
-.game-shell.unified-shell {
-  padding: 14px;
-}
+/* --------------------------------------------------------------------------
+   5. World / travel XP bar
+   -------------------------------------------------------------------------- */
 
-.stage-frame-wrap {
-  width: min(92vw, calc((100vh - 72px) * 16 / 9), 1760px);
-  height: auto;
-  aspect-ratio: 16 / 9;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world,
-.stage-frame.shell-reset-stage.stage-mode-travel {
-  --stage-left-rail-size: 0px;
-  --stage-right-rail-size: 0px;
-  padding: 12px;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .stage-playfield,
-.stage-frame.shell-reset-stage.stage-mode-travel .stage-playfield {
-  position: relative;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .stage-main,
-.stage-frame.shell-reset-stage.stage-mode-travel .stage-main {
-  grid-column: 1;
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip {
+  display: block;
   min-width: 0;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
-  left: 112px;
-  right: 92px;
-  width: auto;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-portrait,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-portrait {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter {
+  position: relative;
+  grid-template-columns: 44px minmax(230px, 1fr);
+  gap: 8px;
+  min-width: 320px;
+  height: 36px;
+  padding: 4px 12px;
   overflow: hidden;
-  background: #202027;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(236, 232, 203, 0.88), rgba(81, 80, 75, 0.86)),
+    #2f3134;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-portrait img,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  border-radius: inherit;
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter > span:first-child {
+  display: block;
+  color: #fff1bf;
+  font-family: Georgia, serif;
+  font-size: 1.03rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter div {
+  position: relative;
+  height: 24px;
+  overflow: hidden;
+  border: 2px solid rgba(36, 31, 29, 0.88);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(16, 15, 14, 0.96)),
+    url('/assets/generated/ui/bars/ui-energy-bar-01.jpg') center / cover no-repeat;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.62),
+    0 1px 0 rgba(255, 238, 179, 0.18);
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter i {
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(125, 206, 176, 0.95), rgba(224, 209, 112, 0.96)),
+    #9ccb7d;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter strong {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  z-index: 2;
+  min-width: 118px;
+  padding: 0;
+  color: #fff8e8;
+  line-height: 1;
+  text-align: right;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.82),
+    0 0 6px rgba(0, 0, 0, 0.45);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. World side rails
+   -------------------------------------------------------------------------- */
 
 .stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack {
   position: absolute;
@@ -523,9 +523,9 @@
   left: 16px;
   z-index: 7;
   width: 70px;
-  padding: 0;
   align-items: start;
   justify-content: start;
+  padding: 0;
   pointer-events: none;
 }
 
@@ -537,9 +537,9 @@
 
 .stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-card {
   min-height: 70px;
+  place-items: center;
   padding: 7px;
   border-radius: 18px;
-  place-items: center;
   text-align: center;
 }
 
@@ -558,125 +558,49 @@
   font-weight: 900;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .stage-right-rail,
-.stage-frame.shell-reset-stage.stage-mode-travel .stage-right-rail {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .stage-right-rail {
   position: absolute;
   top: 18px;
   right: 18px;
   bottom: 18px;
   z-index: 7;
-  width: 54px;
-  padding: 0;
   align-items: stretch;
   justify-content: stretch;
+  width: 54px;
+  padding: 0;
   pointer-events: none;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-rail,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-rail {
-  height: 100%;
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-meta-rail {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   align-items: center;
+  gap: 14px;
+  height: 100%;
   pointer-events: auto;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-orb,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-orb {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-meta-orb {
   width: 54px;
   min-height: 54px;
   border: 2px solid rgba(229, 192, 103, 0.82);
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-orb.action-settings,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-orb.action-settings {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-meta-orb.action-settings {
   margin-top: auto;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .shell-reset-meta-orb.action-settings img,
-.stage-frame.shell-reset-stage.stage-mode-travel .shell-reset-meta-orb.action-settings img {
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-meta-orb.action-settings img {
   width: 34px;
   height: 34px;
   object-fit: contain;
   border-radius: 9px;
 }
 
-@media (max-width: 1180px) {
-  .stage-frame-wrap {
-    width: calc(100vw - 24px);
-  }
+/* --------------------------------------------------------------------------
+   7. Bottom friends tray
+   -------------------------------------------------------------------------- */
 
-  .stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-  .stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
-    left: 88px;
-    right: 76px;
-  }
-}
-
-/* XP number belongs inside the experience bar, matching the original HUD. */
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
-  position: relative;
-  grid-template-columns: 44px minmax(230px, 1fr);
-  gap: 8px;
-  min-width: 360px;
-  padding: 4px 12px;
-  overflow: hidden;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter > span:first-child,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter > span:first-child {
-  display: block;
-  color: #fff1bf;
-  font-family: Georgia, serif;
-  font-size: 1.03rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter div,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter div {
-  position: relative;
-  height: 24px;
-  overflow: hidden;
-  border: 2px solid rgba(36, 31, 29, 0.88);
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(16, 15, 14, 0.96)),
-    url('/assets/generated/ui/bars/ui-energy-bar-01.jpg') center / cover no-repeat;
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.62),
-    0 1px 0 rgba(255, 238, 179, 0.18);
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter i,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter i {
-  height: 100%;
-  border-radius: inherit;
-  background:
-    linear-gradient(90deg, rgba(125, 206, 176, 0.95), rgba(224, 209, 112, 0.96)),
-    #9ccb7d;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter strong,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter strong {
-  position: absolute;
-  top: 50%;
-  right: 20px;
-  z-index: 2;
-  padding: 0;
-  min-width: 118px;
-  color: #fff8e8;
-  text-align: right;
-  line-height: 1;
-  transform: translateY(-50%);
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.82),
-    0 0 6px rgba(0, 0, 0, 0.45);
-  pointer-events: none;
-}
-
-/* Original-style friend carousel spread across the bottom tray. */
 .stage-frame.shell-reset-stage.stage-mode-world {
   --stage-bottom-height: 132px;
 }
@@ -685,8 +609,8 @@
   display: grid;
   grid-template-rows: 74px 42px;
   gap: 4px;
-  padding: 6px 10px 8px;
   overflow: hidden;
+  padding: 6px 10px 8px;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-band {
@@ -704,28 +628,28 @@
   z-index: 2;
   display: grid;
   grid-template-rows: 1fr 1fr;
-  gap: 6px;
   align-content: center;
+  gap: 6px;
   padding: 6px;
   background: linear-gradient(180deg, rgba(92, 81, 65, 0.92), rgba(45, 41, 40, 0.92));
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-nav button {
-  width: 36px;
-  min-height: 0;
-  height: 28px;
-  padding: 0;
   display: grid;
   place-items: center;
+  width: 36px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
   border-radius: 999px;
   color: #fff4cf;
   font-size: 1.25rem;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-friends-cards-viewport {
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  min-width: 0;
   scrollbar-width: none;
 }
 
@@ -742,24 +666,34 @@
   height: 100%;
 }
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card {
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card {
   width: 132px;
   min-height: 0;
   height: 100%;
+  border-color: rgba(196, 167, 91, 0.86);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(103, 96, 84, 0.94), rgba(61, 56, 54, 0.98));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  justify-items: center;
   align-items: center;
+  justify-items: center;
   padding: 6px 8px;
-  border-radius: 10px;
-  border-color: rgba(196, 167, 91, 0.86);
-  background: linear-gradient(180deg, rgba(103, 96, 84, 0.94), rgba(61, 56, 54, 0.98));
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card small,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card strong,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card span {
+  font-weight: 900;
+  line-height: 1.05;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-friend-card small {
   color: #fff6d5;
   font-size: 0.78rem;
-  font-weight: 900;
   line-height: 1;
   white-space: nowrap;
 }
@@ -777,30 +711,22 @@
   overflow: hidden;
   color: #fff0cf;
   font-size: 0.82rem;
-  line-height: 1.05;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card {
-  width: 160px;
-  min-height: 0;
-  height: 100%;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 6px;
+  width: 160px;
   padding: 8px;
-  border-radius: 10px;
-  border-color: rgba(196, 167, 91, 0.86);
-  background: linear-gradient(180deg, rgba(103, 96, 84, 0.94), rgba(61, 56, 54, 0.98));
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card span {
   color: #fff1cf;
   font-size: 0.88rem;
-  font-weight: 900;
-  line-height: 1.05;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-invite-card i {
@@ -830,37 +756,10 @@
   font-size: 1rem;
 }
 
-/* Compact HUD width: begin with hero portrait and end at leaderboard. */
-.stage-frame.shell-reset-stage.stage-mode-world .lov-topbar,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-topbar {
-  left: 104px;
-  right: auto;
-  width: fit-content;
-  max-width: calc(100% - 188px);
-  grid-template-columns: 62px minmax(250px, 330px) auto;
-}
+/* --------------------------------------------------------------------------
+   8. Scene hotspot art overlays
+   -------------------------------------------------------------------------- */
 
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-strip,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-strip {
-  grid-template-columns: auto auto auto 50px;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-xp-strip .meter,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-xp-strip .meter {
-  min-width: 320px;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-resource-pill,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-resource-pill {
-  min-width: 104px;
-}
-
-.stage-frame.shell-reset-stage.stage-mode-world .lov-add-button,
-.stage-frame.shell-reset-stage.stage-mode-travel .lov-add-button {
-  min-width: 128px;
-}
-
-/* Hotspot art should be the visible place marker; the button remains only the hit target. */
 .scene-hotspot-wrap.has-hotspot-art .hotspot-art {
   inset: auto;
   left: 50%;
@@ -922,10 +821,14 @@
   box-shadow: none !important;
 }
 
+/* --------------------------------------------------------------------------
+   9. Loading screen
+   -------------------------------------------------------------------------- */
+
 .lov-loading-screen {
-  min-height: 100vh;
   display: grid;
   place-items: center;
+  min-height: 100vh;
   padding: 24px;
   background:
     linear-gradient(90deg, rgba(73, 24, 20, 0.95), rgba(28, 13, 20, 0.72), rgba(73, 24, 20, 0.95)),
@@ -933,15 +836,15 @@
 }
 
 .lov-loading-card {
-  width: min(900px, 92vw);
-  aspect-ratio: 1.08;
+  position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   align-items: end;
   justify-items: center;
-  padding: 22px 34px 36px;
-  position: relative;
+  width: min(900px, 92vw);
+  aspect-ratio: 1.08;
   overflow: hidden;
+  padding: 22px 34px 36px;
   border: 1px solid rgba(238, 208, 139, 0.44);
   background:
     linear-gradient(180deg, rgba(15, 16, 26, 0.18), rgba(59, 10, 15, 0.36)),
@@ -960,9 +863,13 @@
   pointer-events: none;
 }
 
-.lov-loading-logo {
+.lov-loading-logo,
+.lov-loading-bar {
   position: relative;
   z-index: 1;
+}
+
+.lov-loading-logo {
   align-self: center;
   color: #f9d878;
   font-family: Georgia, serif;
@@ -976,12 +883,10 @@
 }
 
 .lov-loading-bar {
-  position: relative;
-  z-index: 1;
-  width: min(520px, 74vw);
-  min-height: 42px;
   display: grid;
   place-items: center;
+  width: min(520px, 74vw);
+  min-height: 42px;
   overflow: hidden;
   border: 2px solid rgba(224, 208, 172, 0.84);
   border-radius: 999px;
@@ -1019,4 +924,3 @@
     width: 82%;
   }
 }
-

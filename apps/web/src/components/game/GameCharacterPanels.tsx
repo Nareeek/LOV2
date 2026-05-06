@@ -75,6 +75,7 @@ import {
 } from './GamePanels.logic.js';
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
+import { enemyAssetId, enemyDisplayName, enemyStatRows } from './enemyPresentation.js';
 export function CharacterSheet({
   state,
   activeTab,
@@ -572,16 +573,19 @@ export function EnemyInfoPanel({
     return <div className="shell-reset-info-card lov-overlay-card">Противник пока не выбран.</div>;
   }
 
+  const stats = enemyStatRows(enemy);
+
   return (
-    <div className="shell-reset-info-card lov-overlay-card" data-testid="enemy-info-popup">
-      <h3>{enemy.nameRu}</h3>
+    <div className="shell-reset-info-card lov-overlay-card lov-enemy-compact-info" data-testid="enemy-info-popup">
+      <h3>{enemyDisplayName(enemy)}</h3>
+      <p>{enemy.boss ? 'Босс' : 'Противник'} · {enemy.level} уровень</p>
       <div className="lov-profile-stats compact">
-        <div className="lov-profile-stat"><span>HP</span><strong>{enemy.health}</strong></div>
-        <div className="lov-profile-stat"><span>Броня</span><strong>{enemy.armor}</strong></div>
-        <div className="lov-profile-stat"><span>ATK</span><strong>{enemy.stats[STAT_STRENGTH]}</strong></div>
-        <div className="lov-profile-stat"><span>DEX</span><strong>{enemy.stats[STAT_AGILITY]}</strong></div>
-        <div className="lov-profile-stat"><span>INT</span><strong>{enemy.stats[STAT_INTUITION]}</strong></div>
-        <div className="lov-profile-stat"><span>LCK</span><strong>{enemy.stats[STAT_LUCK]}</strong></div>
+        {stats.map((stat) => (
+          <div key={stat.id} className={`lov-profile-stat stat-${stat.id}`} data-testid={`enemy-info-stat-${stat.id}`}>
+            <span>{stat.shortLabel}</span>
+            <strong>{stat.value}</strong>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -598,6 +602,10 @@ export function EnemyInfoWindow({
     return null;
   }
 
+  const stats = enemyStatRows(enemy);
+  const displayedEnemyName = enemyDisplayName(enemy);
+  const displayedEnemyAssetId = enemyAssetId(enemy);
+
   return (
     <WorldWindowShell
       title="Сведения о противнике"
@@ -611,26 +619,26 @@ export function EnemyInfoWindow({
         <section className="lov-sheet-left lov-hero-info-main">
           <div className="lov-profile-screen lov-profile-screen-window">
             <div className="lov-profile-header">
-              <img src={assetPath('enemy-ash-baron')} alt="" />
+              <img src={assetPath(displayedEnemyAssetId)} alt="" />
               <div>
-                <strong>{enemy.nameRu}</strong>
-                <span>{enemy.boss ? 'Босс' : 'Противник'}</span>
+                <strong>{displayedEnemyName}</strong>
+                <span>{enemy.boss ? 'Босс' : 'Противник'} · {enemy.level} уровень</span>
               </div>
             </div>
             <div className="lov-profile-stats">
-              <div className="lov-profile-stat"><span>Здоровье</span><strong>{enemy.health}</strong></div>
-              <div className="lov-profile-stat"><span>Броня</span><strong>{enemy.armor}</strong></div>
-              <div className="lov-profile-stat"><span>Сила</span><strong>{enemy.stats[STAT_STRENGTH]}</strong></div>
-              <div className="lov-profile-stat"><span>Ловкость</span><strong>{enemy.stats[STAT_AGILITY]}</strong></div>
-              <div className="lov-profile-stat"><span>Интуиция</span><strong>{enemy.stats[STAT_INTUITION]}</strong></div>
-              <div className="lov-profile-stat"><span>Удача</span><strong>{enemy.stats[STAT_LUCK]}</strong></div>
+              {stats.map((stat) => (
+                <div key={stat.id} className={`lov-profile-stat stat-${stat.id}`} data-testid={`enemy-info-stat-${stat.id}`}>
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
         <section className="lov-sheet-right lov-hero-info-side">
           <div className="lov-enemy-info-portrait">
-            <img src={assetPath('enemy-ash-baron')} alt="" />
+            <img src={assetPath(displayedEnemyAssetId)} alt="" />
           </div>
         </section>
       </div>

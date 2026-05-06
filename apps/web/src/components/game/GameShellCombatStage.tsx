@@ -22,6 +22,9 @@ export function GameShellCombatStage({
   replayFrame,
   petAssistArmed,
   selectedPetId,
+  battlePetId,
+  combatLocked,
+  rewardBattlePetId,
   visibleReplayTurns,
   onIntent,
   worldWindowContent,
@@ -39,6 +42,9 @@ export function GameShellCombatStage({
   replayFrame: CombatReplayFrame;
   petAssistArmed: boolean;
   selectedPetId: string;
+  battlePetId: string;
+  combatLocked: boolean;
+  rewardBattlePetId: string | null | undefined;
   visibleReplayTurns: CombatLog['turns'];
   onIntent: (intent: GameIntent) => void;
   worldWindowContent: ReactNode;
@@ -65,6 +71,8 @@ export function GameShellCombatStage({
           petMaxHealth={replayFrame.petStart}
           petAssistArmed={petAssistArmed}
           selectedPetId={selectedPetId}
+          battlePetId={battlePetId}
+          combatLocked={combatLocked}
           replayTurns={visibleReplayTurns}
           onIntent={onIntent}
         />
@@ -77,7 +85,11 @@ export function GameShellCombatStage({
 
         {rewardVisible ? (
           <GameShellModalLayer reward>
-            <CombatResultWindow latestResolvedCombat={latestResolvedCombat} onContinue={onCloseReward} />
+            <CombatResultWindow
+              latestResolvedCombat={latestResolvedCombat}
+              {...(rewardBattlePetId ? { battlePetId: rewardBattlePetId } : {})}
+              onContinue={onCloseReward}
+            />
           </GameShellModalLayer>
         ) : null}
 

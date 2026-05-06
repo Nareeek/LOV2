@@ -41,6 +41,12 @@ for (const viewport of [
     await expectNoOverlap(page.locator('.lov-topbar-left'), page.getByTestId('hud-resource-strip'));
     await expectSameRow(page.locator('.lov-friend-card'));
 
+    const fountainWrap = page.locator(".scene-hotspot-wrap[data-hotspot-id='hub-fountain']");
+    const arenaWrap = page.locator(".scene-hotspot-wrap[data-hotspot-id='hub-arena']");
+    await page.getByTestId('hotspot-hub-fountain').hover();
+    await expect(fountainWrap.locator('.hotspot-label')).toHaveCSS('opacity', '1');
+    await expectLayerAbove(fountainWrap, arenaWrap);
+
     await infoButton.click();
     const heroInfoWindow = page.getByTestId('character-info-popup');
     await expect(heroInfoWindow).toBeVisible();
@@ -191,7 +197,7 @@ test('sheet close control and bag slot count stay reachable on a narrow desktop 
 
 test('combat and reward stay inside the battlefield shell', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
-  await openGame(page, createCombatState());
+  await openGame(page, createCombatState(0));
 
   const playfield = page.locator('.stage-main').first();
 
@@ -200,7 +206,29 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expect(page.getByTestId('pet-assist-button')).toBeVisible();
   await expect(page.locator('.lov-fighter.hero')).toBeVisible();
   await expect(page.locator('.lov-fighter.enemy')).toBeVisible();
+  await expect(page.locator('.lov-combat-header.enemy')).toContainText('Роман');
+  await expect(page.locator('.lov-combat-avatar.enemy img')).toHaveAttribute(
+    'src',
+    '/assets/generated/enemies/enemy-mist-bandit.png',
+  );
+  await expect(page.locator('.lov-fighter.enemy')).toHaveAttribute(
+    'src',
+    '/assets/generated/enemies/enemy-mist-bandit.png',
+  );
   await expect(page.getByTestId('bottom-tray')).toBeVisible();
+
+  await page.getByTestId('combat-enemy-info-button').click();
+  const enemyInfoWindow = page.getByTestId('enemy-info-popup');
+  await expect(enemyInfoWindow).toBeVisible();
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-health')).toContainText('55');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-armor')).toContainText('3');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-strength')).toContainText('6');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-luck')).toContainText('3');
+  await expect(enemyInfoWindow.locator('.lov-enemy-info-portrait img')).toHaveAttribute(
+    'src',
+    '/assets/generated/enemies/enemy-mist-bandit.png',
+  );
+  await enemyInfoWindow.getByTestId('world-window-bottom-close').click();
 
   await page.getByTestId('pet-assist-button').click();
   await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
@@ -249,12 +277,19 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   const arenaStartButton = arenaWindow.getByTestId('arena-start-button');
   await expect(arenaWindow).toBeVisible();
   await expectContained(arenaWindow, page.getByTestId('world-stage'));
-  await expect(arenaWindow.getByText('24 \u0443\u0440\u043e\u0432\u0435\u043d\u044c')).toBeVisible();
+  await expect(arenaWindow.getByText('1 \u0443\u0440\u043e\u0432\u0435\u043d\u044c')).toBeVisible();
+  await expect(arenaWindow.getByTestId('arena-stat-health')).toContainText('55');
+  await expect(arenaWindow.getByTestId('arena-stat-strength')).toContainText('6');
+  await expect(arenaWindow.locator('.lov-arena-preview img')).toHaveAttribute(
+    'src',
+    '/assets/generated/enemies/enemy-mist-bandit.png',
+  );
   await expect(arenaWindow.getByText('ATK')).toHaveCount(0);
   await expect(arenaWindow.getByText('DEX')).toHaveCount(0);
   await expect(arenaStats).toHaveCount(6);
   await expect(arenaSwitchButton).toBeVisible();
   await expect(arenaStartButton).toBeVisible();
+  await expect(arenaWindow.getByTestId('world-window-close-button')).toHaveCount(0);
   await expect(arenaWindow.getByTestId('world-window-bottom-close')).toBeVisible();
   await expect(arenaStats.nth(4)).toBeVisible();
   await expect(arenaStats.nth(5)).toBeVisible();
@@ -262,7 +297,7 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   await expectNoOverlap(arenaStats.nth(3), arenaStartButton);
   await expectNoOverlap(arenaStats.nth(4), arenaSwitchButton);
   await expectNoOverlap(arenaStats.nth(5), arenaStartButton);
-  await arenaWindow.getByTestId('world-window-close-button').click();
+  await arenaWindow.getByTestId('world-window-bottom-close').click();
 }
 
 async function openGame(page: Page, state: BootstrapState) {
@@ -416,7 +451,8 @@ function createBootstrapState(overrides: Partial<BootstrapState> = {}): Bootstra
   };
 }
 
-function createCombatState() {
+function createCombatState(enemyIndex = 2) {
+  const enemy = gameData.enemies[enemyIndex] ?? gameData.enemies[2]!;
   const reward = gameData.quests[2]!.reward;
   const combatLog: CombatLog = {
     winner: 'character',
@@ -431,7 +467,7 @@ function createCombatState() {
     {
       id: 'combat-won',
       characterId: 'character-1',
-      enemyId: gameData.enemies[2]!.id,
+      enemyId: enemy.id,
       status: 'won',
       createdAt: '2026-04-22T11:58:00.000Z',
       log: combatLog,
@@ -439,7 +475,7 @@ function createCombatState() {
     {
       id: 'combat-pending',
       characterId: 'character-1',
-      enemyId: gameData.enemies[2]!.id,
+      enemyId: enemy.id,
       status: 'pending',
       createdAt: NOW,
     },
@@ -513,6 +549,15 @@ async function expectAlmostFullWidth(locator: Locator, container: Locator) {
   expect(box).not.toBeNull();
   expect(containerBox).not.toBeNull();
   expect(box!.width).toBeGreaterThan(containerBox!.width * 0.9);
+}
+
+async function expectLayerAbove(top: Locator, bottom: Locator) {
+  const [topZ, bottomZ] = await Promise.all([
+    top.evaluate((element) => Number(window.getComputedStyle(element).zIndex)),
+    bottom.evaluate((element) => Number(window.getComputedStyle(element).zIndex)),
+  ]);
+
+  expect(topZ).toBeGreaterThan(bottomZ);
 }
 
 async function expectNoOverlap(first: Locator, second: Locator) {

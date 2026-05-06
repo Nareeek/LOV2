@@ -77,8 +77,8 @@ export const apiClient = {
     api<BootstrapState>(`/quests/${questId}/accept`, { method: 'POST' }),
   startTravel: (input: { locationId: string; questId?: string }) =>
     api<BootstrapState>('/travel/start', { method: 'POST', body: JSON.stringify(input) }),
-  claimTravel: (travelId: string) =>
-    api<BootstrapState>(`/travel/${travelId}/claim`, { method: 'POST' }),
+  claimTravel: (travelId: string, input: { rush?: boolean } = {}) =>
+    api<BootstrapState>(`/travel/${travelId}/claim`, { method: 'POST', body: JSON.stringify(input) }),
   resolveCombat: (combatId: string, input: { petId?: string } = {}) =>
     api<BootstrapState>(`/combat/${combatId}/resolve`, { method: 'POST', body: JSON.stringify(input) }),
   equipItem: (inventoryStackId: string) =>

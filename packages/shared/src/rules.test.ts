@@ -76,4 +76,40 @@ describe('game rules', () => {
     expect(combat.reward.experience).toBe(25);
     expect(combat.turns.length).toBeGreaterThan(0);
   });
+
+  it('keeps combat hit values deterministic and rising for the replay', () => {
+    const enemy: EnemyDefinition = {
+      id: 'training-knight',
+      nameRu: 'Тренировочный рыцарь',
+      level: 8,
+      health: 1800,
+      armor: 6,
+      boss: false,
+      stats: { сила: 14, ловкость: 8, интуиция: 10, удача: 6 },
+      reward: { experience: 45, gold: 20, gems: 0, itemIds: [] },
+    };
+
+    const combat = resolveCombat({
+      characterLevel: 9,
+      characterHealth: 2600,
+      characterStats: { сила: 28, ловкость: 19, интуиция: 16, удача: 14 },
+      enemy,
+      reward: enemy.reward,
+      characterArmor: 18,
+      pet: { id: 'kitten', level: 17, health: 2100 },
+    });
+
+    const allyHits = combat.turns.filter((turn) => turn.target === 'enemy').map((turn) => turn.damage);
+    const enemyHits = combat.turns.filter((turn) => turn.actor === 'enemy').map((turn) => turn.damage);
+
+    expect(combat.petId).toBe('kitten');
+    expect(combat.turns.some((turn) => turn.actor === 'pet')).toBe(true);
+    expect(allyHits.length).toBeGreaterThan(1);
+    for (let index = 1; index < allyHits.length; index += 1) {
+      expect(allyHits[index]).toBeGreaterThanOrEqual(allyHits[index - 1]!);
+    }
+    for (let index = 1; index < enemyHits.length; index += 1) {
+      expect(enemyHits[index]).toBeGreaterThanOrEqual(enemyHits[index - 1]!);
+    }
+  });
 });
