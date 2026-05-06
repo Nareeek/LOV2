@@ -6,7 +6,15 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "declaration": false,
-    "types": ["vite/client"]
+    "types": ["react", "react-dom", "vite/client"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.test.ts", "vite.config.ts", "vitest.config.ts"]
+  "include": [
+  "src/**/*.ts",
+  "src/**/*.tsx",
+  "src/**/*.test.ts",
+  "src/**/*.test.tsx",
+  "vite.config.ts",
+  "vitest.config.ts"
+  ]
 }
