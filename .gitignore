@@ -14,3 +14,6 @@ test-results/
 apps/web/.vite/
 apps/api/prisma/migrations/dev.db*
 _incoming_assets/
+_incoming_assets_hotspots/
+_incoming_assets_missing/
+_incoming_assets_transparent/

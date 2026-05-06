@@ -98,7 +98,11 @@ packages/
 
 ### Art Pipeline
 
-- `packages/art-pipeline/src/*`
-  - asset metadata/helpers
-  - original asset manifest logic if present
+- `packages/art-pipeline/src/index.ts`
+  - asset manifest records
+  - asset path, kind, license, and source/provenance metadata
+
+- `scripts/validate-assets.mjs`
+  - validates generated asset files exist
+  - checks game-data asset references against the art manifest
 ```

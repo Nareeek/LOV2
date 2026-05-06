@@ -23,6 +23,8 @@ Respect `.codexignore`.
 
 Do not inspect generated, cached, dependency, test-output, local-env, or local-reference-asset folders unless the task explicitly asks for them.
 
+Treat `_incoming_assets*` folders as local/reference asset intake. Do not inspect them unless the task is specifically about asset provenance, asset archival, or replacing/validating those intake files.
+
 ## High-Value Files by Task
 
 ### Frontend UI
@@ -60,6 +62,14 @@ Read:
 - `packages/game-data/AGENTS.md`
 - `packages/game-data/src/index.ts`
 - `packages/game-data/src/index.test.ts`
+
+### Art Pipeline
+
+Read:
+
+- `packages/art-pipeline/AGENTS.md`
+- `packages/art-pipeline/src/index.ts`
+- `scripts/validate-assets.mjs` only if checking manifest-to-file references
 
 ### Worker / Queue
 
@@ -125,3 +135,4 @@ pnpm codex:check:api
 pnpm codex:check:shared
 pnpm codex:check:game-data
 pnpm codex:check:worker
+```
