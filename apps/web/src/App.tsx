@@ -1,48 +1,12 @@
-import { Component, type ErrorInfo, type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import type { BootstrapState, CharacterClassId, CharacterGender } from '@lov2/shared';
 import { apiClient } from './lib/api.js';
 import { GameShell } from './components/game/GameShell.js';
 import { assetPath } from './components/game/assets.js';
-
-const GENDER_OPTIONS: Array<{
-  id: CharacterGender;
-  label: string;
-  glyph: string;
-}> = [
-  { id: 'male', label: 'Мужчина', glyph: '♂' },
-  { id: 'female', label: 'Женщина', glyph: '♀' },
-];
-
-const CLASS_OPTIONS: Array<{
-  id: CharacterClassId;
-  label: string;
-  glyph: string;
-  description: string;
-}> = [
-  {
-    id: 'swordsman',
-    label: 'Мечник',
-    glyph: '⚔',
-    description:
-      'Мечники — самые сильные и чрезвычайно выносливые воины. Вместе с мечами они используют прочные щиты и уверенно держат фронт в долгом бою.',
-  },
-  {
-    id: 'ranger',
-    label: 'Стрелок',
-    glyph: '🏹',
-    description:
-      'Стрелки полагаются на ловкость, дистанцию и быстрые вылазки. Они лучше других читают маршрут, первыми замечают опасность и точнее держат темп боя.',
-  },
-  {
-    id: 'mage',
-    label: 'Мистик',
-    glyph: '✦',
-    description:
-      'Мистики играют от интуиции и контроля. Их сила раскрывается в точных решениях, магических импульсах и умении переломить дуэль в нужный момент.',
-  },
-];
-
-const RANDOM_NAMES = ['Даррид', 'Нарек', 'Элира', 'Каэл', 'Мирель', 'Селвин'];
+import { CLASS_OPTIONS, GENDER_OPTIONS, RANDOM_NAMES } from './game/characterCreationOptions.js';
+import { GameErrorBoundary } from './components/game/GameErrorBoundary.js';
+import { AuthScreen } from './screens/AuthScreen.js';
+import { CharacterCreationScreen } from './screens/CharacterCreationScreen.js';
 
 export function App() {
   const [state, setState] = useState<BootstrapState | null>(null);
@@ -142,189 +106,49 @@ export function App() {
 
   if (!state?.user) {
     return (
-      <main className="auth-shell lov-auth-shell">
-        <section className="auth-panel lov-auth-panel">
-          <p className="eyebrow">LOV2</p>
-          <h1>Ночная сага начинается</h1>
-          <p>
-            Русскоязычная браузерная RPG: контракты, путешествия, дуэли, экипировка,
-            питомцы и рост героя в старом фэнтезийном интерфейсе.
-          </p>
-          <form className="auth-form" onSubmit={(event) => submitAuth(event, 'login')}>
-            <label>
-              Почта
-              <input value={email} onChange={(event) => setEmail(event.target.value)} />
-            </label>
-            <label>
-              Имя
-              <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
-            </label>
-            <label>
-              Пароль
-              <input
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                type="password"
-              />
-            </label>
-            <div className="button-row">
-              <button disabled={busy} type="submit">
-                Войти
-              </button>
-              <button
-                disabled={busy}
-                type="button"
-                className="secondary"
-                onClick={() =>
-                  void run(async () => {
-                    await apiClient.register({ email, displayName, password });
-                    return apiClient.bootstrap();
-                  }, 'Аккаунт создан.')
-                }
-              >
-                Создать аккаунт
-              </button>
-            </div>
-          </form>
-          {message && <p className="message">{message}</p>}
-        </section>
-        <img src={assetPath('scene-hub')} alt="" className="auth-art" />
-      </main>
+      <AuthScreen
+        email={email}
+        displayName={displayName}
+        password={password}
+        message={message}
+        busy={busy}
+        onEmailChange={setEmail}
+        onDisplayNameChange={setDisplayName}
+        onPasswordChange={setPassword}
+        onSubmitAuth={submitAuth}
+        onCreateAccount={() =>
+          void run(async () => {
+            await apiClient.register({ email, displayName, password });
+            return apiClient.bootstrap();
+          }, 'Аккаунт создан.')
+        }
+      />
     );
   }
 
   if (!state.character) {
     return (
-      <main className="lov-creation-shell" data-testid="creation-screen">
-        <div className="lov-creation-ruler" aria-hidden="true">
-          {['0%', '20%', '40%', '60%', '80%', '100%'].map((label) => (
-            <span key={label}>{label}</span>
-          ))}
-        </div>
-
-        <section className="lov-creation-body">
-          <form
-            className="lov-creation-panel"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void run(
-                () => apiClient.createCharacter({ name: characterName, raceId, gender, classId }),
-                'Персонаж готов.',
-              );
-            }}
-          >
-            <header className="lov-creation-header">
-              <h1>Создание персонажа</h1>
-              <label className="lov-creation-name">
-                <span>Имя героя</span>
-                <input
-                  value={characterName}
-                  onChange={(event) => setCharacterName(event.target.value)}
-                  maxLength={24}
-                />
-              </label>
-            </header>
-
-            <section className="lov-creation-section">
-              <div className="lov-creation-section-title">Пол</div>
-              <div className="lov-creation-grid two">
-                {GENDER_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={gender === option.id ? 'active' : ''}
-                    onClick={() => setGender(option.id)}
-                  >
-                    <span className="lov-creation-glyph">{option.glyph}</span>
-                    <strong>{option.label}</strong>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="lov-creation-section">
-              <div className="lov-creation-section-title">Раса</div>
-              <div className="lov-creation-grid race">
-                {state.races.map((race) => (
-                  <button
-                    key={race.id}
-                    type="button"
-                    className={raceId === race.id ? 'active' : ''}
-                    onClick={() => setRaceId(race.id)}
-                  >
-                    <strong>{race.nameRu}</strong>
-                    <small>{race.passiveRu}</small>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="lov-creation-section">
-              <div className="lov-creation-section-title">Класс</div>
-              <div className="lov-creation-grid three">
-                {CLASS_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={classId === option.id ? 'active' : ''}
-                    onClick={() => setClassId(option.id)}
-                  >
-                    <span className="lov-creation-glyph">{option.glyph}</span>
-                    <strong>{option.label}</strong>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="lov-creation-description">
-              <h2>{selectedClass.label}</h2>
-              <p>{selectedClass.description}</p>
-              {selectedRace ? <small>{selectedRace.descriptionRu}</small> : null}
-            </section>
-
-            <footer className="lov-creation-actions">
-              <button
-                type="button"
-                className="secondary"
-                disabled={busy}
-                onClick={randomizeCreation}
-              >
-                Случайный выбор
-              </button>
-              <button disabled={busy || !characterName.trim()} type="submit">
-                Далее
-              </button>
-            </footer>
-          </form>
-
-          <section className="lov-creation-preview">
-            <div className="lov-creation-preview-top">
-              <button
-                type="button"
-                className="lov-creation-random"
-                disabled={busy}
-                onClick={randomizeCreation}
-              >
-                <span>Случайный выбор</span>
-                <strong>⚄</strong>
-              </button>
-            </div>
-            <div className="lov-creation-scene">
-              <img src="/assets/original/scene-hub.svg" alt="" />
-              <div className="lov-creation-avatar-card">
-                <div className="lov-creation-avatar-meta">
-                  <span>{selectedRace?.nameRu ?? 'Раса'}</span>
-                  <strong>{selectedClass.label}</strong>
-                  <small>{gender === 'male' ? 'Мужчина' : 'Женщина'}</small>
-                </div>
-                <img src="/assets/original/hero-nocturne.svg" alt="" />
-              </div>
-            </div>
-          </section>
-        </section>
-
-        {message ? <p className="message lov-creation-message">{message}</p> : null}
-      </main>
+      <CharacterCreationScreen
+        state={state}
+        characterName={characterName}
+        raceId={raceId}
+        gender={gender}
+        classId={classId}
+        message={message}
+        busy={busy}
+        onCharacterNameChange={setCharacterName}
+        onRaceChange={setRaceId}
+        onGenderChange={setGender}
+        onClassChange={setClassId}
+        onRandomize={randomizeCreation}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void run(
+            () => apiClient.createCharacter({ name: characterName, raceId, gender, classId }),
+            'Персонаж готов.',
+          );
+        }}
+      />
     );
   }
 
@@ -345,44 +169,4 @@ function normalizeUserMessage(error: unknown): string {
 
 function isBootstrap(value: unknown): value is BootstrapState {
   return typeof value === 'object' && value !== null && 'races' in value && 'quests' in value;
-}
-
-class GameErrorBoundary extends Component<
-  { children: ReactNode; onLogout: () => void; onRetry: () => void },
-  { error: Error | null }
-> {
-  state: { error: Error | null } = { error: null };
-
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error(error, info.componentStack);
-  }
-
-  render() {
-    if (!this.state.error) {
-      return this.props.children;
-    }
-
-    return (
-      <main className="game-error-shell" data-testid="game-error-boundary">
-        <section className="panel game-error-panel">
-          <p className="eyebrow">LOV2</p>
-          <h1>Экран игры временно не загрузился</h1>
-          <p>
-            Можно повторить загрузку или выйти в экран входа. Прогресс персонажа сохранен.
-          </p>
-          {import.meta.env.DEV && <pre>{this.state.error.message}</pre>}
-          <div className="button-row">
-            <button onClick={this.props.onRetry}>Повторить</button>
-            <button className="secondary" onClick={this.props.onLogout}>
-              Выйти
-            </button>
-          </div>
-        </section>
-      </main>
-    );
-  }
 }
