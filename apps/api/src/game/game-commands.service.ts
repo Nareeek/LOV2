@@ -422,6 +422,14 @@ export class GameCommandsService {
 
     return [{ definition, enhancementLevel: entry.enhancementLevel }];
   });
+    const verifiedPetDefinition = input.petId
+      ? gameData.items.find(
+          (item) =>
+            item.id === input.petId &&
+            item.slot === 'pet' &&
+            equipped.some((entry) => entry.itemId === item.id && entry.equippedSlot === 'pet'),
+        )
+      : undefined;
     const effectiveStats = statsWithEquipment(
       character.stats as unknown as CharacterStats,
       equippedDefinitions,
@@ -436,12 +444,12 @@ export class GameCommandsService {
       reward: combat.questId
         ? (gameData.quests.find((quest) => quest.id === combat.questId)?.reward ?? enemy.reward)
         : enemy.reward,
-      ...(input.petId
+      ...(verifiedPetDefinition
         ? {
             pet: {
-              id: input.petId,
-              level: input.petId === 'kitten' ? 17 : input.petId === 'wyrmlet' ? 14 : 12,
-              health: input.petId === 'kitten' ? 2100 : input.petId === 'wyrmlet' ? 1950 : 1800,
+              id: verifiedPetDefinition.id,
+              level: 12,
+              health: 1800,
             },
           }
         : {}),
