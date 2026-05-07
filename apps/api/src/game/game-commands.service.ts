@@ -33,6 +33,7 @@ import {
   type CombatLog,
   type EquipmentSlot,
   type ItemDefinition,
+  type PetCombatStats,
 } from '@lov2/shared';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsGateway } from './notifications.gateway.js';
@@ -50,6 +51,22 @@ const ENERGY_REFILL_OPTIONS = {
 } as const;
 
 type EnergyRefillMode = keyof typeof ENERGY_REFILL_OPTIONS;
+
+function validPetCombatStats(item: ItemDefinition): PetCombatStats | undefined {
+  const stats = item.petCombatStats;
+
+  if (
+    !stats ||
+    !Number.isSafeInteger(stats.level) ||
+    stats.level <= 0 ||
+    !Number.isSafeInteger(stats.health) ||
+    stats.health <= 0
+  ) {
+    return undefined;
+  }
+
+  return stats;
+}
 
 function applyClassBonus(stats: CharacterStats, classId: CharacterClassId): CharacterStats {
   const bonus = CLASS_STAT_BONUSES[classId];
@@ -454,6 +471,9 @@ export class GameCommandsService {
             equipped.some((entry) => entry.itemId === item.id && entry.equippedSlot === 'pet'),
         )
       : undefined;
+    const verifiedPetCombatStats = verifiedPetDefinition
+      ? validPetCombatStats(verifiedPetDefinition)
+      : undefined;
     const effectiveStats = statsWithEquipment(
       character.stats as unknown as CharacterStats,
       equippedDefinitions,
@@ -468,12 +488,12 @@ export class GameCommandsService {
       reward: combat.questId
         ? (gameData.quests.find((quest) => quest.id === combat.questId)?.reward ?? enemy.reward)
         : enemy.reward,
-      ...(verifiedPetDefinition
+      ...(verifiedPetDefinition && verifiedPetCombatStats
         ? {
             pet: {
               id: verifiedPetDefinition.id,
-              level: 12,
-              health: 1800,
+              level: verifiedPetCombatStats.level,
+              health: verifiedPetCombatStats.health,
             },
           }
         : {}),

@@ -1,4 +1,4 @@
-import type { CharacterStats, CombatLog, EnemyDefinition, ItemDefinition, Reward } from './types.js';
+import type { CharacterStats, CombatLog, EnemyDefinition, ItemDefinition, PetCombatStats, Reward } from './types.js';
 
 export const DEFAULT_MAX_ENERGY = 30;
 export const ENERGY_RESET_HOUR = 4;
@@ -144,10 +144,8 @@ export function resolveCombat(params: {
   characterArmor?: number;
   enemy: EnemyDefinition;
   reward: Reward;
-  pet?: {
+  pet?: PetCombatStats & {
     id?: string;
-    level: number;
-    health: number;
   };
 }): CombatLog {
   const turns = [];
