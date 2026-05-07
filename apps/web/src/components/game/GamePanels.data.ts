@@ -75,6 +75,7 @@ export const PET_VARIANTS = [
   { id: 'foxling', name: 'Лисёнок', level: 12, hp: 1800, damage: '34-35', assetId: 'pet-wolf' },
   { id: 'wyrmlet', name: 'Дракончик', level: 14, hp: 1950, damage: '36-38', assetId: 'pet-dragon' },
   { id: 'kitten', name: 'Котёнок', level: 17, hp: 2100, damage: '40-41', assetId: 'pet-cat' },
+  { id: 'ember-whelp', name: 'Искровой виверн', level: 12, hp: 1800, damage: '-', assetId: 'pet-wyvern' },
 ];
 export const STORE_CONTRACTS = [
   { title: 'Договор на сезон', price: '1000 ОК', profit: '1620 жемчужин за 90 дней' },
@@ -222,4 +223,3 @@ export const QUEST_HINTS: Record<string, string> = {
   'ash-baron-duel':
     'Выходи к арене без спешки. Барон любит долгий разогрев и теряет ритм, если его встречают хладнокровно.',
 };
-

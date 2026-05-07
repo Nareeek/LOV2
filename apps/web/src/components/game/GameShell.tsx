@@ -129,7 +129,6 @@ export function GameShell({
   const latestResolvedCombat = getLatestResolvedCombat(state);
   const activeCombatLog = pendingCombat ? undefined : latestResolvedCombat?.log;
   const resolvedBattlePetId = battlePetId ?? activeCombatLog?.petId ?? null;
-  const activeBattlePetId = resolvedBattlePetId ?? (petAssistArmed ? selectedPetId : null);
   const arenaEnemy = state.enemies.find((enemy) => enemy.id === selectedArenaEnemyId) ?? state.enemies[0];
   const combatEnemyId = pendingCombat?.enemyId ?? latestResolvedCombat?.enemyId ?? arenaEnemy?.id;
   const combatEnemy = state.enemies.find((enemy) => enemy.id === combatEnemyId) ?? arenaEnemy;
@@ -138,6 +137,15 @@ export function GameShell({
   const selectedItemStack = selectedItemStackId ? state.inventory.find((stack) => stack.id === selectedItemStackId) : undefined;
   const selectedItem = selectedItemStack ? state.items.find((item) => item.id === selectedItemStack.itemId) : undefined;
   const selectedForgeStack = selectedForgeStackId ? state.inventory.find((stack) => stack.id === selectedForgeStackId) : undefined;
+  const equippedPetStack = state.inventory.find((stack) => {
+    if (stack.equippedSlot !== 'pet') {
+      return false;
+    }
+    const item = state.items.find((entry) => entry.id === stack.itemId);
+    return item?.slot === 'pet';
+  });
+  const equippedPetId = equippedPetStack?.itemId ?? null;
+  const activeBattlePetId = resolvedBattlePetId ?? (petAssistArmed ? equippedPetId : null);
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
   const stageMode: StageMode = baseStage;
@@ -372,7 +380,7 @@ export function GameShell({
           setBaseStage('combat');
           return;
         case 'resolveCombat': {
-          const usedPetId = petAssistArmed ? selectedPetId : null;
+          const usedPetId = petAssistArmed ? equippedPetId : null;
           const resolved = await run(
             () => apiClient.resolveCombat(intent.combatId, usedPetId ? { petId: usedPetId } : {}),
             'Дуэль завершена.',
@@ -389,14 +397,14 @@ export function GameShell({
           return;
         }
         case 'togglePetAssist':
-          if (replayActive || rewardVisible || battlePetId) {
+          if (replayActive || rewardVisible || battlePetId || !equippedPetId) {
             return;
           }
           setPetAssistArmed((value) => !value);
           return;
         case 'showReward': {
           if (pendingCombat) {
-            const usedPetId = petAssistArmed ? selectedPetId : null;
+            const usedPetId = petAssistArmed ? equippedPetId : null;
             const resolved = await run(
               () => apiClient.resolveCombat(pendingCombat.id, usedPetId ? { petId: usedPetId } : {}),
               'Дуэль завершена.',
@@ -463,6 +471,7 @@ export function GameShell({
       closeSheet,
       closeWorldWindow,
       battlePetId,
+      equippedPetId,
       openLocation,
       openSheet,
       openWorldWindow,
@@ -645,8 +654,9 @@ export function GameShell({
               combatEnemy={combatEnemy}
               replayFrame={replayFrame}
               petAssistArmed={petAssistArmed}
-              selectedPetId={selectedPetId}
-              battlePetId={resolvedBattlePetId ?? selectedPetId}
+              petAssistAvailable={Boolean(equippedPetId)}
+              selectedPetId={equippedPetId ?? selectedPetId}
+              battlePetId={resolvedBattlePetId ?? equippedPetId ?? selectedPetId}
               combatLocked={replayActive || rewardVisible || Boolean(activeCombatLog)}
               visibleReplayTurns={visibleReplayTurns}
               onIntent={handleIntent}
@@ -683,4 +693,3 @@ function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'com
   }
   return 'world';
 }
-

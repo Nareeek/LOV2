@@ -21,6 +21,7 @@ export function GameShellCombatStage({
   combatEnemy,
   replayFrame,
   petAssistArmed,
+  petAssistAvailable,
   selectedPetId,
   battlePetId,
   combatLocked,
@@ -41,6 +42,7 @@ export function GameShellCombatStage({
   combatEnemy: BootstrapState['enemies'][number] | undefined;
   replayFrame: CombatReplayFrame;
   petAssistArmed: boolean;
+  petAssistAvailable: boolean;
   selectedPetId: string;
   battlePetId: string;
   combatLocked: boolean;
@@ -70,6 +72,7 @@ export function GameShellCombatStage({
           petHealth={replayFrame.petCurrent}
           petMaxHealth={replayFrame.petStart}
           petAssistArmed={petAssistArmed}
+          petAssistAvailable={petAssistAvailable}
           selectedPetId={selectedPetId}
           battlePetId={battlePetId}
           combatLocked={combatLocked}

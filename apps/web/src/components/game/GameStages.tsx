@@ -151,6 +151,7 @@ export function CombatStage({
   petHealth,
   petMaxHealth,
   petAssistArmed,
+  petAssistAvailable,
   selectedPetId,
   battlePetId,
   combatLocked,
@@ -166,6 +167,7 @@ export function CombatStage({
   petHealth: number;
   petMaxHealth: number;
   petAssistArmed: boolean;
+  petAssistAvailable: boolean;
   selectedPetId: string;
   battlePetId: string | null;
   combatLocked: boolean;
@@ -183,19 +185,23 @@ export function CombatStage({
   const displayedEnemyAssetId = enemyAssetId(enemy);
   const activePetId = battlePetId ?? selectedPetId;
   const selectedPet = PET_VARIANTS.find((pet) => pet.id === activePetId) ?? PET_VARIANTS[2]!;
+  const selectedPetDefinition = state.items.find((item) => item.id === activePetId && item.slot === 'pet');
+  const selectedPetCombatStats = selectedPetDefinition?.petCombatStats;
+  const selectedPetName = selectedPetDefinition?.nameRu ?? selectedPet.name;
+  const selectedPetLevel = selectedPetCombatStats?.level ?? selectedPet.level;
   const latestReplayTurn = replayTurns?.[replayTurns.length - 1];
   const recentTurns = latestReplayTurn ? [latestReplayTurn] : [];
   const petSummoned = Boolean(battlePetId || petAssistArmed);
   const petActing = petSummoned && latestReplayTurn?.actor === 'pet';
-  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPet.name, displayedEnemyName, character.name) : null;
-  const displayedPetHealth = petMaxHealth > 0 ? petHealth : selectedPet.hp;
-  const displayedPetMaxHealth = petMaxHealth > 0 ? petMaxHealth : selectedPet.hp;
+  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPetName, displayedEnemyName, character.name) : null;
+  const displayedPetHealth = petMaxHealth > 0 ? petHealth : selectedPetCombatStats?.health ?? selectedPet.hp;
+  const displayedPetMaxHealth = petMaxHealth > 0 ? petMaxHealth : selectedPetCombatStats?.health ?? selectedPet.hp;
   const latestTarget = targetForTurn(latestReplayTurn);
   const turnPulseClass = latestReplayTurn ? `turn-${latestReplayTurn.turn % 2}` : '';
   const heroMotionClass = fighterMotionClass(latestReplayTurn, latestTarget, 'character', turnPulseClass);
   const enemyMotionClass = fighterMotionClass(latestReplayTurn, latestTarget, 'enemy', turnPulseClass);
   const petMotionClass = fighterMotionClass(latestReplayTurn, latestTarget, 'pet', turnPulseClass);
-  const petButtonActive = Boolean(petAssistArmed || battlePetId);
+  const petButtonActive = petAssistAvailable && Boolean(petAssistArmed || battlePetId);
 
   return (
     <section className="shell-reset-combat-stage lov-combat-stage" data-testid="combat-screen">
@@ -273,7 +279,7 @@ export function CombatStage({
               aria-hidden="true"
             />
             <div className="lov-pet-battle-health">
-              <span>{selectedPet.name}</span>
+              <span>{selectedPetName}</span>
               <div className="lov-health-track">
                 <i style={{ width: `${Math.round((displayedPetHealth / Math.max(1, displayedPetMaxHealth)) * 100)}%` }} />
               </div>
@@ -296,7 +302,7 @@ export function CombatStage({
             type="button"
             className={`lov-toggle-chip ${petButtonActive ? 'active' : ''}`}
             data-testid="pet-assist-button"
-            disabled={combatLocked}
+            disabled={combatLocked || !petAssistAvailable}
             onClick={() => onIntent({ type: 'togglePetAssist' })}
           >
             Вызывать питомца
@@ -306,8 +312,8 @@ export function CombatStage({
               <img src={assetPath(selectedPet.assetId)} alt="" />
             </div>
             <div className="lov-pet-card-copy">
-              <strong>{selectedPet.name}</strong>
-              <span>{selectedPet.level} уровень</span>
+              <strong>{selectedPetName}</strong>
+              <span>{selectedPetLevel} уровень</span>
               <div className="lov-health-track">
                 <i style={{ width: `${Math.round((displayedPetHealth / Math.max(1, displayedPetMaxHealth)) * 100)}%` }} />
               </div>
@@ -488,5 +494,4 @@ export function CombatResultWindow({
     </section>
   );
 }
-
 
