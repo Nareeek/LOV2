@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check": "tsc --noEmit",
+    "lint": "eslint --max-warnings=0 \"src/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\"",
     "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test"
   },
