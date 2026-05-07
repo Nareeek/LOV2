@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { BadRequestException } from '@nestjs/common';
 import { gameData } from '@lov2/game-data';
 import {
   DEFAULT_MAX_ENERGY,
@@ -68,6 +69,246 @@ describe('vertical slice game data contract', () => {
   });
 });
 
+describe('GameCommandsService command idempotency', () => {
+  const now = new Date('2026-05-07T12:00:00.000Z');
+  const baseStats = {
+    '\u0441\u0438\u043b\u0430': 28,
+    '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 26,
+    '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 26,
+    '\u0443\u0434\u0430\u0447\u0430': 20,
+  };
+  const character = {
+    id: 'character-1',
+    userId: 'user-1',
+    name: 'Tester',
+    raceId: 'nocturne',
+    gender: 'male',
+    classId: 'swordsman',
+    level: 10,
+    experience: 0,
+    rebirths: 0,
+    health: 4000,
+    maxHealth: 4000,
+    unspentStatPoints: 0,
+    stats: baseStats,
+    gold: 120,
+    gems: 2,
+    energy: DEFAULT_MAX_ENERGY,
+    maxEnergy: DEFAULT_MAX_ENERGY,
+    energyUpdatedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const user = {
+    id: character.userId,
+    email: 'tester@example.test',
+    displayName: 'Tester',
+    passwordHash: 'hash',
+    createdAt: now,
+  };
+  const travel = {
+    id: 'travel-1',
+    characterId: character.id,
+    locationId: 'mist-road',
+    questId: 'tavern-first-contract',
+    status: 'arrived',
+    startedAt: new Date('2026-05-07T11:30:00.000Z'),
+    completesAt: new Date('2026-05-07T11:59:00.000Z'),
+  };
+  const combat = {
+    id: 'combat-1',
+    characterId: character.id,
+    enemyId: 'baron-of-ashes',
+    questId: null,
+    status: 'pending',
+    log: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  function createHarness({
+    travelOverride = {},
+    combatOverride = {},
+    travelUpdateCounts = [1],
+    combatUpdateCounts = [1],
+  }: {
+    travelOverride?: Partial<typeof travel>;
+    combatOverride?: Partial<typeof combat>;
+    travelUpdateCounts?: number[];
+    combatUpdateCounts?: number[];
+  } = {}) {
+    const resolvedTravel = { ...travel, ...travelOverride };
+    const resolvedCombat = { ...combat, ...combatOverride };
+    const transactionClient = {
+      travelTask: {
+        findFirst: vi.fn().mockResolvedValue(resolvedTravel),
+        updateMany: vi.fn(),
+      },
+      combatEncounter: {
+        create: vi.fn(),
+        updateMany: vi.fn(),
+      },
+      character: {
+        update: vi.fn(),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+      currencyLedgerEntry: { create: vi.fn() },
+      inventoryStack: { upsert: vi.fn() },
+      questProgress: { update: vi.fn() },
+      gameEvent: { create: vi.fn() },
+    };
+    for (const count of travelUpdateCounts) {
+      transactionClient.travelTask.updateMany.mockResolvedValueOnce({ count });
+    }
+    for (const count of combatUpdateCounts) {
+      transactionClient.combatEncounter.updateMany.mockResolvedValueOnce({ count });
+    }
+    const prisma = {
+      user: { findUnique: vi.fn().mockResolvedValue(user) },
+      character: {
+        findFirst: vi.fn().mockResolvedValue(character),
+        update: vi.fn().mockResolvedValue(character),
+      },
+      inventoryStack: { findMany: vi.fn().mockResolvedValue([]) },
+      questProgress: { findMany: vi.fn().mockResolvedValue([]) },
+      travelTask: {
+        findFirst: vi.fn().mockResolvedValue(resolvedTravel),
+        findMany: vi.fn().mockResolvedValue([]),
+      },
+      combatEncounter: {
+        findFirst: vi.fn().mockResolvedValue(resolvedCombat),
+        findMany: vi.fn().mockResolvedValue([]),
+      },
+      $transaction: vi.fn(async (callback: (tx: typeof transactionClient) => Promise<unknown>) =>
+        callback(transactionClient),
+      ),
+    };
+    const notifications = { emitCharacterEvent: vi.fn() };
+    const travelQueue = { scheduleArrival: vi.fn() };
+    const service = new GameCommandsService(
+      prisma as unknown as ConstructorParameters<typeof GameCommandsService>[0],
+      notifications as unknown as ConstructorParameters<typeof GameCommandsService>[1],
+      travelQueue as unknown as ConstructorParameters<typeof GameCommandsService>[2],
+    );
+
+    return { service, prisma, transactionClient, notifications };
+  }
+
+  it('does not duplicate travel rewards for duplicate claims', async () => {
+    const { service, transactionClient, notifications } = createHarness({
+      travelUpdateCounts: [1, 0],
+    });
+
+    await service.claimTravel(character.userId, travel.id);
+    await service.claimTravel(character.userId, travel.id);
+
+    expect(transactionClient.travelTask.updateMany).toHaveBeenCalledTimes(2);
+    expect(transactionClient.combatEncounter.create).toHaveBeenCalledTimes(1);
+    expect(transactionClient.gameEvent.create).toHaveBeenCalledTimes(1);
+    expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects unfinished travel without rush before granting anything', async () => {
+    const { service, transactionClient, notifications } = createHarness({
+      travelOverride: {
+        status: 'traveling',
+        completesAt: new Date(Date.now() + 60_000),
+      },
+    });
+
+    await expect(service.claimTravel(character.userId, travel.id)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+
+    expect(transactionClient.travelTask.updateMany).not.toHaveBeenCalled();
+    expect(transactionClient.character.updateMany).not.toHaveBeenCalled();
+    expect(transactionClient.combatEncounter.create).not.toHaveBeenCalled();
+    expect(transactionClient.gameEvent.create).not.toHaveBeenCalled();
+    expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not spend rush gems or grant travel rewards when the guarded claim loses the race', async () => {
+    const { service, transactionClient, notifications } = createHarness({
+      travelOverride: {
+        status: 'traveling',
+        completesAt: new Date(Date.now() + 60_000),
+      },
+      travelUpdateCounts: [0],
+    });
+
+    await service.claimTravel(character.userId, travel.id, { rush: true });
+
+    expect(transactionClient.travelTask.updateMany).toHaveBeenCalledTimes(1);
+    expect(transactionClient.character.updateMany).not.toHaveBeenCalled();
+    expect(transactionClient.combatEncounter.create).not.toHaveBeenCalled();
+    expect(transactionClient.gameEvent.create).not.toHaveBeenCalled();
+    expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+  });
+
+  it('returns safely for already claimed travel without reward writes', async () => {
+    const { service, transactionClient, notifications } = createHarness({
+      travelOverride: { status: 'claimed' },
+    });
+
+    await service.claimTravel(character.userId, travel.id);
+
+    expect(transactionClient.travelTask.updateMany).not.toHaveBeenCalled();
+    expect(transactionClient.character.updateMany).not.toHaveBeenCalled();
+    expect(transactionClient.combatEncounter.create).not.toHaveBeenCalled();
+    expect(transactionClient.gameEvent.create).not.toHaveBeenCalled();
+    expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not duplicate combat rewards for duplicate resolves', async () => {
+    const { service, transactionClient, notifications } = createHarness({
+      combatUpdateCounts: [1, 0],
+    });
+
+    await service.resolveCombat(character.userId, combat.id);
+    await service.resolveCombat(character.userId, combat.id);
+
+    expect(transactionClient.combatEncounter.updateMany).toHaveBeenCalledTimes(2);
+    expect(transactionClient.character.update).toHaveBeenCalledTimes(1);
+    expect(transactionClient.gameEvent.create).toHaveBeenCalledTimes(1);
+    expect(notifications.emitCharacterEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not grant combat rewards when the guarded resolve loses the race', async () => {
+    const { service, transactionClient, notifications } = createHarness({
+      combatUpdateCounts: [0],
+    });
+
+    await service.resolveCombat(character.userId, combat.id);
+
+    expect(transactionClient.combatEncounter.updateMany).toHaveBeenCalledTimes(1);
+    expect(transactionClient.character.update).not.toHaveBeenCalled();
+    expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
+    expect(transactionClient.inventoryStack.upsert).not.toHaveBeenCalled();
+    expect(transactionClient.questProgress.update).not.toHaveBeenCalled();
+    expect(transactionClient.gameEvent.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+  });
+
+  it('returns safely for already resolved combat without reward writes', async () => {
+    const { service, prisma, transactionClient, notifications } = createHarness({
+      combatOverride: { status: 'won' },
+    });
+
+    await service.resolveCombat(character.userId, combat.id);
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(transactionClient.combatEncounter.updateMany).not.toHaveBeenCalled();
+    expect(transactionClient.character.update).not.toHaveBeenCalled();
+    expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
+    expect(transactionClient.gameEvent.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+  });
+});
+
 describe('GameCommandsService combat pet authority', () => {
   const now = new Date('2026-05-07T12:00:00.000Z');
   const baseStats = {
@@ -129,7 +370,7 @@ describe('GameCommandsService combat pet authority', () => {
     }>,
   ) {
     const transactionClient = {
-      combatEncounter: { update: vi.fn() },
+      combatEncounter: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       character: { update: vi.fn() },
       currencyLedgerEntry: { create: vi.fn() },
       inventoryStack: { upsert: vi.fn() },
@@ -165,7 +406,7 @@ describe('GameCommandsService combat pet authority', () => {
   }
 
   function resolvedLog(transactionClient: ReturnType<typeof createHarness>['transactionClient']) {
-    return transactionClient.combatEncounter.update.mock.calls[0]?.[0].data.log as CombatLog;
+    return transactionClient.combatEncounter.updateMany.mock.calls[0]?.[0].data.log as CombatLog;
   }
 
   it('does not grant pet assist for arbitrary client petId', async () => {

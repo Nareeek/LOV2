@@ -338,29 +338,48 @@ export class GameCommandsService {
     if (!travel) {
       throw new NotFoundException('Путешествие не найдено');
     }
-    const now = new Date();
-    const rushCostGems = travel.completesAt > now && input.rush ? 1 : 0;
-    if (travel.completesAt > now && !input.rush) {
-      throw new BadRequestException('Путешествие еще не завершено');
-    }
-    if (rushCostGems > 0 && character.gems < rushCostGems) {
-      throw new BadRequestException('Недостаточно жемчужин для ускорения');
-    }
-    if (travel.status === 'claimed') {
-      throw new ConflictException('Путешествие уже получено');
-    }
 
-    const quest = travel.questId
-      ? gameData.quests.find((entry) => entry.id === travel.questId)
-      : gameData.quests.find((entry) => entry.locationId === travel.locationId);
-    const enemyId = quest?.enemyId ?? 'mist-bandit';
+    const claimResult = await this.prisma.$transaction(async (tx) => {
+      const currentTravel = await tx.travelTask.findFirst({
+        where: { id: travelId, characterId: character.id },
+      });
+      if (!currentTravel) {
+        throw new NotFoundException('Путешествие не найдено');
+      }
+      if (currentTravel.status === 'claimed') {
+        return { claimed: false, enemyId: null };
+      }
 
-    await this.prisma.$transaction(async (tx) => {
+      const now = new Date();
+      const rushCostGems = currentTravel.completesAt > now && input.rush ? 1 : 0;
+      if (currentTravel.completesAt > now && !input.rush) {
+        throw new BadRequestException('Путешествие еще не завершено');
+      }
+
+      const quest = currentTravel.questId
+        ? gameData.quests.find((entry) => entry.id === currentTravel.questId)
+        : gameData.quests.find((entry) => entry.locationId === currentTravel.locationId);
+      const enemyId = quest?.enemyId ?? 'mist-bandit';
+      const transition = await tx.travelTask.updateMany({
+        where: {
+          id: currentTravel.id,
+          characterId: character.id,
+          status: { in: ['traveling', 'arrived'] },
+        },
+        data: { status: 'claimed' },
+      });
+      if (transition.count === 0) {
+        return { claimed: false, enemyId };
+      }
+
       if (rushCostGems > 0) {
-        await tx.character.update({
-          where: { id: character.id },
+        const spent = await tx.character.updateMany({
+          where: { id: character.id, gems: { gte: rushCostGems } },
           data: { gems: { decrement: rushCostGems } },
         });
+        if (spent.count === 0) {
+          throw new BadRequestException('Недостаточно жемчужин для ускорения');
+        }
         await tx.currencyLedgerEntry.create({
           data: {
             characterId: character.id,
@@ -371,7 +390,6 @@ export class GameCommandsService {
         });
       }
 
-      await tx.travelTask.update({ where: { id: travel.id }, data: { status: 'claimed' } });
       await tx.combatEncounter.create({
         data: {
           characterId: character.id,
@@ -386,9 +404,15 @@ export class GameCommandsService {
           payload: { travelId, enemyId, rushed: rushCostGems > 0, gemsSpent: rushCostGems },
         },
       });
+      return { claimed: true, enemyId };
     });
 
-    this.notifications.emitCharacterEvent(character.id, 'travel.completed', { travelId, enemyId });
+    if (claimResult.claimed) {
+      this.notifications.emitCharacterEvent(character.id, 'travel.completed', {
+        travelId,
+        enemyId: claimResult.enemyId,
+      });
+    }
     return this.bootstrap(userId);
   }
 
@@ -463,11 +487,15 @@ export class GameCommandsService {
     const nextBaseStats = character.stats as unknown as CharacterStats;
     const nextMaxHealth = maxHealthForStats(nextBaseStats, nextLevel, character.rebirths);
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.combatEncounter.update({
-        where: { id: combat.id },
+    const resolved = await this.prisma.$transaction(async (tx) => {
+      const transition = await tx.combatEncounter.updateMany({
+        where: { id: combat.id, characterId: character.id, status: 'pending' },
         data: { status: won ? 'won' : 'lost', log: log as unknown as Prisma.InputJsonValue },
       });
+      if (transition.count === 0) {
+        return false;
+      }
+
       await tx.character.update({
         where: { id: character.id },
         data: {
@@ -532,9 +560,12 @@ export class GameCommandsService {
           } as unknown as Prisma.InputJsonObject,
         },
       });
+      return true;
     });
 
-    this.notifications.emitCharacterEvent(character.id, 'combat.resolved', { combatId, won });
+    if (resolved) {
+      this.notifications.emitCharacterEvent(character.id, 'combat.resolved', { combatId, won });
+    }
     return this.bootstrap(userId);
   }
 
