@@ -41,7 +41,6 @@
     "stripe": "^18.5.0"
   },
   "devDependencies": {
-    "dotenv": "^17.4.1",
     "prisma": "^6.18.0",
     "tsx": "^4.20.6",
     "typescript": "^5.6.3",
