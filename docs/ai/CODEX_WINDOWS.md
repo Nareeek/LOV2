@@ -42,6 +42,24 @@ Run broader check:
 pnpm codex:check
 ```
 
+Docker-first full workspace validation should run from the API container because
+root `pnpm check` runs API Prisma generation and Prisma CLI is available there.
+
+When containers are running:
+
+```powershell
+docker compose exec api sh -lc "pnpm lint && pnpm check && pnpm test"
+```
+
+For a one-off full workspace check:
+
+```powershell
+docker compose run --rm api sh -lc "pnpm lint && pnpm check && pnpm test"
+```
+
+Use the `web` container for frontend serving and focused frontend checks, not
+full monorepo validation.
+
 ## Direct script usage
 
 The package scripts above are preferred, but this also works:

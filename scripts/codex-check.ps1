@@ -26,7 +26,7 @@ switch ($Target) {
   }
 
   "all" {
-    docker compose run --rm web sh -lc "pnpm check && pnpm test"
+    docker compose run --rm api sh -lc "pnpm lint && pnpm check && pnpm test"
   }
 
   default {

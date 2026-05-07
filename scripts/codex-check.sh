@@ -18,7 +18,7 @@ case "$1" in
     docker compose run --rm worker sh -lc "pnpm --filter @lov2/worker check && pnpm --filter @lov2/worker test"
     ;;
   all|"")
-    docker compose run --rm web sh -lc "pnpm check && pnpm test"
+    docker compose run --rm api sh -lc "pnpm lint && pnpm check && pnpm test"
     ;;
   *)
     echo "Usage: bash scripts/codex-check.sh [api|web|shared|game-data|worker|all]"
