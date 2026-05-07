@@ -1,10 +1,11 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import type { Server } from 'socket.io';
+import { resolveCorsOrigin } from '../runtime-config.js';
 
 @WebSocketGateway({
   namespace: '/events',
   cors: {
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: resolveCorsOrigin(process.env),
     credentials: true,
   },
 })
@@ -16,4 +17,3 @@ export class NotificationsGateway {
     this.server?.to(`character:${characterId}`).emit(type, payload);
   }
 }
-

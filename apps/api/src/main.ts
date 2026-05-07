@@ -7,6 +7,11 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import {
+  resolveCorsOrigin,
+  resolveSessionSecret,
+  shouldEnableSwagger,
+} from './runtime-config.js';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
@@ -16,7 +21,7 @@ async function bootstrap() {
 
   await app.register(helmet as never);
   await app.register(cookie as never, {
-    secret: config.get<string>('SESSION_SECRET') ?? 'dev-session-secret-change-me',
+    secret: resolveSessionSecret(process.env),
   });
 
   const csrfCookieName = config.get<string>('CSRF_COOKIE_NAME') ?? 'lov2_csrf';
@@ -42,7 +47,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: config.get<string>('CORS_ORIGIN') ?? 'http://localhost:5173',
+    origin: resolveCorsOrigin(process.env),
     credentials: true,
   });
 
@@ -54,16 +59,18 @@ async function bootstrap() {
     }),
   );
 
-  const document = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder()
-      .setTitle('LOV2 API')
-      .setDescription('Server-authoritative API for the LOV2 vertical slice.')
-      .setVersion('0.1.0')
-      .addCookieAuth('lov2_session')
-      .build(),
-  );
-  SwaggerModule.setup('/docs', app, document);
+  if (shouldEnableSwagger(process.env)) {
+    const document = SwaggerModule.createDocument(
+      app,
+      new DocumentBuilder()
+        .setTitle('LOV2 API')
+        .setDescription('Server-authoritative API for the LOV2 vertical slice.')
+        .setVersion('0.1.0')
+        .addCookieAuth('lov2_session')
+        .build(),
+    );
+    SwaggerModule.setup('/docs', app, document);
+  }
 
   const port = Number(config.get<string>('API_PORT') ?? 4000);
   await app.listen({ port, host: '0.0.0.0' });
