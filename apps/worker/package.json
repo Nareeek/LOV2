@@ -8,6 +8,7 @@
     "start": "node dist/apps/worker/src/main.js",
     "build": "tsc -p tsconfig.json",
     "check": "tsc --noEmit",
+    "lint": "eslint --max-warnings=0 \"src/**/*.ts\"",
     "test": "vitest run"
   },
   "dependencies": {
