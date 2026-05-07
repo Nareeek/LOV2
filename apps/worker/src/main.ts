@@ -1,17 +1,18 @@
 import { Queue, Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { PrismaClient } from '@prisma/client';
+import { TRAVEL_QUEUE, type MarkArrivedTravelJobData } from '@lov2/shared';
 
 const redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
 const connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
 const prisma = new PrismaClient();
 
-export const travelQueue = new Queue('travel-events', { connection });
+export const travelQueue = new Queue<MarkArrivedTravelJobData>(TRAVEL_QUEUE.name, { connection });
 
-const worker = new Worker(
-  'travel-events',
+const worker = new Worker<MarkArrivedTravelJobData>(
+  TRAVEL_QUEUE.name,
   async (job) => {
-    if (job.name !== 'mark-arrived') {
+    if (job.name !== TRAVEL_QUEUE.jobs.markArrived) {
       return { ignored: true };
     }
 
@@ -52,4 +53,4 @@ process.on('SIGTERM', async () => {
   await connection.quit();
 });
 
-console.log('[worker] travel-events worker started');
+console.log(`[worker] ${TRAVEL_QUEUE.name} worker started`);
