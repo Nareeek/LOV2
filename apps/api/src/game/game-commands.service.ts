@@ -248,11 +248,23 @@ export class GameCommandsService {
       throw new NotFoundException('Квест не найден');
     }
 
-    await this.prisma.questProgress.upsert({
+    const existingProgress = await this.prisma.questProgress.findUnique({
       where: { characterId_questId: { characterId: character.id, questId } },
-      update: { status: 'active', progress: 0, target: 1 },
-      create: { characterId: character.id, questId, status: 'active', progress: 0, target: 1 },
     });
+    if (existingProgress && existingProgress.status !== 'available') {
+      return this.bootstrap(userId);
+    }
+
+    if (existingProgress) {
+      await this.prisma.questProgress.update({
+        where: { characterId_questId: { characterId: character.id, questId } },
+        data: { status: 'active', progress: 0, target: 1 },
+      });
+    } else {
+      await this.prisma.questProgress.create({
+        data: { characterId: character.id, questId, status: 'active', progress: 0, target: 1 },
+      });
+    }
     await this.recordEvent(character.id, 'quest.updated', { questId, status: 'active' });
 
     return this.bootstrap(userId);
@@ -375,7 +387,10 @@ export class GameCommandsService {
 
       const quest = currentTravel.questId
         ? gameData.quests.find((entry) => entry.id === currentTravel.questId)
-        : gameData.quests.find((entry) => entry.locationId === currentTravel.locationId);
+        : undefined;
+      if (currentTravel.questId && !quest) {
+        throw new BadRequestException('Quest data is inconsistent');
+      }
       const enemyId = quest?.enemyId ?? 'mist-bandit';
       const transition = await tx.travelTask.updateMany({
         where: {
@@ -410,15 +425,22 @@ export class GameCommandsService {
       await tx.combatEncounter.create({
         data: {
           characterId: character.id,
-          questId: quest?.id ?? null,
+          questId: quest ? currentTravel.questId : null,
           enemyId,
         },
       });
+      const payload = {
+        travelId,
+        enemyId,
+        rushed: rushCostGems > 0,
+        gemsSpent: rushCostGems,
+        ...(currentTravel.questId ? { questId: currentTravel.questId } : {}),
+      };
       await tx.gameEvent.create({
         data: {
           characterId: character.id,
           type: 'travel.completed',
-          payload: { travelId, enemyId, rushed: rushCostGems > 0, gemsSpent: rushCostGems },
+          payload: payload as Prisma.InputJsonObject,
         },
       });
       return { claimed: true, enemyId };
@@ -448,6 +470,13 @@ export class GameCommandsService {
     const enemy = gameData.enemies.find((entry) => entry.id === combat.enemyId);
     if (!enemy) {
       throw new NotFoundException('Противник не найден');
+    }
+
+    const questDefinition = combat.questId
+      ? gameData.quests.find((quest) => quest.id === combat.questId)
+      : undefined;
+    if (combat.questId && !questDefinition) {
+      throw new NotFoundException('Quest not found');
     }
 
     const equipped = await this.prisma.inventoryStack.findMany({
@@ -485,9 +514,7 @@ export class GameCommandsService {
       characterHealth: character.health,
       characterArmor: effectiveArmor,
       enemy,
-      reward: combat.questId
-        ? (gameData.quests.find((quest) => quest.id === combat.questId)?.reward ?? enemy.reward)
-        : enemy.reward,
+      reward: questDefinition?.reward ?? enemy.reward,
       ...(verifiedPetDefinition && verifiedPetCombatStats
         ? {
             pet: {

@@ -71,6 +71,421 @@ describe('vertical slice game data contract', () => {
   });
 });
 
+describe('GameCommandsService quest travel combat vertical slice', () => {
+  const now = new Date('2026-05-07T12:00:00.000Z');
+  const quest = gameData.quests.find((entry) => entry.id === 'tavern-first-contract')!;
+  const strongStats = {
+    '\u0441\u0438\u043b\u0430': 30,
+    '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 26,
+    '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 24,
+    '\u0443\u0434\u0430\u0447\u0430': 18,
+  };
+  const weakStats = {
+    '\u0441\u0438\u043b\u0430': 1,
+    '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 1,
+    '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 1,
+    '\u0443\u0434\u0430\u0447\u0430': 1,
+  };
+
+  function createVerticalHarness({
+    initialQuestStatus,
+    characterOverride = {},
+  }: {
+    initialQuestStatus?: 'available' | 'active' | 'completed' | 'claimed';
+    characterOverride?: Record<string, unknown>;
+  } = {}) {
+    const user = {
+      id: 'user-vertical',
+      email: 'vertical@example.test',
+      displayName: 'Vertical',
+      passwordHash: 'hash',
+      createdAt: now,
+    };
+    const character = {
+      id: 'character-vertical',
+      userId: user.id,
+      name: 'Vertical',
+      raceId: 'nocturne',
+      gender: 'male',
+      classId: 'swordsman',
+      level: 10,
+      experience: 0,
+      rebirths: 0,
+      health: 4000,
+      maxHealth: 4000,
+      unspentStatPoints: 0,
+      stats: strongStats,
+      gold: 0,
+      gems: 0,
+      energy: DEFAULT_MAX_ENERGY,
+      maxEnergy: DEFAULT_MAX_ENERGY,
+      energyUpdatedAt: now,
+      createdAt: now,
+      updatedAt: now,
+      ...characterOverride,
+    };
+    const state = {
+      user,
+      character,
+      inventory: [] as Array<Record<string, unknown>>,
+      questProgress: initialQuestStatus
+        ? [
+            {
+              id: 'quest-progress-vertical',
+              characterId: character.id,
+              questId: quest.id,
+              status: initialQuestStatus,
+              progress: initialQuestStatus === 'completed' || initialQuestStatus === 'claimed' ? 1 : 0,
+              target: 1,
+              createdAt: now,
+              updatedAt: now,
+            },
+          ]
+        : ([] as Array<Record<string, unknown>>),
+      travels: [] as Array<Record<string, unknown>>,
+      combats: [] as Array<Record<string, unknown>>,
+      ledgers: [] as Array<Record<string, unknown>>,
+      events: [] as Array<Record<string, unknown>>,
+    };
+
+    const applyCharacterUpdate = (data: Record<string, unknown>) => {
+      for (const [key, value] of Object.entries(data)) {
+        const mutableCharacter = state.character as Record<string, unknown>;
+        const currentValue = Number(mutableCharacter[key] ?? 0);
+        if (value && typeof value === 'object' && 'increment' in value) {
+          mutableCharacter[key] = currentValue + (value as { increment: number }).increment;
+        } else if (value && typeof value === 'object' && 'decrement' in value) {
+          mutableCharacter[key] = currentValue - (value as { decrement: number }).decrement;
+        } else {
+          mutableCharacter[key] = value;
+        }
+      }
+      return state.character;
+    };
+    const findQuestProgress = (questId: string) =>
+      state.questProgress.find(
+        (progress) => progress.characterId === character.id && progress.questId === questId,
+      );
+    const findTravel = (id: string) =>
+      state.travels.find((travel) => travel.id === id && travel.characterId === character.id);
+    const findCombat = (id: string) =>
+      state.combats.find((combat) => combat.id === id && combat.characterId === character.id);
+    const matchesStatus = (actual: unknown, expected: unknown) => {
+      if (expected && typeof expected === 'object' && 'in' in expected) {
+        return (expected as { in: unknown[] }).in.includes(actual);
+      }
+      return actual === expected;
+    };
+
+    const prisma = {
+      user: { findUnique: vi.fn().mockResolvedValue(user) },
+      character: {
+        findFirst: vi.fn().mockResolvedValue(state.character),
+        update: vi.fn(async ({ data }: { data: Record<string, unknown> }) =>
+          applyCharacterUpdate(data),
+        ),
+        updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+          if (
+            typeof where.gems === 'object' &&
+            where.gems &&
+            'gte' in where.gems &&
+            state.character.gems < (where.gems as { gte: number }).gte
+          ) {
+            return { count: 0 };
+          }
+          applyCharacterUpdate(data);
+          return { count: 1 };
+        }),
+      },
+      inventoryStack: {
+        findMany: vi.fn().mockResolvedValue([]),
+        upsert: vi.fn(async ({ where, create }: { where: { characterId_itemId: { itemId: string } }; create: Record<string, unknown> }) => {
+          const existing = state.inventory.find(
+            (item) => item.itemId === where.characterId_itemId.itemId,
+          );
+          if (existing) {
+            existing.quantity = Number(existing.quantity) + 1;
+            return existing;
+          }
+          const created = { id: `inventory-${state.inventory.length + 1}`, ...create };
+          state.inventory.push(created);
+          return created;
+        }),
+      },
+      questProgress: {
+        findMany: vi.fn().mockImplementation(async () => state.questProgress),
+        findUnique: vi.fn(async ({ where }: { where: { characterId_questId: { questId: string } } }) =>
+          findQuestProgress(where.characterId_questId.questId) ?? null,
+        ),
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          const created = {
+            id: `quest-progress-${state.questProgress.length + 1}`,
+            progress: 0,
+            target: 1,
+            ...data,
+          };
+          state.questProgress.push(created);
+          return created;
+        }),
+        update: vi.fn(async ({ where, data }: { where: { characterId_questId: { questId: string } }; data: Record<string, unknown> }) => {
+          const progress = findQuestProgress(where.characterId_questId.questId);
+          if (!progress) {
+            throw new Error('missing quest progress');
+          }
+          Object.assign(progress, data);
+          return progress;
+        }),
+      },
+      travelTask: {
+        findMany: vi.fn().mockImplementation(async () => state.travels),
+        findFirst: vi.fn(async ({ where }: { where: Record<string, unknown> }) => {
+          if (typeof where.id === 'string') {
+            return findTravel(where.id) ?? null;
+          }
+          if (where.status) {
+            return state.travels.find((travel) => matchesStatus(travel.status, where.status)) ?? null;
+          }
+          return null;
+        }),
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          const created = {
+            id: `travel-${state.travels.length + 1}`,
+            status: 'traveling',
+            ...data,
+          };
+          state.travels.push(created);
+          return created;
+        }),
+        updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+          const travel = typeof where.id === 'string' ? findTravel(where.id) : undefined;
+          if (!travel || !matchesStatus(travel.status, where.status)) {
+            return { count: 0 };
+          }
+          Object.assign(travel, data);
+          return { count: 1 };
+        }),
+      },
+      combatEncounter: {
+        findMany: vi.fn().mockImplementation(async () => state.combats),
+        findFirst: vi.fn(async ({ where }: { where: Record<string, unknown> }) => {
+          if (typeof where.id === 'string') {
+            return findCombat(where.id) ?? null;
+          }
+          if (where.status) {
+            return state.combats.find((combat) => matchesStatus(combat.status, where.status)) ?? null;
+          }
+          return null;
+        }),
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          const created = {
+            id: `combat-${state.combats.length + 1}`,
+            status: 'pending',
+            log: null,
+            createdAt: now,
+            updatedAt: now,
+            ...data,
+          };
+          state.combats.push(created);
+          return created;
+        }),
+        updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+          const combat = typeof where.id === 'string' ? findCombat(where.id) : undefined;
+          if (!combat || !matchesStatus(combat.status, where.status)) {
+            return { count: 0 };
+          }
+          Object.assign(combat, data);
+          return { count: 1 };
+        }),
+      },
+      currencyLedgerEntry: {
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          state.ledgers.push(data);
+          return data;
+        }),
+      },
+      gameEvent: {
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          state.events.push(data);
+          return data;
+        }),
+      },
+      $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
+        callback(prisma),
+      ),
+    };
+    const notifications = { emitCharacterEvent: vi.fn() };
+    const travelQueue = { scheduleArrival: vi.fn() };
+    const service = new GameCommandsService(
+      prisma as unknown as ConstructorParameters<typeof GameCommandsService>[0],
+      notifications as unknown as ConstructorParameters<typeof GameCommandsService>[1],
+      travelQueue as unknown as ConstructorParameters<typeof GameCommandsService>[2],
+    );
+
+    return { service, prisma, state, notifications, travelQueue };
+  }
+
+  it('keeps acceptQuest idempotent for existing quest progress', async () => {
+    for (const status of ['active', 'completed', 'claimed'] as const) {
+      const { service, prisma, state, notifications } = createVerticalHarness({
+        initialQuestStatus: status,
+      });
+
+      await service.acceptQuest(state.user.id, quest.id);
+
+      expect(state.questProgress[0]?.status).toBe(status);
+      expect(prisma.questProgress.create).not.toHaveBeenCalled();
+      expect(prisma.questProgress.update).not.toHaveBeenCalled();
+      expect(prisma.gameEvent.create).not.toHaveBeenCalled();
+      expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+    }
+  });
+
+  it('activates available quest progress once', async () => {
+    const { service, prisma, state, notifications } = createVerticalHarness({
+      initialQuestStatus: 'available',
+    });
+
+    const bootstrap = await service.acceptQuest(state.user.id, quest.id);
+
+    expect(bootstrap.questProgress[0]?.status).toBe('active');
+    expect(prisma.questProgress.update).toHaveBeenCalledTimes(1);
+    expect(prisma.gameEvent.create).toHaveBeenCalledTimes(1);
+    expect(notifications.emitCharacterEvent).toHaveBeenCalledWith(
+      state.character.id,
+      'quest.updated',
+      { questId: quest.id, status: 'active' },
+    );
+  });
+
+  it('runs accept quest, travel, claim, quest combat, and reward once through bootstrap state', async () => {
+    const { service, prisma, state, travelQueue } = createVerticalHarness();
+
+    const accepted = await service.acceptQuest(state.user.id, quest.id);
+    expect(accepted.questProgress).toMatchObject([
+      { questId: quest.id, status: 'active', progress: 0, target: 1 },
+    ]);
+
+    const started = await service.startTravel(state.user.id, {
+      locationId: quest.locationId,
+      questId: quest.id,
+    });
+    expect(started.character?.energy).toBe(DEFAULT_MAX_ENERGY - quest.energyCost);
+    expect(started.travels[0]).toMatchObject({
+      questId: quest.id,
+      locationId: quest.locationId,
+      status: 'traveling',
+    });
+    expect(travelQueue.scheduleArrival).toHaveBeenCalledTimes(1);
+
+    Object.assign(state.travels[0]!, {
+      status: 'arrived',
+      completesAt: new Date(now.getTime() - 1000),
+    });
+    const claimed = await service.claimTravel(state.user.id, String(state.travels[0]!.id));
+    expect(claimed.travels[0]).toMatchObject({ questId: quest.id, status: 'claimed' });
+    expect(claimed.combats[0]).toMatchObject({
+      questId: quest.id,
+      enemyId: quest.enemyId,
+      status: 'pending',
+    });
+    expect(prisma.combatEncounter.create).toHaveBeenCalledWith({
+      data: { characterId: state.character.id, questId: quest.id, enemyId: quest.enemyId },
+    });
+    expect(state.events.find((event) => event.type === 'travel.completed')?.payload).toMatchObject({
+      questId: quest.id,
+      enemyId: quest.enemyId,
+    });
+
+    const combatId = String(state.combats[0]!.id);
+    const resolved = await service.resolveCombat(state.user.id, combatId);
+    expect(resolved.questProgress[0]).toMatchObject({
+      questId: quest.id,
+      status: 'completed',
+      progress: 1,
+    });
+    expect(resolved.combats[0]).toMatchObject({ questId: quest.id, status: 'won' });
+    expect(resolved.combats[0]?.log?.reward).toEqual(quest.reward);
+
+    const ledgerCount = state.ledgers.length;
+    const inventoryCount = state.inventory.length;
+    const combatEventCount = state.events.filter((event) => event.type === 'combat.resolved').length;
+    await service.resolveCombat(state.user.id, combatId);
+
+    expect(state.ledgers).toHaveLength(ledgerCount);
+    expect(state.inventory).toHaveLength(inventoryCount);
+    expect(state.events.filter((event) => event.type === 'combat.resolved')).toHaveLength(
+      combatEventCount,
+    );
+    expect(prisma.questProgress.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps lost quest combat active and grants no quest reward', async () => {
+    const { service, state } = createVerticalHarness({
+      initialQuestStatus: 'active',
+      characterOverride: {
+        level: 1,
+        health: 1,
+        maxHealth: 10,
+        stats: weakStats,
+      },
+    });
+    state.combats.push({
+      id: 'combat-lost',
+      characterId: state.character.id,
+      questId: quest.id,
+      enemyId: quest.enemyId,
+      status: 'pending',
+      log: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const resolved = await service.resolveCombat(state.user.id, 'combat-lost');
+
+    expect(resolved.combats[0]).toMatchObject({ questId: quest.id, status: 'lost' });
+    expect(resolved.combats[0]?.log?.reward).toEqual({
+      experience: 0,
+      gold: 0,
+      gems: 0,
+      itemIds: [],
+    });
+    expect(resolved.questProgress[0]).toMatchObject({
+      questId: quest.id,
+      status: 'active',
+      progress: 0,
+    });
+    expect(state.ledgers).toHaveLength(0);
+    expect(state.inventory).toHaveLength(0);
+  });
+
+  it('claims unlinked legacy travel as non-quest combat without location quest fallback', async () => {
+    const { service, prisma, state } = createVerticalHarness();
+    state.travels.push({
+      id: 'legacy-travel',
+      characterId: state.character.id,
+      locationId: 'fog-harbor',
+      questId: null,
+      status: 'arrived',
+      startedAt: now,
+      completesAt: new Date(now.getTime() - 1000),
+    });
+
+    const bootstrap = await service.claimTravel(state.user.id, 'legacy-travel');
+
+    expect(bootstrap.combats[0]).toMatchObject({
+      enemyId: 'mist-bandit',
+      status: 'pending',
+    });
+    expect(bootstrap.combats[0]).not.toHaveProperty('questId');
+    expect(prisma.combatEncounter.create).toHaveBeenCalledWith({
+      data: { characterId: state.character.id, questId: null, enemyId: 'mist-bandit' },
+    });
+    expect(state.events.find((event) => event.type === 'travel.completed')?.payload).not.toHaveProperty(
+      'questId',
+    );
+  });
+});
+
 describe('GameCommandsService command idempotency', () => {
   const now = new Date('2026-05-07T12:00:00.000Z');
   const baseStats = {
