@@ -264,10 +264,10 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   await expect(stage).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
   await expect(stage).not.toHaveClass(/stage-mode-worldWindow/);
   await expectContained(tavernWindow, playfield);
-  await expect(tavernTasks).toHaveCount(3);
-  await expect(tavernTasks.nth(0)).toBeVisible();
-  await expect(tavernTasks.nth(1)).toBeVisible();
-  await expect(tavernTasks.nth(2)).toBeVisible();
+  await expect(tavernTasks).toHaveCount(4);
+  for (let index = 0; index < 4; index += 1) {
+    await expect(tavernTasks.nth(index)).toBeVisible();
+  }
   await tavernWindow.getByTestId('world-window-close-button').click();
 
   await page.getByTestId('hotspot-hub-arena').click();
