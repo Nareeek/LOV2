@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { gameData, gameAssetIds, sceneDefinitions, validateGameData } from './index.js';
 import type { PetCombatStats } from '@lov2/shared';
 
+type RewardOwner = (typeof gameData.quests | typeof gameData.enemies)[number];
+
 function withPetCombatStats<T>(itemId: string, stats: PetCombatStats | undefined, callback: () => T): T {
   const item = gameData.items.find((entry) => entry.id === itemId);
   if (!item) {
@@ -29,6 +31,17 @@ function withPetCombatStats<T>(itemId: string, stats: PetCombatStats | undefined
   }
 }
 
+function withRewardItemIds<T>(owner: RewardOwner, itemIds: string[], callback: () => T): T {
+  const originalItemIds = owner.reward.itemIds;
+
+  try {
+    owner.reward.itemIds = itemIds;
+    return callback();
+  } finally {
+    owner.reward.itemIds = originalItemIds;
+  }
+}
+
 describe('game data', () => {
   it('is internally valid', () => {
     expect(() => validateGameData()).not.toThrow();
@@ -36,6 +49,20 @@ describe('game data', () => {
 
   it('contains the vertical slice boss', () => {
     expect(gameData.enemies.some((enemy) => enemy.boss)).toBe(true);
+  });
+
+  it('defines the PR16 follow-up quest with valid reward content', () => {
+    const quest = gameData.quests.find((entry) => entry.id === 'ember-whelp-first-flight');
+
+    expect(quest).toMatchObject({
+      locationId: 'fog-harbor',
+      enemyId: 'harbor-wraith',
+      energyCost: 3,
+      reward: { experience: 180, gold: 95, gems: 1, itemIds: ['moon-vest'] },
+    });
+    expect(gameData.locations.some((location) => location.id === quest?.locationId)).toBe(true);
+    expect(gameData.enemies.some((enemy) => enemy.id === quest?.enemyId)).toBe(true);
+    expect(quest?.reward.itemIds.every((itemId) => gameData.items.some((item) => item.id === itemId))).toBe(true);
   });
 
   it('defines normalized clickable scenes', () => {
@@ -89,6 +116,21 @@ describe('game data', () => {
   it('rejects pet combat stats on non-pet items', () => {
     withPetCombatStats('duelist-rapier', { level: 1, health: 1 }, () => {
       expect(() => validateGameData()).toThrow(/non-pet item/);
+    });
+  });
+
+  it('rejects missing item references in quest and enemy rewards', () => {
+    const quest = gameData.quests.find((entry) => entry.id === 'ember-whelp-first-flight');
+    const enemy = gameData.enemies.find((entry) => entry.id === 'harbor-wraith');
+
+    expect(quest).toBeDefined();
+    expect(enemy).toBeDefined();
+
+    withRewardItemIds(quest!, ['missing-moon-vest'], () => {
+      expect(() => validateGameData()).toThrow(/quest ember-whelp-first-flight reward references missing item/);
+    });
+    withRewardItemIds(enemy!, ['missing-wraith-drop'], () => {
+      expect(() => validateGameData()).toThrow(/enemy harbor-wraith reward references missing item/);
     });
   });
 

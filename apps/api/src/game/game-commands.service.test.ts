@@ -74,6 +74,8 @@ describe('vertical slice game data contract', () => {
 describe('GameCommandsService quest travel combat vertical slice', () => {
   const now = new Date('2026-05-07T12:00:00.000Z');
   const quest = gameData.quests.find((entry) => entry.id === 'tavern-first-contract')!;
+  const ashBaronQuest = gameData.quests.find((entry) => entry.id === 'ash-baron-duel')!;
+  const emberWhelpQuest = gameData.quests.find((entry) => entry.id === 'ember-whelp-first-flight')!;
   const strongStats = {
     '\u0441\u0438\u043b\u0430': 30,
     '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 26,
@@ -170,6 +172,8 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       state.travels.find((travel) => travel.id === id && travel.characterId === character.id);
     const findCombat = (id: string) =>
       state.combats.find((combat) => combat.id === id && combat.characterId === character.id);
+    const findInventoryStack = (id: string) =>
+      state.inventory.find((item) => item.id === id && item.characterId === character.id);
     const matchesStatus = (actual: unknown, expected: unknown) => {
       if (expected && typeof expected === 'object' && 'in' in expected) {
         return (expected as { in: unknown[] }).in.includes(actual);
@@ -198,18 +202,83 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
         }),
       },
       inventoryStack: {
-        findMany: vi.fn().mockResolvedValue([]),
-        upsert: vi.fn(async ({ where, create }: { where: { characterId_itemId: { itemId: string } }; create: Record<string, unknown> }) => {
+        findMany: vi.fn(async ({ where }: { where?: Record<string, unknown> } = {}) => {
+          return state.inventory.filter((item) => {
+            if (where?.characterId && item.characterId !== where.characterId) {
+              return false;
+            }
+            if (where?.equippedSlot) {
+              const equippedSlot = where.equippedSlot;
+              if (
+                equippedSlot &&
+                typeof equippedSlot === 'object' &&
+                'not' in equippedSlot &&
+                item.equippedSlot === (equippedSlot as { not: unknown }).not
+              ) {
+                return false;
+              }
+              if (typeof equippedSlot === 'string' && item.equippedSlot !== equippedSlot) {
+                return false;
+              }
+            }
+            return true;
+          });
+        }),
+        findFirst: vi.fn(async ({ where }: { where: Record<string, unknown> }) => {
+          return (
+            state.inventory.find((item) => {
+              if (where.id && item.id !== where.id) {
+                return false;
+              }
+              if (where.characterId && item.characterId !== where.characterId) {
+                return false;
+              }
+              return true;
+            }) ?? null
+          );
+        }),
+        upsert: vi.fn(async ({ where, update, create }: { where: { characterId_itemId: { itemId: string } }; update: Record<string, unknown>; create: Record<string, unknown> }) => {
           const existing = state.inventory.find(
             (item) => item.itemId === where.characterId_itemId.itemId,
           );
           if (existing) {
-            existing.quantity = Number(existing.quantity) + 1;
+            if (update.quantity && typeof update.quantity === 'object' && 'increment' in update.quantity) {
+              existing.quantity = Number(existing.quantity) + (update.quantity as { increment: number }).increment;
+            }
             return existing;
           }
-          const created = { id: `inventory-${state.inventory.length + 1}`, ...create };
+          const created = {
+            id: `inventory-${state.inventory.length + 1}`,
+            enhancementLevel: 0,
+            equippedSlot: null,
+            createdAt: now,
+            updatedAt: now,
+            ...create,
+          };
           state.inventory.push(created);
           return created;
+        }),
+        updateMany: vi.fn(async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+          let count = 0;
+          for (const item of state.inventory) {
+            if (where.characterId && item.characterId !== where.characterId) {
+              continue;
+            }
+            if (where.equippedSlot && item.equippedSlot !== where.equippedSlot) {
+              continue;
+            }
+            Object.assign(item, data);
+            count += 1;
+          }
+          return { count };
+        }),
+        update: vi.fn(async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
+          const stack = findInventoryStack(where.id);
+          if (!stack) {
+            throw new Error('missing inventory stack');
+          }
+          Object.assign(stack, data);
+          return stack;
         }),
       },
       questProgress: {
@@ -309,9 +378,12 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
           return data;
         }),
       },
-      $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
-        callback(prisma),
-      ),
+      $transaction: vi.fn(async (input: ((tx: unknown) => Promise<unknown>) | Array<Promise<unknown>>) => {
+        if (Array.isArray(input)) {
+          return Promise.all(input);
+        }
+        return input(prisma);
+      }),
     };
     const notifications = { emitCharacterEvent: vi.fn() };
     const travelQueue = { scheduleArrival: vi.fn() };
@@ -417,6 +489,154 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       combatEventCount,
     );
     expect(prisma.questProgress.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs the PR16 reward, equip, and pet-assisted follow-up combat slice', async () => {
+    const { service, state } = createVerticalHarness({
+      characterOverride: {
+        level: 20,
+        health: 9000,
+        maxHealth: 9000,
+        stats: {
+          '\u0441\u0438\u043b\u0430': 160,
+          '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 120,
+          '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 110,
+          '\u0443\u0434\u0430\u0447\u0430': 90,
+        },
+      },
+    });
+
+    await service.acceptQuest(state.user.id, ashBaronQuest.id);
+    await service.startTravel(state.user.id, {
+      locationId: ashBaronQuest.locationId,
+      questId: ashBaronQuest.id,
+    });
+    Object.assign(state.travels[0]!, {
+      status: 'arrived',
+      completesAt: new Date(now.getTime() - 1000),
+    });
+    const claimedBossTravel = await service.claimTravel(state.user.id, String(state.travels[0]!.id));
+    expect(claimedBossTravel.combats[0]).toMatchObject({
+      questId: ashBaronQuest.id,
+      enemyId: ashBaronQuest.enemyId,
+      status: 'pending',
+    });
+
+    const bossCombatId = String(state.combats[0]!.id);
+    const resolvedBoss = await service.resolveCombat(state.user.id, bossCombatId);
+    expect(resolvedBoss.combats[0]).toMatchObject({ questId: ashBaronQuest.id, status: 'won' });
+    expect(resolvedBoss.combats[0]?.log?.reward.itemIds).toEqual(['lucky-onyx', 'ember-whelp']);
+    expect(resolvedBoss.inventory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ itemId: 'lucky-onyx', quantity: 1 }),
+        expect.objectContaining({ itemId: 'ember-whelp', quantity: 1 }),
+      ]),
+    );
+    expect(resolvedBoss.questProgress.find((progress) => progress.questId === ashBaronQuest.id)).toMatchObject({
+      status: 'completed',
+      progress: 1,
+    });
+
+    const inventoryAfterBoss = state.inventory.map((item) => ({ itemId: item.itemId, quantity: item.quantity }));
+    const combatEventsAfterBoss = state.events.filter((event) => event.type === 'combat.resolved').length;
+    await service.resolveCombat(state.user.id, bossCombatId);
+    expect(state.inventory.map((item) => ({ itemId: item.itemId, quantity: item.quantity }))).toEqual(
+      inventoryAfterBoss,
+    );
+    expect(state.events.filter((event) => event.type === 'combat.resolved')).toHaveLength(
+      combatEventsAfterBoss,
+    );
+
+    const luckyOnyxStack = state.inventory.find((item) => item.itemId === 'lucky-onyx');
+    const emberWhelpStack = state.inventory.find((item) => item.itemId === 'ember-whelp');
+    expect(luckyOnyxStack).toBeDefined();
+    expect(emberWhelpStack).toBeDefined();
+
+    const equippedOnyx = await service.equipItem(state.user.id, String(luckyOnyxStack!.id));
+    expect(equippedOnyx.inventory.find((item) => item.itemId === 'lucky-onyx')).toMatchObject({
+      equippedSlot: 'amulet',
+    });
+    const equippedPet = await service.equipItem(state.user.id, String(emberWhelpStack!.id));
+    expect(equippedPet.inventory.find((item) => item.itemId === 'ember-whelp')).toMatchObject({
+      equippedSlot: 'pet',
+    });
+
+    await service.acceptQuest(state.user.id, emberWhelpQuest.id);
+    await service.startTravel(state.user.id, {
+      locationId: emberWhelpQuest.locationId,
+      questId: emberWhelpQuest.id,
+    });
+    Object.assign(state.travels[1]!, {
+      status: 'arrived',
+      completesAt: new Date(now.getTime() - 1000),
+    });
+    const claimedFollowUpTravel = await service.claimTravel(state.user.id, String(state.travels[1]!.id));
+    expect(claimedFollowUpTravel.combats[1]).toMatchObject({
+      questId: emberWhelpQuest.id,
+      enemyId: emberWhelpQuest.enemyId,
+      status: 'pending',
+    });
+
+    const followUpCombatId = String(state.combats[1]!.id);
+    const petDefinition = gameData.items.find((item) => item.id === 'ember-whelp')!;
+    const onyxDefinition = gameData.items.find((item) => item.id === 'lucky-onyx')!;
+    const followUpEnemy = gameData.enemies.find((enemy) => enemy.id === emberWhelpQuest.enemyId)!;
+    const expectedPetStats = petDefinition.petCombatStats!;
+    const expectedLog = resolveCombat({
+      characterStats: statsWithEquipment(state.character.stats, [onyxDefinition, petDefinition]),
+      characterLevel: state.character.level,
+      characterHealth: state.character.health,
+      characterArmor: 0,
+      enemy: followUpEnemy,
+      reward: emberWhelpQuest.reward,
+      pet: { id: 'ember-whelp', ...expectedPetStats },
+    });
+
+    const resolvedFollowUp = await service.resolveCombat(state.user.id, followUpCombatId, {
+      petId: 'ember-whelp',
+    });
+    const followUpLog = resolvedFollowUp.combats[1]?.log;
+    const firstPetTurn = followUpLog?.turns.find((turn) => turn.actor === 'pet');
+    const expectedFirstPetTurn = expectedLog.turns.find((turn) => turn.actor === 'pet');
+
+    expect(resolvedFollowUp.combats[1]).toMatchObject({ questId: emberWhelpQuest.id, status: 'won' });
+    expect(followUpLog?.reward).toEqual(emberWhelpQuest.reward);
+    expect(followUpLog?.petId).toBe('ember-whelp');
+    expect(firstPetTurn?.damage).toBe(expectedFirstPetTurn?.damage);
+    expect(resolvedFollowUp.inventory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ itemId: 'ember-whelp', equippedSlot: 'pet' }),
+        expect.objectContaining({ itemId: 'moon-vest', quantity: 1 }),
+      ]),
+    );
+    expect(resolvedFollowUp.travels).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ questId: ashBaronQuest.id, status: 'claimed' }),
+        expect.objectContaining({ questId: emberWhelpQuest.id, status: 'claimed' }),
+      ]),
+    );
+    expect(resolvedFollowUp.questProgress.find((progress) => progress.questId === emberWhelpQuest.id)).toMatchObject({
+      status: 'completed',
+      progress: 1,
+    });
+
+    const inventoryAfterFollowUp = state.inventory.map((item) => ({
+      itemId: item.itemId,
+      quantity: item.quantity,
+      equippedSlot: item.equippedSlot,
+    }));
+    const ledgersAfterFollowUp = state.ledgers.length;
+    const combatEventsAfterFollowUp = state.events.filter((event) => event.type === 'combat.resolved').length;
+    await service.resolveCombat(state.user.id, followUpCombatId, { petId: 'ember-whelp' });
+    expect(state.inventory.map((item) => ({
+      itemId: item.itemId,
+      quantity: item.quantity,
+      equippedSlot: item.equippedSlot,
+    }))).toEqual(inventoryAfterFollowUp);
+    expect(state.ledgers).toHaveLength(ledgersAfterFollowUp);
+    expect(state.events.filter((event) => event.type === 'combat.resolved')).toHaveLength(
+      combatEventsAfterFollowUp,
+    );
   });
 
   it('keeps lost quest combat active and grants no quest reward', async () => {

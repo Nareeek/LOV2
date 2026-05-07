@@ -199,6 +199,15 @@ export const quests: QuestDefinition[] = [
     energyCost: 4,
     reward: { experience: 360, gold: 220, gems: 5, itemIds: ['lucky-onyx', 'ember-whelp'] },
   },
+  {
+    id: 'ember-whelp-first-flight',
+    titleRu: 'Первый полёт искрового виверна',
+    descriptionRu: 'Новый спутник ведёт героя обратно к туманной пристани, где можно проверить его помощь в бою.',
+    locationId: 'fog-harbor',
+    enemyId: 'harbor-wraith',
+    energyCost: 3,
+    reward: { experience: 180, gold: 95, gems: 1, itemIds: ['moon-vest'] },
+  },
 ];
 
 export const exerciseDefinitions: ExerciseDefinition[] = [
@@ -430,6 +439,22 @@ export function validateGameData(): void {
     }
     if (!enemies.some((enemy) => enemy.id === quest.enemyId)) {
       throw new Error(`quest ${quest.id} references missing enemy ${quest.enemyId}`);
+    }
+  }
+
+  const itemIds = new Set(items.map((item) => item.id));
+  for (const quest of quests) {
+    for (const itemId of quest.reward.itemIds) {
+      if (!itemIds.has(itemId)) {
+        throw new Error(`quest ${quest.id} reward references missing item ${itemId}`);
+      }
+    }
+  }
+  for (const enemy of enemies) {
+    for (const itemId of enemy.reward.itemIds) {
+      if (!itemIds.has(itemId)) {
+        throw new Error(`enemy ${enemy.id} reward references missing item ${itemId}`);
+      }
     }
   }
 
