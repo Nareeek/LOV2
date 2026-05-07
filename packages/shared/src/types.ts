@@ -92,6 +92,11 @@ export type EquipmentSlot =
 
 export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
+export interface PetCombatStats {
+  level: number;
+  health: number;
+}
+
 export interface ItemDefinition {
   id: string;
   nameRu: string;
@@ -104,6 +109,7 @@ export interface ItemDefinition {
   armorBonus?: number;
   forgeable?: boolean;
   statBonus: Partial<CharacterStats>;
+  petCombatStats?: PetCombatStats;
 }
 
 export interface InventoryStack {

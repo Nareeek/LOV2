@@ -11,8 +11,10 @@ import {
   refillEnergy,
   resolveCombat,
   spendEnergy,
+  statsWithEquipment,
   type CombatEncounter,
   type CombatLog,
+  type PetCombatStats,
 } from '@lov2/shared';
 import { GameCommandsService } from './game-commands.service.js';
 
@@ -409,6 +411,36 @@ describe('GameCommandsService combat pet authority', () => {
     return transactionClient.combatEncounter.updateMany.mock.calls[0]?.[0].data.log as CombatLog;
   }
 
+  async function withEmberWhelpPetCombatStats<T>(
+    stats: PetCombatStats | undefined,
+    callback: () => Promise<T>,
+  ): Promise<T> {
+    const petDefinition = gameData.items.find((item) => item.id === 'ember-whelp');
+    if (!petDefinition) {
+      throw new Error('missing ember-whelp test item');
+    }
+
+    const mutablePet = petDefinition as typeof petDefinition & { petCombatStats?: PetCombatStats };
+    const hadStats = Object.hasOwn(mutablePet, 'petCombatStats');
+    const originalStats = mutablePet.petCombatStats;
+
+    try {
+      if (stats) {
+        mutablePet.petCombatStats = stats;
+      } else {
+        delete mutablePet.petCombatStats;
+      }
+
+      return await callback();
+    } finally {
+      if (hadStats && originalStats) {
+        mutablePet.petCombatStats = originalStats;
+      } else {
+        delete mutablePet.petCombatStats;
+      }
+    }
+  }
+
   it('does not grant pet assist for arbitrary client petId', async () => {
     const { service, transactionClient } = createHarness([]);
 
@@ -443,7 +475,19 @@ describe('GameCommandsService combat pet authority', () => {
     },
   );
 
-  it('grants pet assist for a server-owned equipped pet', async () => {
+  it('resolves combat without pet assist when no pet is requested', async () => {
+    const { service, transactionClient } = createHarness([]);
+
+    await service.resolveCombat(character.userId, combat.id);
+
+    const log = resolvedLog(transactionClient);
+    expect(log.turns.length).toBeGreaterThan(0);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+  });
+
+  it('grants pet assist using game-data stats for a server-owned equipped pet', async () => {
+    const petCombatStats = { level: 7, health: 2345 };
     const { service, transactionClient } = createHarness([
       {
         id: 'stack-pet',
@@ -457,10 +501,57 @@ describe('GameCommandsService combat pet authority', () => {
       },
     ]);
 
-    await service.resolveCombat(character.userId, combat.id, { petId: 'ember-whelp' });
+    await withEmberWhelpPetCombatStats(petCombatStats, async () => {
+      await service.resolveCombat(character.userId, combat.id, { petId: 'ember-whelp' });
+    });
 
     const log = resolvedLog(transactionClient);
+    const petDefinition = gameData.items.find((item) => item.id === 'ember-whelp')!;
+    const enemy = gameData.enemies.find((entry) => entry.id === combat.enemyId)!;
+    const expectedLog = resolveCombat({
+      characterStats: statsWithEquipment(baseStats, [petDefinition]),
+      characterLevel: character.level,
+      characterHealth: character.health,
+      characterArmor: 0,
+      enemy,
+      reward: enemy.reward,
+      pet: { id: 'ember-whelp', ...petCombatStats },
+    });
+    const firstPetTurn = log.turns.find((turn) => turn.actor === 'pet');
+    const expectedFirstPetTurn = expectedLog.turns.find((turn) => turn.actor === 'pet');
+
     expect(log.petId).toBe('ember-whelp');
-    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(true);
+    expect(firstPetTurn?.damage).toBe(expectedFirstPetTurn?.damage);
   });
+
+  it.each([
+    { label: 'missing', petCombatStats: undefined },
+    { label: 'invalid', petCombatStats: { level: 0, health: 1800 } as PetCombatStats },
+  ])(
+    'does not grant pet assist when game-data combat stats are $label',
+    async ({ petCombatStats }) => {
+      const { service, transactionClient } = createHarness([
+        {
+          id: 'stack-pet',
+          characterId: character.id,
+          itemId: 'ember-whelp',
+          quantity: 1,
+          enhancementLevel: 0,
+          equippedSlot: 'pet',
+          createdAt: now,
+          updatedAt: now,
+        },
+      ]);
+
+      await withEmberWhelpPetCombatStats(petCombatStats, async () => {
+        await expect(
+          service.resolveCombat(character.userId, combat.id, { petId: 'ember-whelp' }),
+        ).resolves.toBeDefined();
+      });
+
+      const log = resolvedLog(transactionClient);
+      expect(log.petId).toBeUndefined();
+      expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+    },
+  );
 });

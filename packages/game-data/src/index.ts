@@ -110,6 +110,7 @@ export const items: ItemDefinition[] = [
     priceGold: 0,
     priceGems: 3,
     statBonus: { интуиция: 2, удача: 2 },
+    petCombatStats: { level: 12, health: 1800 },
   },
 ];
 
@@ -436,6 +437,17 @@ export function validateGameData(): void {
   for (const item of items) {
     if (!knownAssetIds.has(item.iconAssetId)) {
       throw new Error(`item ${item.id} references missing icon asset ${item.iconAssetId}`);
+    }
+
+    if (item.slot !== 'pet' && item.petCombatStats) {
+      throw new Error(`non-pet item ${item.id} defines pet combat stats`);
+    }
+
+    if (item.slot === 'pet') {
+      const stats = item.petCombatStats;
+      if (!stats || !Number.isInteger(stats.level) || stats.level <= 0 || !Number.isInteger(stats.health) || stats.health <= 0) {
+        throw new Error(`pet item ${item.id} must define positive integer combat stats`);
+      }
     }
   }
 
