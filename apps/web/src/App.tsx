@@ -11,9 +11,9 @@ import { CharacterCreationScreen } from './screens/CharacterCreationScreen.js';
 export function App() {
   const [state, setState] = useState<BootstrapState | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
-  const [email, setEmail] = useState('player@example.com');
+  const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('Игрок');
-  const [password, setPassword] = useState('change-me-1234');
+  const [password, setPassword] = useState('');
   const [characterName, setCharacterName] = useState('Даррид');
   const [raceId, setRaceId] = useState('nocturne');
   const [gender, setGender] = useState<CharacterGender>('male');
