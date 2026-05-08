@@ -151,7 +151,7 @@ export function CharacterCreationScreen({
             <div className="lov-creation-section-title">Класс</div>
             <div className="lov-creation-grid three">
               {CLASS_OPTIONS.map((option) => {
-                const selected = classId === option.id;
+                const selected = option.id === classId;
                 return (
                   <button
                     key={option.id}
