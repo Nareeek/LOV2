@@ -4,6 +4,87 @@ import type { BootstrapState, CombatEncounter, CombatLog } from '@lov2/shared';
 
 const NOW = '2026-04-22T12:00:00.000Z';
 
+type CreateCharacterRequest = {
+  name: string;
+  raceId: string;
+  gender: 'male' | 'female';
+  classId: 'swordsman' | 'ranger' | 'mage';
+};
+
+test('character creation preview is selected-state driven and submits the chosen build', async ({ page }) => {
+  const createRequests: CreateCharacterRequest[] = [];
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openCreation(page, createBootstrapState({ character: null }), (input) => {
+    createRequests.push(input);
+  });
+
+  const preview = page.getByTestId('creation-preview');
+  const previewCharacter = page.getByTestId('creation-preview-character');
+  await expect(page.locator('.lov-creation-ruler')).toHaveCount(0);
+  await expect(page.getByText('0%')).toHaveCount(0);
+  await expect(page.getByTestId('creation-gender-male')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('creation-race-nocturne')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('creation-class-mage')).toHaveAttribute('aria-pressed', 'true');
+  await expect(preview).toHaveAttribute('data-gender', 'male');
+  await expect(preview).toHaveAttribute('data-race', 'nocturne');
+  await expect(preview).toHaveAttribute('data-class', 'mage');
+  await expect(previewCharacter).toHaveAttribute(
+    'src',
+    '/assets/generated/character-creation/cc_male_nocturne_mystic.png',
+  );
+  await expectNoDocumentScroll(page);
+
+  await page.getByTestId('creation-class-ranger').click();
+  await page.getByTestId('creation-gender-female').click();
+  await page.getByTestId('creation-race-oracle').click();
+
+  await expect(page.getByTestId('creation-gender-female')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('creation-race-oracle')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('creation-class-ranger')).toHaveAttribute('aria-pressed', 'true');
+  await expect(preview).toHaveAttribute('data-gender', 'female');
+  await expect(preview).toHaveAttribute('data-race', 'oracle');
+  await expect(preview).toHaveAttribute('data-class', 'ranger');
+  await expect(previewCharacter).toHaveAttribute(
+    'src',
+    '/assets/generated/character-creation/cc_female_oracle_ranger.png',
+  );
+
+  await page.evaluate(() => {
+    const values = [0, 0, 0, 0.5];
+    let index = 0;
+    Math.random = () => values[index++ % values.length]!;
+  });
+  await page.getByTestId('creation-random').click();
+  await expect(page.getByTestId('creation-name-input')).toHaveValue('Каэл');
+  await expect(page.getByTestId('creation-gender-male')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('creation-race-nocturne')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('creation-class-swordsman')).toHaveAttribute('aria-pressed', 'true');
+  await expect(preview).toHaveAttribute('data-gender', 'male');
+  await expect(preview).toHaveAttribute('data-race', 'nocturne');
+  await expect(preview).toHaveAttribute('data-class', 'swordsman');
+  await expect(previewCharacter).toHaveAttribute(
+    'src',
+    '/assets/generated/character-creation/cc_male_nocturne_swordsman.png',
+  );
+
+  await page.getByTestId('creation-class-mage').click();
+  await expect(page.getByTestId('creation-class-mage')).toHaveAttribute('aria-pressed', 'true');
+  await expect(preview).toHaveAttribute('data-class', 'mage');
+  await expect(previewCharacter).toHaveAttribute(
+    'src',
+    '/assets/generated/character-creation/cc_male_nocturne_mystic.png',
+  );
+  await page.getByTestId('creation-submit').click();
+  await expect.poll(() => createRequests.length).toBe(1);
+  expect(createRequests[0]).toMatchObject({
+    name: 'Каэл',
+    raceId: 'nocturne',
+    gender: 'male',
+    classId: 'mage',
+  });
+  expect(createRequests[0]?.classId).not.toBe('mystic');
+});
+
 for (const viewport of [
   { width: 1366, height: 768, label: '1366x768' },
   { width: 1600, height: 900, label: '1600x900' },
@@ -306,7 +387,21 @@ async function openGame(page: Page, state: BootstrapState) {
   await expect(page.getByTestId('game-shell')).toBeVisible();
 }
 
-async function mockApi(page: Page, state: BootstrapState) {
+async function openCreation(
+  page: Page,
+  state: BootstrapState,
+  onCreateCharacter?: (input: CreateCharacterRequest) => void,
+) {
+  await mockApi(page, state, { onCreateCharacter });
+  await page.goto('/');
+  await expect(page.getByTestId('creation-screen')).toBeVisible();
+}
+
+async function mockApi(
+  page: Page,
+  state: BootstrapState,
+  options: { onCreateCharacter?: (input: CreateCharacterRequest) => void } = {},
+) {
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
 
@@ -334,6 +429,16 @@ async function mockApi(page: Page, state: BootstrapState) {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ ok: true }),
+      });
+      return;
+    }
+
+    if (pathname === '/characters' && route.request().method() === 'POST') {
+      options.onCreateCharacter?.(route.request().postDataJSON() as CreateCharacterRequest);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(createBootstrapState()),
       });
       return;
     }

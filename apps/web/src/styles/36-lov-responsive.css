@@ -51,6 +51,10 @@
     grid-template-columns: 1fr;
   }
 
+  .lov-creation-body {
+    height: auto;
+  }
+
   .lov-auth-shell .auth-art {
     height: 320px;
   }
@@ -98,6 +102,11 @@
 @media (max-width: 720px) {
   .lov-creation-shell {
     padding: 12px;
+  }
+
+  .lov-creation-panel,
+  .lov-creation-preview {
+    padding: 14px;
   }
 
   .lov-creation-grid.two,
@@ -211,4 +220,3 @@
     width: min(220px, calc(100vw - 40px));
   }
 }
-
