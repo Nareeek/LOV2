@@ -196,17 +196,18 @@
   justify-items: center;
   align-content: center;
   gap: 6px;
-  padding: 12px;
-  border-color: rgba(194, 150, 77, 0.78);
-  border-radius: 12px;
+  padding: 16px 18px;
+  border-color: transparent;
+  border-radius: 10px;
   color: #3c2517;
   background:
+    url("/assets/generated/ui/buttons/ui_button_option_default.png") center / 100% 100% no-repeat,
     linear-gradient(180deg, rgba(255, 247, 220, 0.96), rgba(203, 151, 77, 0.96)),
     #d2a05d;
   text-align: center;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 250, 239, 0.48),
-    0 8px 18px rgba(0, 0, 0, 0.12);
+    0 9px 18px rgba(0, 0, 0, 0.16),
+    0 0 16px rgba(232, 181, 88, 0.1);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -239,14 +240,21 @@
 .lov-creation-grid button.active {
   border-color: rgba(255, 234, 183, 0.96);
   background:
+    url("/assets/generated/ui/buttons/ui_button_option_selected.png") center / 100% 100% no-repeat,
     linear-gradient(180deg, #fff4d2, #e2ad58 58%, #bc7831),
     #d4a04c;
   transform: translateY(-1px);
 }
 
+.lov-creation-grid button[data-selected="true"] {
+  background:
+    url("/assets/generated/ui/buttons/ui_button_option_selected.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, #fff4d2, #e2ad58 58%, #bc7831),
+    #d4a04c;
+}
+
 .lov-creation-grid button.active {
   box-shadow:
-    inset 0 0 0 2px rgba(92, 47, 22, 0.48),
     0 0 0 2px rgba(255, 222, 150, 0.5),
     0 14px 30px rgba(218, 154, 70, 0.2);
 }
@@ -276,14 +284,28 @@
 .lov-creation-description {
   display: grid;
   gap: 7px;
-  padding: 13px 16px;
-  border: 1px solid rgba(166, 128, 82, 0.68);
-  border-radius: 16px;
-  background: rgba(21, 18, 19, 0.54);
+  padding: 18px 22px;
+  border: 1px solid rgba(218, 175, 102, 0.38);
+  border-radius: 12px;
+  background:
+    url("/assets/generated/ui/buttons/ui_panel_parchment.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, rgba(243, 224, 184, 0.94), rgba(199, 153, 91, 0.88)),
+    #d8bb82;
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.22),
+    inset 0 0 18px rgba(75, 44, 25, 0.12);
+}
+
+.lov-creation-description h2 {
+  color: #52331e;
 }
 
 .lov-creation-description p,
-.lov-creation-description small,
+.lov-creation-description small {
+  color: #603c25;
+  line-height: 1.38;
+}
+
 .lov-creation-message {
   color: #e8ddcc;
   line-height: 1.38;
@@ -304,6 +326,46 @@
 .lov-creation-actions button,
 .lov-creation-random {
   min-width: 180px;
+}
+
+.lov-creation-actions button[type="submit"] {
+  min-height: 48px;
+  padding: 12px 26px;
+  border-color: transparent;
+  border-radius: 10px;
+  color: #402414;
+  background:
+    url("/assets/generated/ui/buttons/ui_button_primary_default.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, #ffe8b3, #cf8133),
+    #d99a45;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(230, 166, 69, 0.18);
+  font-weight: 800;
+}
+
+.lov-creation-actions button[type="submit"]:hover:not(:disabled),
+.lov-creation-actions button[type="submit"]:focus-visible {
+  background:
+    url("/assets/generated/ui/buttons/ui_button_primary_hover.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, #fff1bf, #e29c42),
+    #dea04b;
+}
+
+.lov-creation-actions button.secondary {
+  min-height: 48px;
+  padding: 12px 22px;
+  border-color: transparent;
+  border-radius: 10px;
+  color: #3f2718;
+  background:
+    url("/assets/generated/ui/buttons/ui_random_button_frame.png") center / 100% 100% no-repeat,
+    linear-gradient(180deg, rgba(255, 244, 210, 0.94), rgba(204, 141, 59, 0.94)),
+    #d49a4d;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.22),
+    0 0 20px rgba(225, 168, 77, 0.14);
+  font-weight: 800;
 }
 
 .lov-creation-preview {
@@ -327,15 +389,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 10px 12px 10px 18px;
-  border-color: rgba(241, 207, 139, 0.9);
-  border-radius: 999px;
+  padding: 12px 16px 12px 22px;
+  border-color: transparent;
+  border-radius: 10px;
   color: #382312;
   background:
+    url("/assets/generated/ui/buttons/ui_random_button_frame.png") center / 100% 100% no-repeat,
     linear-gradient(180deg, rgba(255, 247, 221, 0.96), rgba(217, 158, 71, 0.96) 60%, rgba(157, 91, 36, 0.96)),
     #d39a4f;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.62),
     0 12px 28px rgba(0, 0, 0, 0.24),
     0 0 24px rgba(227, 169, 79, 0.18);
   font-weight: 800;
@@ -430,15 +492,16 @@
   z-index: 6;
   min-width: 280px;
   max-width: min(360px, calc(100% - 48px));
-  padding: 14px 18px;
-  border: 1px solid rgba(224, 183, 110, 0.74);
-  border-radius: 16px;
+  padding: 20px 26px;
+  border: 1px solid rgba(224, 183, 110, 0.48);
+  border-radius: 12px;
   background:
+    url("/assets/generated/ui/buttons/ui_nameplate_gold.png") center / 100% 100% no-repeat,
     linear-gradient(180deg, rgba(247, 229, 190, 0.94), rgba(211, 181, 130, 0.92)),
     #e0c899;
   box-shadow:
     0 18px 38px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.46);
+    0 0 24px rgba(232, 184, 87, 0.18);
   text-align: left;
 }
 
