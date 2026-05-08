@@ -4,6 +4,12 @@ import type { BootstrapState, CombatEncounter, CombatLog } from '@lov2/shared';
 
 const NOW = '2026-04-22T12:00:00.000Z';
 
+const RACE_SIGN_ASSET_PATHS = {
+  nocturne: '/assets/generated/character-creation/race-signs/race_sign_nocturne.png',
+  veiled: '/assets/generated/character-creation/race-signs/race_sign_veiled.png',
+  oracle: '/assets/generated/character-creation/race-signs/race_sign_oracle.png',
+} as const;
+
 type CreateCharacterRequest = {
   name: string;
   raceId: string;
@@ -20,6 +26,7 @@ test('character creation preview is selected-state driven and submits the chosen
 
   const preview = page.getByTestId('creation-preview');
   const previewCharacter = page.getByTestId('creation-preview-character');
+  const previewRaceSign = page.getByTestId('creation-preview-race-sign');
   await expect(page.locator('.lov-creation-ruler')).toHaveCount(0);
   await expect(page.getByText('0%')).toHaveCount(0);
   await expect(page.getByTestId('creation-gender-male')).toHaveAttribute('aria-pressed', 'true');
@@ -32,7 +39,13 @@ test('character creation preview is selected-state driven and submits the chosen
     'src',
     '/assets/generated/character-creation/cc_male_nocturne_mystic.png',
   );
+  await expect(previewRaceSign).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.nocturne);
   await expectNoDocumentScroll(page);
+
+  await page.getByTestId('creation-race-veiled').click();
+  await expect(page.getByTestId('creation-race-veiled')).toHaveAttribute('aria-pressed', 'true');
+  await expect(preview).toHaveAttribute('data-race', 'veiled');
+  await expect(previewRaceSign).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.veiled);
 
   await page.getByTestId('creation-class-ranger').click();
   await page.getByTestId('creation-gender-female').click();
@@ -48,6 +61,7 @@ test('character creation preview is selected-state driven and submits the chosen
     'src',
     '/assets/generated/character-creation/cc_female_oracle_ranger.png',
   );
+  await expect(previewRaceSign).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.oracle);
 
   await page.evaluate(() => {
     const values = [0, 0, 0, 0.5];
@@ -66,6 +80,7 @@ test('character creation preview is selected-state driven and submits the chosen
     'src',
     '/assets/generated/character-creation/cc_male_nocturne_swordsman.png',
   );
+  await expect(previewRaceSign).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.nocturne);
 
   await page.getByTestId('creation-class-mage').click();
   await expect(page.getByTestId('creation-class-mage')).toHaveAttribute('aria-pressed', 'true');
@@ -74,6 +89,7 @@ test('character creation preview is selected-state driven and submits the chosen
     'src',
     '/assets/generated/character-creation/cc_male_nocturne_mystic.png',
   );
+  await expect(previewRaceSign).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.nocturne);
   await page.getByTestId('creation-submit').click();
   await expect.poll(() => createRequests.length).toBe(1);
   expect(createRequests[0]).toMatchObject({

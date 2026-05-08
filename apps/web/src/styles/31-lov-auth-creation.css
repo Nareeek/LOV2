@@ -518,6 +518,22 @@
   pointer-events: none;
 }
 
+.lov-creation-race-sign {
+  position: absolute;
+  top: clamp(86px, 17%, 132px);
+  left: clamp(92px, 23%, 210px);
+  z-index: 6;
+  width: clamp(54px, 8vw, 86px);
+  max-height: 92px;
+  object-fit: contain;
+  opacity: 0.88;
+  pointer-events: none;
+  transform: rotate(-4deg);
+  filter:
+    drop-shadow(0 0 12px rgba(225, 190, 121, 0.34))
+    drop-shadow(0 10px 18px rgba(0, 0, 0, 0.48));
+}
+
 .lov-creation-avatar-card {
   position: absolute;
   top: 0;
