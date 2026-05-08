@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import type { BootstrapState, CharacterClassId, CharacterGender } from '@lov2/shared';
 import { apiClient } from './lib/api.js';
 import { GameShell } from './components/game/GameShell.js';
@@ -17,7 +17,7 @@ export function App() {
   const [characterName, setCharacterName] = useState('Даррид');
   const [raceId, setRaceId] = useState('nocturne');
   const [gender, setGender] = useState<CharacterGender>('male');
-  const [classId, setClassId] = useState<CharacterClassId>('swordsman');
+  const [classId, setClassId] = useState<CharacterClassId>('mage');
   const [message, setMessage] = useState('Добро пожаловать в ночной двор.');
   const [busy, setBusy] = useState(false);
 
@@ -45,15 +45,6 @@ export function App() {
       setBusy(false);
     }
   }, []);
-
-  const selectedRace = useMemo(
-    () => state?.races.find((race) => race.id === raceId) ?? state?.races[0] ?? null,
-    [raceId, state?.races],
-  );
-  const selectedClass = useMemo(
-    () => CLASS_OPTIONS.find((entry) => entry.id === classId) ?? CLASS_OPTIONS[0]!,
-    [classId],
-  );
 
   function randomizeCreation() {
     const nextGender = GENDER_OPTIONS[Math.floor(Math.random() * GENDER_OPTIONS.length)]!;
