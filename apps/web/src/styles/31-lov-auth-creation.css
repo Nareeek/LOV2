@@ -357,7 +357,7 @@
 
 .lov-creation-scene {
   position: relative;
-  min-height: 0;
+  min-height: clamp(460px, calc(100vh - 244px), 680px);
   overflow: hidden;
   border: 1px solid rgba(198, 155, 88, 0.72);
   border-radius: 22px;
@@ -409,13 +409,17 @@
 
 .lov-creation-avatar-card {
   position: absolute;
-  right: 2%;
-  bottom: -4%;
-  left: 18%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 4;
-  display: grid;
-  align-items: end;
-  justify-items: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 118px 24px 0;
 }
 
 .lov-creation-avatar-meta {
@@ -452,9 +456,12 @@
 }
 
 .lov-creation-character-image {
-  width: min(86%, 520px);
-  max-height: 104%;
+  width: 100%;
+  height: 100%;
+  max-width: min(58%, 430px);
+  max-height: 100%;
   object-fit: contain;
+  object-position: center bottom;
   filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.5));
 }
 
