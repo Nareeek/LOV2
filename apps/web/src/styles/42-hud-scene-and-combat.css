@@ -37,6 +37,19 @@
   min-width: 0;
 }
 
+.lov-topbar-character-name {
+  display: block;
+  min-width: 0;
+  margin: 0 0 4px;
+  overflow: hidden;
+  color: #f8e8bf;
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .lov-topbar-portrait {
   width: 86px;
   height: 68px;

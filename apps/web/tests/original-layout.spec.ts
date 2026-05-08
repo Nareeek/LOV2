@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { gameData } from '@lov2/game-data';
 import type { BootstrapState, CombatEncounter, CombatLog } from '@lov2/shared';
+import { CLASS_OPTIONS } from '../src/game/characterCreationOptions.js';
 
 const NOW = '2026-04-22T12:00:00.000Z';
 
@@ -8,6 +9,11 @@ const RACE_SIGN_ASSET_PATHS = {
   nocturne: '/assets/generated/character-creation/race-signs/race_sign_nocturne.png',
   veiled: '/assets/generated/character-creation/race-signs/race_sign_veiled.png',
   oracle: '/assets/generated/character-creation/race-signs/race_sign_oracle.png',
+} as const;
+
+const CHARACTER_CREATION_ASSET_PATHS = {
+  male_nocturne_swordsman: '/assets/generated/character-creation/cc_male_nocturne_swordsman.png',
+  female_oracle_ranger: '/assets/generated/character-creation/cc_female_oracle_ranger.png',
 } as const;
 
 type CreateCharacterRequest = {
@@ -101,6 +107,54 @@ test('character creation preview is selected-state driven and submits the chosen
   expect(createRequests[0]?.classId).not.toBe('mystic');
 });
 
+test('created character identity is reflected in the next game screen', async ({ page }) => {
+  const createRequests: CreateCharacterRequest[] = [];
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openCreation(page, createBootstrapState({ character: null }), (input) => {
+    createRequests.push(input);
+  });
+
+  await page.getByTestId('creation-name-input').fill('Custom Test Name');
+  await page.getByTestId('creation-gender-female').click();
+  await page.getByTestId('creation-race-oracle').click();
+  await page.getByTestId('creation-class-ranger').click();
+  await page.getByTestId('creation-submit').click();
+
+  await expect(page.getByTestId('game-shell')).toBeVisible();
+  await expect.poll(() => createRequests.length).toBe(1);
+  expect(createRequests[0]).toMatchObject({
+    name: 'Custom Test Name',
+    raceId: 'oracle',
+    gender: 'female',
+    classId: 'ranger',
+  });
+
+  const oracleRace = gameData.races.find((race) => race.id === 'oracle')!;
+  const rangerClass = CLASS_OPTIONS.find((entry) => entry.id === 'ranger')!;
+
+  await expect(page.getByTestId('topbar-character-name')).toHaveText('Custom Test Name');
+  await expect(page.getByTestId('character-portrait-image')).toHaveAttribute(
+    'src',
+    CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
+  );
+
+  await page.getByTestId('character-info-button').click();
+  const heroInfoWindow = page.getByTestId('character-info-popup');
+  await expect(heroInfoWindow).toBeVisible();
+  await expect(heroInfoWindow.locator('.lov-profile-header strong')).toHaveText('Custom Test Name');
+  await expect(heroInfoWindow.locator('.lov-profile-header span')).toContainText(oracleRace.nameRu);
+  await expect(heroInfoWindow.locator('.lov-profile-header span')).toContainText(rangerClass.label);
+  await expect(heroInfoWindow.getByTestId('hero-info-character-image')).toHaveAttribute(
+    'src',
+    CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
+  );
+  await expect(heroInfoWindow.getByTestId('hero-info-race-sign')).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.oracle);
+  await expect(heroInfoWindow.getByTestId('paperdoll-character-image')).toHaveAttribute(
+    'src',
+    CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
+  );
+});
+
 for (const viewport of [
   { width: 1366, height: 768, label: '1366x768' },
   { width: 1600, height: 900, label: '1600x900' },
@@ -150,9 +204,9 @@ for (const viewport of [
     await expect(heroInfoWindow.getByTestId('hero-info-stat-health')).toBeVisible();
     await expect(heroInfoWindow.getByTestId('hero-info-stat-armor')).toBeVisible();
     await expect(heroInfoWindow.getByTestId('world-window-bottom-close')).toBeVisible();
-    await expect(heroInfoWindow.locator('.lov-profile-header img')).toHaveAttribute(
+    await expect(heroInfoWindow.getByTestId('hero-info-character-image')).toHaveAttribute(
       'src',
-      '/assets/generated/characters/character-face-portrait.jpg',
+      CHARACTER_CREATION_ASSET_PATHS.male_nocturne_swordsman,
     );
     await expectContained(heroInfoWindow, page.getByTestId('world-stage'));
     await expectWiderThan(
@@ -450,11 +504,22 @@ async function mockApi(
     }
 
     if (pathname === '/characters' && route.request().method() === 'POST') {
-      options.onCreateCharacter?.(route.request().postDataJSON() as CreateCharacterRequest);
+      const input = route.request().postDataJSON() as CreateCharacterRequest;
+      options.onCreateCharacter?.(input);
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(createBootstrapState()),
+        body: JSON.stringify(createBootstrapState({
+          ...state,
+          character: {
+            ...createBootstrapState().character!,
+            userId: state.user?.id ?? 'user-1',
+            name: input.name,
+            raceId: input.raceId,
+            gender: input.gender,
+            classId: input.classId,
+          },
+        })),
       });
       return;
     }

@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
 import type { BootstrapState, CharacterClassId, CharacterGender, Race } from '@lov2/shared';
 import { assetPath } from '../components/game/assets.js';
+import { characterCreationImagePath, characterRaceSignPath } from '../game/characterIdentity.js';
 import { CLASS_OPTIONS, GENDER_OPTIONS } from '../game/characterCreationOptions.js';
 
 type PreviewGenderConfig = {
@@ -10,7 +11,6 @@ type PreviewGenderConfig = {
 
 type PreviewClassConfig = {
   label: string;
-  assetKey: 'swordsman' | 'ranger' | 'mystic';
 };
 
 type PreviewRaceAssetKey = 'nocturne' | 'veiled' | 'oracle';
@@ -34,24 +34,15 @@ const PREVIEW_RACE_ASSET_KEYS: Record<string, PreviewRaceAssetKey> = {
   oracle: 'oracle',
 };
 
-const RACE_SIGN_ASSETS: Record<PreviewRaceAssetKey, string> = {
-  nocturne: '/assets/generated/character-creation/race-signs/race_sign_nocturne.png',
-  veiled: '/assets/generated/character-creation/race-signs/race_sign_veiled.png',
-  oracle: '/assets/generated/character-creation/race-signs/race_sign_oracle.png',
-};
-
 const PREVIEW_CLASSES: Record<CharacterClassId, PreviewClassConfig> = {
   swordsman: {
     label: 'Мечник',
-    assetKey: 'swordsman',
   },
   ranger: {
     label: 'Стрелок',
-    assetKey: 'ranger',
   },
   mage: {
     label: 'Мистик',
-    assetKey: 'mystic',
   },
 };
 
@@ -60,14 +51,12 @@ function previewRaceAssetKey(raceId: string): PreviewRaceAssetKey {
 }
 
 function characterCreationPreviewPath(gender: CharacterGender, raceId: string, classId: CharacterClassId): string {
-  const genderKey = PREVIEW_GENDERS[gender].assetKey;
   const raceKey = previewRaceAssetKey(raceId);
-  const classKey = PREVIEW_CLASSES[classId].assetKey;
-  return `/assets/generated/character-creation/cc_${genderKey}_${raceKey}_${classKey}.png`;
+  return characterCreationImagePath(PREVIEW_GENDERS[gender].assetKey, raceKey, classId);
 }
 
 function characterCreationRaceSignPath(raceId: string): string {
-  return RACE_SIGN_ASSETS[previewRaceAssetKey(raceId)];
+  return characterRaceSignPath(previewRaceAssetKey(raceId));
 }
 
 export function CharacterCreationScreen({

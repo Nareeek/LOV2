@@ -89,6 +89,7 @@ export function GameShellCombatStage({
         {rewardVisible ? (
           <GameShellModalLayer reward>
             <CombatResultWindow
+              character={state.character!}
               latestResolvedCombat={latestResolvedCombat}
               {...(rewardBattlePetId ? { battlePetId: rewardBattlePetId } : {})}
               onContinue={onCloseReward}

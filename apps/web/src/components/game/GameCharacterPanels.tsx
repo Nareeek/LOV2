@@ -20,6 +20,11 @@ import {
   type Race,
   type TravelTask,
 } from '@lov2/shared';
+import {
+  characterImagePath,
+  characterRaceClassLabel,
+  characterRaceSignPath,
+} from '../../game/characterIdentity.js';
 import type { GameIntent, MetaTab, RouteState, SheetTab } from '../../game/types.js';
 import { assetPath } from './assets.js';
 import {
@@ -108,6 +113,10 @@ export function CharacterSheet({
   }
 
   const race = state.races.find((entry) => entry.id === character.raceId);
+  const raceLabel = race?.nameRu ?? character.raceId;
+  const raceClassLabel = characterRaceClassLabel(raceLabel, character.classId);
+  const characterImageSrc = characterImagePath(character);
+  const raceSignSrc = characterRaceSignPath(character.raceId);
   const equippedBySlot = getEquippedBySlot(state);
   const equippedEntries = Object.values(equippedBySlot).filter((entry): entry is EquippedEntry => Boolean(entry));
   const backpack = orderBackpackStacks(getBackpackStacks(state), inventorySlotOrder, 24);
@@ -344,10 +353,13 @@ export function CharacterSheet({
         {activeTab === 'profile' ? (
           <div className="lov-profile-screen">
             <div className="lov-profile-header">
-              <img src="/assets/generated/characters/character-face-portrait.jpg" alt="" />
+              <div className="lov-profile-identity-art">
+                <img src={characterImageSrc} alt="" data-testid="profile-character-image" />
+                <img className="lov-profile-race-sign" src={raceSignSrc} alt="" data-testid="profile-race-sign" />
+              </div>
               <div>
                 <strong>{character.name}</strong>
-                <span>(LOV)</span>
+                <span>{raceClassLabel}</span>
               </div>
             </div>
             <div className="lov-profile-stats">
@@ -450,13 +462,15 @@ export function HeroInfoPanel({
   }
 
   const race = state.races.find((entry) => entry.id === character.raceId);
+  const raceLabel = race?.nameRu ?? character.raceId;
+  const raceClassLabel = characterRaceClassLabel(raceLabel, character.classId);
   const equippedEntries = Object.values(getEquippedBySlot(state)).filter((entry): entry is EquippedEntry => Boolean(entry));
   const totals = buildCharacterTotals(state, equippedEntries);
 
   return (
     <div className="shell-reset-info-card lov-overlay-card" data-testid="character-info-popup">
       <h3>{character.name}</h3>
-      <p>{race?.nameRu ?? character.raceId}</p>
+      <p>{raceClassLabel}</p>
       <div className="lov-profile-stats compact">
         <div className="lov-profile-stat"><span>❤</span><strong>{character.maxHealth}</strong></div>
         <div className="lov-profile-stat"><span>🛡</span><strong>{totals.armor}</strong></div>
@@ -484,6 +498,10 @@ export function HeroInfoWindow({
   }
 
   const race = state.races.find((entry) => entry.id === character.raceId);
+  const raceLabel = race?.nameRu ?? character.raceId;
+  const raceClassLabel = characterRaceClassLabel(raceLabel, character.classId);
+  const characterImageSrc = characterImagePath(character);
+  const raceSignSrc = characterRaceSignPath(character.raceId);
   const equippedBySlot = getEquippedBySlot(state);
   const equippedEntries = Object.values(equippedBySlot).filter((entry): entry is EquippedEntry => Boolean(entry));
   const totals = buildCharacterTotals(state, equippedEntries);
@@ -502,10 +520,13 @@ export function HeroInfoWindow({
         <section className="lov-sheet-left lov-hero-info-main">
           <div className="lov-profile-screen lov-profile-screen-window">
             <div className="lov-profile-header">
-              <img src="/assets/generated/characters/character-face-portrait.jpg" alt="" />
+              <div className="lov-profile-identity-art">
+                <img src={characterImageSrc} alt="" data-testid="hero-info-character-image" />
+                <img className="lov-profile-race-sign" src={raceSignSrc} alt="" data-testid="hero-info-race-sign" />
+              </div>
               <div>
                 <strong>{character.name}</strong>
-                <span>{race?.nameRu ?? character.raceId}</span>
+                <span>{raceClassLabel}</span>
               </div>
             </div>
             <div className="lov-profile-stats">
@@ -703,7 +724,7 @@ function PaperDollPanel({
   selectedPetAssetId?: string | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
-  const heroAssetId = paperDollHeroAssetId(equippedBySlot);
+  const heroSrc = characterImagePath(character);
   const paperDollPetAssetId = selectedPetAssetId ?? 'pet-wyvern';
 
   return (
@@ -727,7 +748,7 @@ function PaperDollPanel({
         </div>
 
         <div className="lov-paperdoll-center">
-          <img className="lov-paperdoll-hero" src={assetPath(heroAssetId)} alt="" />
+          <img className="lov-paperdoll-hero" src={heroSrc} alt="" data-testid="paperdoll-character-image" />
           {equippedBySlot.pet || selectedPetAssetId ? <img className="lov-paperdoll-pet" src={assetPath(paperDollPetAssetId)} alt="" /> : null}
           <span className="lov-wing-badge">🪽</span>
         </div>
@@ -758,25 +779,6 @@ function PaperDollPanel({
       )}
     </div>
   );
-}
-
-export function paperDollHeroAssetId(equippedBySlot: Partial<Record<EquipmentSlot, EquippedEntry>>): string {
-  const hasArmor = Boolean(equippedBySlot.armor);
-  const hasWeapon = Boolean(equippedBySlot.weapon);
-
-  if (!hasArmor && hasWeapon) {
-    return 'hero-nocturne-without-armor-with-sword';
-  }
-
-  if (!hasArmor) {
-    return 'hero-nocturne-without-armor';
-  }
-
-  if (!hasWeapon) {
-    return 'hero-nocturne-without-sword';
-  }
-
-  return 'hero-nocturne';
 }
 
 function AppearanceSelector({
@@ -1035,5 +1037,3 @@ function ItemHoverCard({
     </span>
   );
 }
-
-

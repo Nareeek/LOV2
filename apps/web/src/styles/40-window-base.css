@@ -705,6 +705,16 @@
   height: 72px;
 }
 
+.lov-profile-screen-window .lov-profile-identity-art {
+  width: 72px;
+  height: 72px;
+}
+
+.lov-profile-screen-window .lov-profile-header .lov-profile-race-sign {
+  width: 30px;
+  height: 30px;
+}
+
 .lov-profile-screen-window .lov-profile-header strong {
   font-size: 1.82rem;
 }
@@ -1102,4 +1112,3 @@
   max-height: calc(100% - 124px);
   overflow: auto;
 }
-
