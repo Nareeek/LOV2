@@ -13,6 +13,10 @@ type PreviewClassConfig = {
   assetKey: 'swordsman' | 'ranger' | 'mystic';
 };
 
+type PreviewRaceAssetKey = 'nocturne' | 'veiled' | 'oracle';
+
+const DEFAULT_PREVIEW_RACE_ASSET_KEY: PreviewRaceAssetKey = 'nocturne';
+
 const PREVIEW_GENDERS: Record<CharacterGender, PreviewGenderConfig> = {
   male: {
     label: 'Мужчина',
@@ -24,10 +28,16 @@ const PREVIEW_GENDERS: Record<CharacterGender, PreviewGenderConfig> = {
   },
 };
 
-const PREVIEW_RACE_ASSET_KEYS: Record<string, 'nocturne' | 'veiled' | 'oracle'> = {
+const PREVIEW_RACE_ASSET_KEYS: Record<string, PreviewRaceAssetKey> = {
   nocturne: 'nocturne',
   veiled: 'veiled',
   oracle: 'oracle',
+};
+
+const RACE_SIGN_ASSETS: Record<PreviewRaceAssetKey, string> = {
+  nocturne: '/assets/generated/character-creation/race-signs/race_sign_nocturne.png',
+  veiled: '/assets/generated/character-creation/race-signs/race_sign_veiled.png',
+  oracle: '/assets/generated/character-creation/race-signs/race_sign_oracle.png',
 };
 
 const PREVIEW_CLASSES: Record<CharacterClassId, PreviewClassConfig> = {
@@ -45,11 +55,19 @@ const PREVIEW_CLASSES: Record<CharacterClassId, PreviewClassConfig> = {
   },
 };
 
+function previewRaceAssetKey(raceId: string): PreviewRaceAssetKey {
+  return PREVIEW_RACE_ASSET_KEYS[raceId] ?? DEFAULT_PREVIEW_RACE_ASSET_KEY;
+}
+
 function characterCreationPreviewPath(gender: CharacterGender, raceId: string, classId: CharacterClassId): string {
   const genderKey = PREVIEW_GENDERS[gender].assetKey;
-  const raceKey = PREVIEW_RACE_ASSET_KEYS[raceId] ?? PREVIEW_RACE_ASSET_KEYS.nocturne;
+  const raceKey = previewRaceAssetKey(raceId);
   const classKey = PREVIEW_CLASSES[classId].assetKey;
   return `/assets/generated/character-creation/cc_${genderKey}_${raceKey}_${classKey}.png`;
+}
+
+function characterCreationRaceSignPath(raceId: string): string {
+  return RACE_SIGN_ASSETS[previewRaceAssetKey(raceId)];
 }
 
 export function CharacterCreationScreen({
@@ -226,6 +244,7 @@ function CharacterCreationPreview({
   const classPreview = PREVIEW_CLASSES[classId];
   const raceId = race?.id ?? 'nocturne';
   const previewSrc = characterCreationPreviewPath(gender, raceId, classId);
+  const raceSignSrc = characterCreationRaceSignPath(raceId);
   const displayName = characterName.trim() || 'Герой';
 
   return (
@@ -251,6 +270,12 @@ function CharacterCreationPreview({
       >
         <img className="lov-creation-scene-bg" src={assetPath('scene-character')} alt="" />
         <div className="lov-creation-preview-light" aria-hidden="true" />
+        <img
+          className="lov-creation-race-sign"
+          data-testid="creation-preview-race-sign"
+          src={raceSignSrc}
+          alt=""
+        />
         <div className="lov-creation-avatar-card">
           <img
             className="lov-creation-character-image"
