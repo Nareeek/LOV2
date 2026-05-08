@@ -20,6 +20,7 @@ import {
   type Race,
   type TravelTask,
 } from '@lov2/shared';
+import { characterImagePath } from '../../game/characterIdentity.js';
 import type { GameIntent, MetaTab, RouteState, SheetTab } from '../../game/types.js';
 import { assetPath } from './assets.js';
 import {
@@ -61,7 +62,6 @@ import {
   formatDuration,
   formatPrice,
   getBackpackStacks,
-  getEquippedBySlot,
   getItemStatTags,
   orderBackpackStacks,
   readDraggedStackId,
@@ -75,7 +75,6 @@ import {
 } from './GamePanels.logic.js';
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
-import { paperDollHeroAssetId } from './GameCharacterPanels.js';
 import { enemyAssetId, enemyDisplayName } from './enemyPresentation.js';
 export function TravelStage({
   state,
@@ -94,6 +93,7 @@ export function TravelStage({
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
   const progressPercent = progress?.percent ?? 0;
   const canRushTravel = Boolean(activeTravel && (activeTravelReady || (state.character?.gems ?? 0) >= 1));
+  const characterImageSrc = state.character ? characterImagePath(state.character) : null;
 
   return (
     <section
@@ -112,7 +112,7 @@ export function TravelStage({
       </aside>
 
       <div className="lov-travel-pin">
-        <img src="/assets/generated/characters/character-face-portrait.jpg" alt="" />
+        {characterImageSrc ? <img src={characterImageSrc} alt="" data-testid="travel-character-image" /> : null}
       </div>
 
       <div className="lov-travel-bottom">
@@ -179,8 +179,7 @@ export function CombatStage({
     return null;
   }
 
-  const equippedBySlot = getEquippedBySlot(state);
-  const heroAssetId = paperDollHeroAssetId(equippedBySlot);
+  const heroSrc = characterImagePath(character);
   const displayedEnemyName = enemyDisplayName(enemy);
   const displayedEnemyAssetId = enemyAssetId(enemy);
   const activePetId = battlePetId ?? selectedPetId;
@@ -221,7 +220,7 @@ export function CombatStage({
             <UiIcon name="info" />
           </button>
           <div className="lov-combat-avatar hero">
-            <img src={assetPath(heroAssetId)} alt="" />
+            <img src={heroSrc} alt="" data-testid="combat-character-avatar" />
           </div>
           <div className="lov-combat-meta">
             <strong>{character.name}</strong>
@@ -267,7 +266,7 @@ export function CombatStage({
       </div>
 
       <div className="lov-battle-stage">
-        <img className={`lov-fighter hero ${heroMotionClass}`} src={assetPath(heroAssetId)} alt="" />
+        <img className={`lov-fighter hero ${heroMotionClass}`} src={heroSrc} alt="" data-testid="combat-character-fighter" />
         <img className={`lov-fighter enemy ${enemyMotionClass}`} src={assetPath(displayedEnemyAssetId)} alt="" />
         {petSummoned ? (
           <div className={`lov-battle-pet-wrap pet-${selectedPet.id}`}>
@@ -400,10 +399,12 @@ function rewardPetForCombat(latestResolvedCombat: CombatEncounter | undefined, b
 }
 
 export function RewardWindow({
+  character,
   latestResolvedCombat,
   battlePetId,
   onContinue,
 }: {
+  character: NonNullable<BootstrapState['character']>;
   latestResolvedCombat: CombatEncounter | undefined;
   battlePetId?: string | null;
   onContinue: () => void;
@@ -418,7 +419,7 @@ export function RewardWindow({
   return (
     <section className={`lov-victory-window ${didWin ? 'is-victory' : 'is-defeat'}`} data-testid="reward-screen">
       <div className="lov-victory-left">
-        <img src={assetPath('hero-nocturne')} alt="" />
+        <img src={characterImagePath(character)} alt="" data-testid="reward-character-image" />
       </div>
       <div className="lov-victory-right">
         <h2>Победа!</h2>
@@ -444,10 +445,12 @@ export function RewardWindow({
 }
 
 export function CombatResultWindow({
+  character,
   latestResolvedCombat,
   battlePetId,
   onContinue,
 }: {
+  character: NonNullable<BootstrapState['character']>;
   latestResolvedCombat: CombatEncounter | undefined;
   battlePetId?: string | null;
   onContinue: () => void;
@@ -462,7 +465,7 @@ export function CombatResultWindow({
   return (
     <section className={`lov-victory-window ${didWin ? 'is-victory' : 'is-defeat'}`} data-testid="reward-screen">
       <div className="lov-victory-left">
-        <img src={assetPath('hero-nocturne')} alt="" />
+        <img src={characterImagePath(character)} alt="" data-testid="reward-character-image" />
       </div>
       <div className="lov-victory-right">
         <h2>{didWin ? '\u041f\u043e\u0431\u0435\u0434\u0430!' : '\u041f\u043e\u0440\u0430\u0436\u0435\u043d\u0438\u0435!'}</h2>
@@ -494,4 +497,3 @@ export function CombatResultWindow({
     </section>
   );
 }
-

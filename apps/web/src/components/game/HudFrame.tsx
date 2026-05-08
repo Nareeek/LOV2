@@ -1,4 +1,5 @@
 import type { Character } from '@lov2/shared';
+import { characterImagePath } from '../../game/characterIdentity.js';
 import type { GameIntent } from '../../game/types.js';
 import { assetPath } from './assets.js';
 import { Meter, UiIcon } from './ui.js';
@@ -24,7 +25,7 @@ export function HudFrame({
             aria-label="Открыть окно героя"
             onClick={() => onIntent({ type: 'openSheet', tab: 'character' })}
           >
-            <img src="/assets/generated/characters/character-face-portrait.jpg" alt="" />
+            <img src={characterImagePath(character)} alt="" data-testid="character-portrait-image" />
           </button>
           <span className="shell-reset-level" data-testid="level-badge">
             {character.level}
@@ -41,6 +42,9 @@ export function HudFrame({
       </section>
 
       <section className="lov-topbar-center">
+        <strong className="lov-topbar-character-name" data-testid="topbar-character-name">
+          {character.name}
+        </strong>
         <div className="shell-reset-progress lov-xp-strip" data-testid="hud-xp">
           <Meter
             label="XP"

@@ -514,12 +514,30 @@
   align-items: center;
 }
 
+.lov-profile-identity-art {
+  position: relative;
+  width: 86px;
+  height: 86px;
+}
+
 .lov-profile-header img {
   width: 86px;
   height: 86px;
   object-fit: cover;
   border: 2px solid rgba(201, 165, 102, 0.82);
   border-radius: 8px;
+}
+
+.lov-profile-header .lov-profile-race-sign {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  background: rgba(27, 24, 28, 0.86);
+  border-radius: 50%;
+  padding: 3px;
 }
 
 .lov-profile-header span {
@@ -924,4 +942,3 @@
   background: linear-gradient(180deg, #f0dfab, #ca9649);
   color: #4a2b18;
 }
-
