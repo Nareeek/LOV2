@@ -84,8 +84,8 @@
   min-height: 100vh;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 10px;
-  padding: 16px 22px;
+  gap: 6px;
+  padding: 12px 18px;
   background:
     linear-gradient(115deg, rgba(41, 68, 70, 0.34), transparent 36%),
     linear-gradient(245deg, rgba(120, 56, 52, 0.28), transparent 40%),
@@ -93,13 +93,13 @@
 }
 
 .lov-creation-body {
-  width: min(1320px, 100%);
-  height: min(704px, calc(100vh - 88px));
+  width: min(1260px, 100%);
+  height: min(704px, calc(100vh - 80px));
   min-height: 0;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(360px, 0.88fr) minmax(470px, 1.12fr);
-  gap: 18px;
+  grid-template-columns: minmax(330px, 0.78fr) minmax(500px, 1.22fr);
+  gap: 16px;
   align-items: stretch;
 }
 
@@ -107,16 +107,16 @@
 .lov-creation-preview {
   min-height: 0;
   border: 1px solid rgba(217, 177, 103, 0.72);
-  border-radius: 24px;
+  border-radius: 18px;
   box-shadow: var(--lov-shadow);
 }
 
 .lov-creation-panel {
   display: grid;
   align-content: start;
-  gap: 12px;
-  padding: 20px;
-  overflow: auto;
+  gap: 6px;
+  padding: 14px;
+  overflow: hidden;
   background:
     linear-gradient(180deg, rgba(64, 48, 47, 0.92), rgba(39, 29, 32, 0.96)),
     #241d1e;
@@ -124,7 +124,7 @@
 
 .lov-creation-header {
   display: grid;
-  gap: 10px;
+  gap: 5px;
 }
 
 .lov-creation-header h1,
@@ -137,23 +137,26 @@
 }
 
 .lov-creation-header h1 {
-  font-size: clamp(2rem, 3vw, 2.4rem);
+  font-size: clamp(1.22rem, 1.7vw, 1.58rem);
+  line-height: 1.05;
 }
 
 .lov-creation-name {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   color: #e6d7bf;
+  font-size: 0.92rem;
 }
 
 .lov-creation-name input {
+  min-height: 34px;
   border-color: rgba(157, 127, 82, 0.72);
   background: rgba(18, 17, 19, 0.82);
 }
 
 .lov-creation-section {
   display: grid;
-  gap: 8px;
+  gap: 5px;
 }
 
 .lov-creation-section-title,
@@ -169,12 +172,13 @@
 }
 
 .lov-creation-section-title {
-  font-size: 1.22rem;
+  font-size: 0.96rem;
+  line-height: 1.1;
 }
 
 .lov-creation-grid {
   display: grid;
-  gap: 10px;
+  gap: 7px;
 }
 
 .lov-creation-grid.two {
@@ -191,23 +195,24 @@
 
 .lov-creation-grid button {
   position: relative;
-  min-height: 76px;
+  min-height: 44px;
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 6px;
-  padding: 16px 18px;
-  border-color: transparent;
-  border-radius: 10px;
-  color: #3c2517;
+  gap: 3px;
+  padding: 7px 10px;
+  overflow: hidden;
+  border: 1px solid rgba(177, 132, 72, 0.62);
+  border-radius: 8px;
+  color: #f5e5c4;
   background:
-    url("/assets/generated/ui/buttons/ui_button_option_default.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, rgba(255, 247, 220, 0.96), rgba(203, 151, 77, 0.96)),
-    #d2a05d;
+    linear-gradient(180deg, rgba(74, 55, 45, 0.92), rgba(35, 29, 31, 0.96)),
+    #2e2525;
   text-align: center;
   box-shadow:
-    0 9px 18px rgba(0, 0, 0, 0.16),
-    0 0 16px rgba(232, 181, 88, 0.1);
+    inset 0 1px 0 rgba(255, 235, 184, 0.13),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.34),
+    0 7px 16px rgba(0, 0, 0, 0.16);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -215,95 +220,125 @@
     background 160ms ease;
 }
 
+.lov-creation-grid button::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  border-radius: 7px;
+  background:
+    linear-gradient(90deg, rgba(255, 221, 145, 0.13), transparent 22%, transparent 78%, rgba(255, 221, 145, 0.08)),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 233, 176, 0.15), transparent 56%);
+  opacity: 0.86;
+  pointer-events: none;
+}
+
 .lov-creation-grid.race button {
-  min-height: 92px;
+  min-height: 52px;
   align-content: start;
   justify-items: start;
+  gap: 4px;
+  padding: 8px 10px;
   text-align: left;
 }
 
+.lov-creation-grid button > * {
+  position: relative;
+  z-index: 1;
+}
+
 .lov-creation-grid button strong {
-  color: #482b1b;
+  color: #f7e8c8;
   font-family: Georgia, serif;
-  font-size: 1.08rem;
+  font-size: 0.92rem;
   font-weight: 500;
+  line-height: 1.08;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
 }
 
 .lov-creation-grid button small {
-  color: #6c4731;
-  font-size: 0.84rem;
-  line-height: 1.3;
+  color: #d7c19b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.24;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
 }
 
 .lov-creation-grid button:hover:not(:disabled),
 .lov-creation-grid button:focus-visible,
 .lov-creation-grid button.active {
-  border-color: rgba(255, 234, 183, 0.96);
+  border-color: rgba(240, 195, 105, 0.95);
   background:
-    url("/assets/generated/ui/buttons/ui_button_option_selected.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, #fff4d2, #e2ad58 58%, #bc7831),
-    #d4a04c;
+    linear-gradient(180deg, rgba(94, 69, 49, 0.96), rgba(49, 35, 32, 0.98)),
+    #392b26;
   transform: translateY(-1px);
 }
 
 .lov-creation-grid button[data-selected="true"] {
   background:
-    url("/assets/generated/ui/buttons/ui_button_option_selected.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, #fff4d2, #e2ad58 58%, #bc7831),
-    #d4a04c;
+    linear-gradient(180deg, rgba(103, 74, 48, 0.98), rgba(58, 39, 31, 0.98)),
+    #3f2d25;
 }
 
 .lov-creation-grid button.active {
   box-shadow:
-    0 0 0 2px rgba(255, 222, 150, 0.5),
-    0 14px 30px rgba(218, 154, 70, 0.2);
+    inset 0 1px 0 rgba(255, 237, 188, 0.2),
+    inset 0 0 24px rgba(226, 171, 88, 0.14),
+    0 0 0 1px rgba(255, 227, 157, 0.28),
+    0 10px 24px rgba(214, 154, 70, 0.18);
 }
 
 .lov-creation-grid button.active::after {
   content: "";
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 16px;
-  height: 16px;
-  border: 1px solid rgba(89, 48, 22, 0.38);
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  border: 1px solid rgba(255, 232, 170, 0.78);
   border-radius: 50%;
   background:
-    linear-gradient(135deg, transparent 0 42%, #5d321d 43% 56%, transparent 57%),
-    linear-gradient(45deg, transparent 0 48%, #5d321d 49% 62%, transparent 63%),
-    #ffe8ad;
-  box-shadow: 0 0 12px rgba(255, 225, 151, 0.72);
+    radial-gradient(circle, #fff1bf 0 34%, #d99b46 36% 100%);
+  box-shadow: 0 0 10px rgba(255, 215, 128, 0.62);
+  pointer-events: none;
 }
 
 .lov-creation-glyph {
-  color: #5d3520;
-  font-size: 1.7rem;
+  color: #e7bd6c;
+  font-size: 1rem;
   line-height: 1;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.48);
 }
 
 .lov-creation-description {
   display: grid;
-  gap: 7px;
-  padding: 18px 22px;
-  border: 1px solid rgba(218, 175, 102, 0.38);
-  border-radius: 12px;
+  grid-template-columns: minmax(74px, 0.24fr) minmax(0, 1fr);
+  gap: 3px 10px;
+  align-items: start;
+  padding: 8px 10px;
+  border: 1px solid rgba(218, 175, 102, 0.42);
+  border-radius: 8px;
   background:
-    url("/assets/generated/ui/buttons/ui_panel_parchment.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, rgba(243, 224, 184, 0.94), rgba(199, 153, 91, 0.88)),
-    #d8bb82;
+    linear-gradient(180deg, rgba(64, 48, 40, 0.9), rgba(34, 28, 29, 0.96)),
+    #2f2623;
   box-shadow:
-    0 12px 26px rgba(0, 0, 0, 0.22),
-    inset 0 0 18px rgba(75, 44, 25, 0.12);
+    inset 0 1px 0 rgba(255, 231, 178, 0.1),
+    0 9px 18px rgba(0, 0, 0, 0.18);
 }
 
 .lov-creation-description h2 {
-  color: #52331e;
+  grid-row: span 2;
+  color: #f4dfb7;
+  font-size: 0.96rem;
+  line-height: 1.1;
 }
 
 .lov-creation-description p,
 .lov-creation-description small {
-  color: #603c25;
-  line-height: 1.38;
+  color: #dfc8a2;
+  font-size: 0.73rem;
+  line-height: 1.14;
 }
 
 .lov-creation-message {
@@ -319,67 +354,70 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 6px;
+  gap: 7px;
+  margin-top: 0;
 }
 
 .lov-creation-actions button,
 .lov-creation-random {
-  min-width: 180px;
+  min-width: 146px;
 }
 
 .lov-creation-actions button[type="submit"] {
-  min-height: 48px;
-  padding: 12px 26px;
-  border-color: transparent;
-  border-radius: 10px;
-  color: #402414;
+  min-height: 38px;
+  padding: 8px 20px;
+  border-color: rgba(255, 219, 143, 0.78);
+  border-radius: 8px;
+  color: #2d1a0d;
   background:
-    url("/assets/generated/ui/buttons/ui_button_primary_default.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, #ffe8b3, #cf8133),
+    linear-gradient(180deg, #ffe9b0, #dc9a3e 58%, #a85d25),
     #d99a45;
   box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.28),
-    0 0 24px rgba(230, 166, 69, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 10px 22px rgba(0, 0, 0, 0.24),
+    0 0 20px rgba(230, 166, 69, 0.18);
   font-weight: 800;
 }
 
 .lov-creation-actions button[type="submit"]:hover:not(:disabled),
 .lov-creation-actions button[type="submit"]:focus-visible {
   background:
-    url("/assets/generated/ui/buttons/ui_button_primary_hover.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, #fff1bf, #e29c42),
+    linear-gradient(180deg, #fff0c2, #e5aa4b 58%, #b86b2a),
     #dea04b;
 }
 
 .lov-creation-actions button.secondary {
-  min-height: 48px;
-  padding: 12px 22px;
-  border-color: transparent;
-  border-radius: 10px;
-  color: #3f2718;
+  min-height: 38px;
+  padding: 8px 16px;
+  border-color: rgba(141, 188, 172, 0.66);
+  border-radius: 8px;
+  color: #f2ead5;
   background:
-    url("/assets/generated/ui/buttons/ui_random_button_frame.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, rgba(255, 244, 210, 0.94), rgba(204, 141, 59, 0.94)),
-    #d49a4d;
+    linear-gradient(180deg, rgba(57, 71, 64, 0.96), rgba(27, 35, 35, 0.98)),
+    #263635;
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.22),
-    0 0 20px rgba(225, 168, 77, 0.14);
+    inset 0 1px 0 rgba(214, 247, 231, 0.13),
+    0 8px 18px rgba(0, 0, 0, 0.2);
   font-weight: 800;
 }
 
 .lov-creation-preview {
+  position: relative;
   min-width: 0;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 12px;
-  padding: 16px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+  padding: 14px;
   background:
     linear-gradient(180deg, rgba(43, 35, 38, 0.92), rgba(21, 26, 30, 0.95)),
     #241d1f;
 }
 
 .lov-creation-preview-top {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 8;
   display: flex;
   justify-content: flex-end;
 }
@@ -387,25 +425,36 @@
 .lov-creation-random {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 16px 12px 22px;
-  border-color: transparent;
-  border-radius: 10px;
-  color: #382312;
+  justify-content: center;
+  width: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-color: rgba(141, 188, 172, 0.66);
+  border-radius: 8px;
+  color: #f2ead5;
   background:
-    url("/assets/generated/ui/buttons/ui_random_button_frame.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, rgba(255, 247, 221, 0.96), rgba(217, 158, 71, 0.96) 60%, rgba(157, 91, 36, 0.96)),
-    #d39a4f;
+    linear-gradient(180deg, rgba(66, 78, 68, 0.96), rgba(28, 36, 35, 0.98)),
+    #263635;
   box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.24),
-    0 0 24px rgba(227, 169, 79, 0.18);
+    inset 0 1px 0 rgba(214, 247, 231, 0.14),
+    0 9px 20px rgba(0, 0, 0, 0.22),
+    0 0 18px rgba(127, 212, 197, 0.08);
   font-weight: 800;
 }
 
+.lov-creation-random span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .lov-creation-random strong {
-  width: 38px;
-  min-height: 38px;
+  width: 32px;
+  min-height: 32px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -413,13 +462,13 @@
     radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.58), transparent 30%),
     linear-gradient(180deg, #5f3a20, #2f2119);
   color: #ffe8ae;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   box-shadow: inset 0 0 0 1px rgba(255, 228, 163, 0.3);
 }
 
 .lov-creation-scene {
   position: relative;
-  min-height: clamp(460px, calc(100vh - 244px), 680px);
+  min-height: clamp(492px, calc(100vh - 142px), 676px);
   overflow: hidden;
   border: 1px solid rgba(198, 155, 88, 0.72);
   border-radius: 22px;
@@ -490,32 +539,48 @@
   right: auto;
   bottom: 24px;
   z-index: 6;
-  min-width: 280px;
-  max-width: min(360px, calc(100% - 48px));
-  padding: 20px 26px;
-  border: 1px solid rgba(224, 183, 110, 0.48);
-  border-radius: 12px;
+  min-width: 240px;
+  max-width: min(330px, calc(100% - 48px));
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 18px;
+  border: 1px solid rgba(224, 183, 110, 0.56);
+  border-radius: 10px;
   background:
-    url("/assets/generated/ui/buttons/ui_nameplate_gold.png") center / 100% 100% no-repeat,
-    linear-gradient(180deg, rgba(247, 229, 190, 0.94), rgba(211, 181, 130, 0.92)),
-    #e0c899;
+    linear-gradient(180deg, rgba(68, 48, 40, 0.9), rgba(31, 27, 29, 0.96)),
+    #2f2625;
   box-shadow:
+    inset 0 1px 0 rgba(255, 231, 178, 0.12),
     0 18px 38px rgba(0, 0, 0, 0.34),
-    0 0 24px rgba(232, 184, 87, 0.18);
+    0 0 24px rgba(232, 184, 87, 0.12);
   text-align: left;
 }
 
 .lov-creation-avatar-meta span,
 .lov-creation-avatar-meta small {
   display: block;
-  color: #734d36;
+  color: #d6bd96;
+  font-size: 0.84rem;
+  line-height: 1.15;
+}
+
+.lov-creation-avatar-meta span {
+  order: 2;
 }
 
 .lov-creation-avatar-meta strong {
-  color: #452a19;
+  order: 1;
+  color: #f5dfb9;
   font-family: Georgia, serif;
-  font-size: 1.8rem;
+  font-size: clamp(1.35rem, 2vw, 1.68rem);
   font-weight: 500;
+  line-height: 1;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.58);
+}
+
+.lov-creation-avatar-meta small {
+  order: 3;
 }
 
 .lov-creation-character-image {
@@ -531,7 +596,7 @@
 .lov-creation-message {
   width: min(1320px, 100%);
   margin: 0 auto;
-  padding: 8px 16px;
+  padding: 6px 14px;
   border: 1px solid rgba(153, 201, 187, 0.52);
   border-radius: 999px;
   background: rgba(19, 26, 27, 0.72);
