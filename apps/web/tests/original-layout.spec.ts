@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page, type Route } from '@playwright/test';
 import { gameData } from '@lov2/game-data';
 import type { BootstrapState, CombatEncounter, CombatLog } from '@lov2/shared';
 import { CLASS_OPTIONS } from '../src/game/characterCreationOptions.js';
@@ -168,6 +168,7 @@ for (const viewport of [
     const exercise = page.getByTestId('exercise-card-courtyard-lanterns');
     const actionDockButton = page.getByTestId('action-journal');
     const infoButton = page.getByTestId('character-info-button');
+    const logoutButton = page.getByTestId('logout-button');
     const heroCluster = page.getByTestId('character-cluster');
     const xpStrip = page.getByTestId('hud-xp');
 
@@ -175,6 +176,7 @@ for (const viewport of [
     await expect(bottomTray).toBeVisible();
     await expect(exercise).toBeVisible();
     await expect(actionDockButton).toBeVisible();
+    await expect(logoutButton).toBeVisible();
     await expectNoDocumentScroll(page);
     await expectAlmostFullWidth(bottomTray, page.getByTestId('world-stage'));
     await expect(page.locator('.lov-topbar-actions')).toHaveCount(0);
@@ -322,6 +324,169 @@ test('tavern quests and arena actions stay visible on a wide desktop viewport', 
   await expectTavernAndArenaWindows(page, playfield);
 });
 
+test('failed travel start keeps the player in world and shows backend feedback', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  let startTravelRequests = 0;
+  await openGame(page, createBootstrapState(), {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/travel/start' && route.request().method() === 'POST') {
+        startTravelRequests += 1;
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Недостаточно энергии для этого маршрута' }),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-tavern').click();
+  await page.getByTestId(`task-ribbon-${gameData.quests[0]!.id}`).click();
+
+  await expect.poll(() => startTravelRequests).toBe(1);
+  await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
+  await expect(page.getByTestId('travel-screen')).toHaveCount(0);
+  await expect(page.getByTestId('tavern-window')).toBeVisible();
+  await expect(page.getByTestId('game-message')).toContainText('Недостаточно энергии');
+});
+
+test('successful travel start switches to travel and shows success feedback', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  const travelState = createBootstrapState({
+    travels: [
+      {
+        id: 'travel-success',
+        characterId: 'character-1',
+        locationId: gameData.quests[0]!.locationId,
+        questId: gameData.quests[0]!.id,
+        status: 'traveling',
+        startedAt: new Date(Date.now()).toISOString(),
+        completesAt: new Date(Date.now() + 30000).toISOString(),
+      },
+    ],
+  });
+  await openGame(page, createBootstrapState(), {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/travel/start' && route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(travelState),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-tavern').click();
+  await page.getByTestId(`task-ribbon-${gameData.quests[0]!.id}`).click();
+
+  await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-travel(?: |$)/);
+  await expect(page.getByTestId('travel-screen')).toBeVisible();
+  await expect(page.getByTestId('game-message')).toContainText('Путь начался');
+});
+
+test('busy travel start disables duplicate contract clicks', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  let startTravelRequests = 0;
+  let releaseStartTravel!: () => void;
+  const startTravelPending = new Promise<void>((resolve) => {
+    releaseStartTravel = resolve;
+  });
+
+  await openGame(page, createBootstrapState(), {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/travel/start' && route.request().method() === 'POST') {
+        startTravelRequests += 1;
+        await startTravelPending;
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Маршрут временно закрыт' }),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-tavern').click();
+  const firstTask = page.getByTestId(`task-ribbon-${gameData.quests[0]!.id}`);
+  await firstTask.click();
+  await expect(firstTask).toBeDisabled();
+  await expect.poll(() => startTravelRequests).toBe(1);
+  releaseStartTravel();
+  await expect(page.getByTestId('game-message')).toContainText('Маршрут временно закрыт');
+  expect(startTravelRequests).toBe(1);
+});
+
+test('failed travel claim keeps the player in travel and shows backend feedback', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(
+    page,
+    createBootstrapState({
+      travels: [
+        {
+          id: 'travel-claim-fail',
+          characterId: 'character-1',
+          locationId: gameData.quests[0]!.locationId,
+          questId: gameData.quests[0]!.id,
+          status: 'traveling',
+          startedAt: new Date(Date.now() - 1000).toISOString(),
+          completesAt: new Date(Date.now() + 30000).toISOString(),
+        },
+      ],
+    }),
+    {
+      onApiRequest: async (pathname, route) => {
+        if (pathname === '/travel/travel-claim-fail/claim' && route.request().method() === 'POST') {
+          await route.fulfill({
+            status: 400,
+            contentType: 'application/json',
+            body: JSON.stringify({ message: 'Недостаточно жемчужин для ускорения' }),
+          });
+          return true;
+        }
+        return false;
+      },
+    },
+  );
+
+  await page.getByTestId('travel-rush-button').click();
+
+  await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-travel(?: |$)/);
+  await expect(page.getByTestId('combat-screen')).toHaveCount(0);
+  await expect(page.getByTestId('game-message')).toContainText('Недостаточно жемчужин');
+});
+
+test('failed arena start keeps the arena window open and shows backend feedback', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(page, createBootstrapState(), {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/arena/start' && route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 409,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Сначала завершите текущее путешествие' }),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-arena').click();
+  await page.getByTestId('arena-start-button').click();
+
+  await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
+  await expect(page.getByTestId('combat-screen')).toHaveCount(0);
+  await expect(page.getByTestId('arena-window')).toBeVisible();
+  await expect(page.getByTestId('game-message')).toContainText('Сначала завершите текущее путешествие');
+});
+
 test('sheet close control and bag slot count stay reachable on a narrow desktop viewport', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 576 });
   await openGame(page, createBootstrapState());
@@ -451,8 +616,8 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   await arenaWindow.getByTestId('world-window-bottom-close').click();
 }
 
-async function openGame(page: Page, state: BootstrapState) {
-  await mockApi(page, state);
+async function openGame(page: Page, state: BootstrapState, options: MockApiOptions = {}) {
+  await mockApi(page, state, options);
   await page.goto('/');
   await expect(page.getByTestId('game-shell')).toBeVisible();
 }
@@ -470,7 +635,7 @@ async function openCreation(
 async function mockApi(
   page: Page,
   state: BootstrapState,
-  options: { onCreateCharacter?: (input: CreateCharacterRequest) => void } = {},
+  options: MockApiOptions = {},
 ) {
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
@@ -484,6 +649,10 @@ async function mockApi(
     }
 
     const { pathname } = url;
+
+    if (await options.onApiRequest?.(pathname, route)) {
+      return;
+    }
 
     if (pathname === '/auth/csrf') {
       await route.fulfill({
@@ -531,6 +700,11 @@ async function mockApi(
     });
   });
 }
+
+type MockApiOptions = {
+  onCreateCharacter?: (input: CreateCharacterRequest) => void;
+  onApiRequest?: (pathname: string, route: Route) => boolean | Promise<boolean>;
+};
 
 function createBootstrapState(overrides: Partial<BootstrapState> = {}): BootstrapState {
   const userId = 'user-1';

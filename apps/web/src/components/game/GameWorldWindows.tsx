@@ -164,6 +164,7 @@ export function TavernWindow({
             {state.quests.map((quest) => {
               const routeState = routeStates[quest.id] ?? 'locked';
               const canTravel =
+                !busy &&
                 (character?.energy ?? 0) >= quest.energyCost &&
                 routeState !== 'traveling' &&
                 routeState !== 'ready';
@@ -173,6 +174,7 @@ export function TavernWindow({
                   type="button"
                   className={`lov-quest-row ${activeQuest?.id === quest.id ? 'active' : ''} ${canTravel ? 'can-travel' : 'locked'}`}
                   data-testid={`task-ribbon-${quest.id}`}
+                  disabled={busy || !canTravel}
                   onMouseEnter={() => setHoveredQuestId(quest.id)}
                   onMouseLeave={() =>
                     setHoveredQuestId((current) => (current === quest.id ? null : current))
@@ -213,10 +215,12 @@ export function TavernWindow({
 
 export function ArenaPreviewWindow({
   enemy,
+  busy = false,
   onClose,
   onIntent,
 }: {
   enemy: EnemyDefinition | undefined;
+  busy?: boolean;
   onClose: () => void;
   onIntent: (intent: GameIntent) => void;
 }) {
@@ -265,6 +269,7 @@ export function ArenaPreviewWindow({
               type="button"
               className="lov-danger-button"
               data-testid="arena-start-button"
+              disabled={busy}
               onClick={() => onIntent({ type: 'startArena', enemyId: enemy.id })}
             >
               Начать бой!
@@ -936,5 +941,3 @@ export function SettingsWindow({
     </WorldWindowShell>
   );
 }
-
-

@@ -70,7 +70,8 @@ export function GameShell({
   const [selectedForgeStackId, setSelectedForgeStackId] = useState<string | null>(null);
   const [selectedArenaEnemyId, setSelectedArenaEnemyId] = useState<string | null>(state.enemies[0]?.id ?? null);
   const [busy, setBusy] = useState(false);
-  const [, setMessage] = useState('Добро пожаловать в ночной двор.');
+  const [message, setMessage] = useState('Добро пожаловать в ночной двор.');
+  const [messageTone, setMessageTone] = useState<'neutral' | 'success' | 'error'>('neutral');
   const [clock, setClock] = useState(() => Date.now());
   const [petAssistArmed, setPetAssistArmed] = useState(false);
   const [battlePetId, setBattlePetId] = useState<string | null>(null);
@@ -222,15 +223,18 @@ export function GameShell({
     async <T,>(action: () => Promise<T>, success: string) => {
       setBusy(true);
       setMessage('');
+      setMessageTone('neutral');
       try {
         const result = await action();
         if (isBootstrap(result)) {
           onBootstrap(result);
         }
         setMessage(success);
+        setMessageTone('success');
         return result;
       } catch (error) {
         setMessage(error instanceof Error ? error.message : 'Что-то пошло не так');
+        setMessageTone('error');
         return null;
       } finally {
         setBusy(false);
@@ -285,6 +289,10 @@ export function GameShell({
 
   const handleIntent = useCallback(
     async (intent: GameIntent) => {
+      if (busy && isCommandIntent(intent)) {
+        return;
+      }
+
       switch (intent.type) {
         case 'openLocation':
           openLocation(intent.location);
@@ -339,10 +347,13 @@ export function GameShell({
               return;
             }
           }
-          await run(
+          const started = await run(
             () => apiClient.startTravel({ locationId: intent.locationId, questId: intent.questId }),
             'Путь начался.',
           );
+          if (!started) {
+            return;
+          }
           setWorldWindow('none');
           setInfoWindow('none');
           setRewardVisible(false);
@@ -353,13 +364,18 @@ export function GameShell({
           return;
         }
         case 'claimTravel':
-        await run(
-          () => apiClient.claimTravel(
-            intent.travelId,
-            intent.rush === undefined ? {} : { rush: intent.rush },
-          ),
-          'Вы добрались до места.',
-        );
+          {
+            const claimed = await run(
+              () => apiClient.claimTravel(
+                intent.travelId,
+                intent.rush === undefined ? {} : { rush: intent.rush },
+              ),
+              'Вы добрались до места.',
+            );
+            if (!claimed) {
+              return;
+            }
+          }
           setWorldWindow('none');
           setInfoWindow('none');
           setRewardVisible(false);
@@ -370,7 +386,10 @@ export function GameShell({
           return;
         case 'startArena':
           setReturnLocation(worldLocation);
-          await run(() => apiClient.startArena({ enemyId: intent.enemyId }), 'Соперник вызван.');
+          const arenaStarted = await run(() => apiClient.startArena({ enemyId: intent.enemyId }), 'Соперник вызван.');
+          if (!arenaStarted) {
+            return;
+          }
           setWorldWindow('none');
           setInfoWindow('none');
           setRewardVisible(false);
@@ -471,6 +490,7 @@ export function GameShell({
       closeSheet,
       closeWorldWindow,
       battlePetId,
+      busy,
       equippedPetId,
       openLocation,
       openSheet,
@@ -517,6 +537,7 @@ export function GameShell({
   const handleHotspotClick = useCallback(
     async (action: SceneAction, hotspot: SceneHotspot) => {
       setMessage(hotspot.descriptionRu);
+      setMessageTone('neutral');
 
       if (action.type === 'openScene') {
         await handleIntent({
@@ -606,6 +627,7 @@ export function GameShell({
               xpTarget={xpTarget}
               xpPercent={xpPercent}
               onIntent={handleIntent}
+              onLogout={onLogout}
             />
           ) : null}
 
@@ -622,6 +644,7 @@ export function GameShell({
               activeTravel={activeTravel}
               activeTravelReady={activeTravelReady}
               clock={clock}
+              busy={busy}
               worldWindowContent={worldWindowContent}
               heroInfoContent={heroInfoContent}
               enemyInfoContent={enemyInfoContent}
@@ -658,6 +681,7 @@ export function GameShell({
               selectedPetId={equippedPetId ?? selectedPetId}
               battlePetId={resolvedBattlePetId ?? equippedPetId ?? selectedPetId}
               combatLocked={replayActive || rewardVisible || Boolean(activeCombatLog)}
+              busy={busy}
               visibleReplayTurns={visibleReplayTurns}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
@@ -674,6 +698,12 @@ export function GameShell({
           ) : null}
 
           {showBottomTray ? <BottomTray activeTab={metaTab} onSelectTab={handleMetaTabSelect} /> : null}
+
+          {message ? (
+            <p className={`shell-reset-message lov-game-message tone-${messageTone}`} data-testid="game-message" role="status" aria-live="polite">
+              {message}
+            </p>
+          ) : null}
         </section>
       </section>
     </main>
@@ -682,6 +712,26 @@ export function GameShell({
 
 function isBootstrap(value: unknown): value is BootstrapState {
   return typeof value === 'object' && value !== null && 'races' in value && 'quests' in value;
+}
+
+function isCommandIntent(intent: GameIntent) {
+  switch (intent.type) {
+    case 'acceptTask':
+    case 'startTravel':
+    case 'claimTravel':
+    case 'startArena':
+    case 'resolveCombat':
+    case 'showReward':
+    case 'equipItem':
+    case 'unequipItem':
+    case 'purchaseItem':
+    case 'upgradeItem':
+    case 'allocateStat':
+    case 'refillEnergy':
+      return true;
+    default:
+      return false;
+  }
 }
 
 function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'combat' {
