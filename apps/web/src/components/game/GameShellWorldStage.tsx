@@ -29,6 +29,7 @@ export function GameShellWorldStage({
   activeTravel,
   activeTravelReady,
   clock,
+  busy,
   worldWindowContent,
   heroInfoContent,
   enemyInfoContent,
@@ -48,6 +49,7 @@ export function GameShellWorldStage({
   activeTravel: TravelTask | undefined;
   activeTravelReady: boolean;
   clock: number;
+  busy: boolean;
   worldWindowContent: ReactNode;
   heroInfoContent: ReactNode;
   enemyInfoContent: ReactNode;
@@ -78,6 +80,7 @@ export function GameShellWorldStage({
             activeTravel={activeTravel}
             activeTravelReady={activeTravelReady}
             clock={clock}
+            busy={busy}
             onIntent={onIntent}
           />
         )}

@@ -9,11 +9,13 @@ export function HudFrame({
   xpTarget,
   xpPercent,
   onIntent,
+  onLogout,
 }: {
   character: Character;
   xpTarget: number;
   xpPercent: number;
   onIntent: (intent: GameIntent) => void;
+  onLogout: () => Promise<void> | void;
 }) {
   return (
     <header className="shell-reset-topbar lov-topbar" data-testid="game-topbar">
@@ -82,6 +84,16 @@ export function HudFrame({
           onClick={() => onIntent({ type: 'openWindow', windowId: 'leaderboard' })}
         >
           <UiIcon name="trophy" />
+        </button>
+        <button
+          type="button"
+          className="lov-logout-button"
+          data-testid="logout-button"
+          aria-label="Выйти"
+          title="Выйти"
+          onClick={() => void onLogout()}
+        >
+          <UiIcon name="logout" />
         </button>
       </section>
     </header>

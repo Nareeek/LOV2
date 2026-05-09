@@ -442,6 +442,32 @@
   transform: translateY(-1px);
 }
 
+.lov-logout-button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px solid rgba(191, 148, 82, 0.82);
+  border-radius: 50%;
+  color: #f4dfb0;
+  background: linear-gradient(180deg, #4b4240, #292729);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.28);
+}
+
+.lov-logout-button .ui-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.lov-logout-button:hover,
+.lov-logout-button:focus-visible {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 1180px) {
   .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
     grid-template-columns: 58px minmax(180px, 1fr);

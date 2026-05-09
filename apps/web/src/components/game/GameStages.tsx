@@ -81,18 +81,20 @@ export function TravelStage({
   activeTravel,
   activeTravelReady,
   clock,
+  busy = false,
   onIntent,
 }: {
   state: BootstrapState;
   activeTravel: TravelTask | undefined;
   activeTravelReady: boolean;
   clock: number;
+  busy?: boolean;
   onIntent: (intent: GameIntent) => void;
 }) {
   const activeQuest = activeTravel?.questId ? state.quests.find((quest) => quest.id === activeTravel.questId) : undefined;
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
   const progressPercent = progress?.percent ?? 0;
-  const canRushTravel = Boolean(activeTravel && (activeTravelReady || (state.character?.gems ?? 0) >= 1));
+  const canRushTravel = Boolean(!busy && activeTravel && (activeTravelReady || (state.character?.gems ?? 0) >= 1));
   const characterImageSrc = state.character ? characterImagePath(state.character) : null;
 
   return (
@@ -155,6 +157,7 @@ export function CombatStage({
   selectedPetId,
   battlePetId,
   combatLocked,
+  busy = false,
   replayTurns,
   onIntent,
 }: {
@@ -171,6 +174,7 @@ export function CombatStage({
   selectedPetId: string;
   battlePetId: string | null;
   combatLocked: boolean;
+  busy?: boolean;
   replayTurns: CombatTurn[] | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
@@ -236,6 +240,7 @@ export function CombatStage({
           type="button"
           className="lov-skip-battle"
           data-testid="combat-skip-button"
+          disabled={busy || combatLocked}
           onClick={() => onIntent({ type: 'showReward' })}
         >
           Пропустить бой
