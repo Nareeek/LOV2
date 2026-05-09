@@ -3,6 +3,8 @@ import { CLASS_OPTIONS } from './characterCreationOptions.js';
 
 type CharacterIdentity = Pick<Character, 'gender' | 'raceId' | 'classId'>;
 
+export const DEFAULT_CHARACTER_AVATAR_PATH = '/assets/generated/character-icons/avatar_male_nocturne_swordsman.png';
+
 const CHARACTER_CLASS_ASSET_KEYS: Record<CharacterClassId, 'swordsman' | 'ranger' | 'mystic'> = {
   swordsman: 'swordsman',
   ranger: 'ranger',
@@ -19,6 +21,10 @@ export function characterClassLabel(classId: CharacterClassId) {
 
 export function characterImagePath(character: CharacterIdentity): string {
   return characterCreationImagePath(character.gender, character.raceId, character.classId);
+}
+
+export function characterAvatarPath(character: CharacterIdentity): string {
+  return `/assets/generated/character-icons/avatar_${character.gender}_${character.raceId}_${characterClassAssetKey(character.classId)}.png`;
 }
 
 export function characterCreationImagePath(

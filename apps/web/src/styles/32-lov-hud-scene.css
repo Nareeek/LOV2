@@ -36,12 +36,22 @@
   min-height: 74px;
   border-width: 3px;
   border-radius: 50%;
+  overflow: hidden;
   background:
     radial-gradient(circle at 38% 26%, #96a6c2, #42536e 32%, #212227 78%),
     #27304b;
   box-shadow:
     inset 0 0 0 4px rgba(29, 29, 31, 0.86),
     0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.lov-topbar-portrait .shell-reset-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  object-position: center top;
 }
 
 .lov-topbar-portrait .shell-reset-level {
@@ -497,4 +507,3 @@
   font-size: 0.74rem !important;
   font-weight: 900 !important;
 }
-
