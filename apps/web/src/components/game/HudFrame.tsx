@@ -1,5 +1,5 @@
 import type { Character } from '@lov2/shared';
-import { characterImagePath } from '../../game/characterIdentity.js';
+import { DEFAULT_CHARACTER_AVATAR_PATH, characterAvatarPath } from '../../game/characterIdentity.js';
 import type { GameIntent } from '../../game/types.js';
 import { assetPath } from './assets.js';
 import { Meter, UiIcon } from './ui.js';
@@ -27,7 +27,16 @@ export function HudFrame({
             aria-label="Открыть окно героя"
             onClick={() => onIntent({ type: 'openSheet', tab: 'character' })}
           >
-            <img src={characterImagePath(character)} alt="" data-testid="character-portrait-image" />
+            <img
+              src={characterAvatarPath(character)}
+              alt=""
+              data-testid="character-portrait-image"
+              onError={(event) => {
+                if (event.currentTarget.getAttribute('src') !== DEFAULT_CHARACTER_AVATAR_PATH) {
+                  event.currentTarget.src = DEFAULT_CHARACTER_AVATAR_PATH;
+                }
+              }}
+            />
           </button>
           <span className="shell-reset-level" data-testid="level-badge">
             {character.level}

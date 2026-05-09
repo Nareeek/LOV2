@@ -16,6 +16,11 @@ const CHARACTER_CREATION_ASSET_PATHS = {
   female_oracle_ranger: '/assets/generated/character-creation/cc_female_oracle_ranger.png',
 } as const;
 
+const CHARACTER_AVATAR_ASSET_PATHS = {
+  male_nocturne_mystic: '/assets/generated/character-icons/avatar_male_nocturne_mystic.png',
+  female_oracle_ranger: '/assets/generated/character-icons/avatar_female_oracle_ranger.png',
+} as const;
+
 type CreateCharacterRequest = {
   name: string;
   raceId: string;
@@ -133,10 +138,10 @@ test('created character identity is reflected in the next game screen', async ({
   const rangerClass = CLASS_OPTIONS.find((entry) => entry.id === 'ranger')!;
 
   await expect(page.getByTestId('topbar-character-name')).toHaveText('Custom Test Name');
-  await expect(page.getByTestId('character-portrait-image')).toHaveAttribute(
-    'src',
-    CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
-  );
+  const hudPortrait = page.getByTestId('character-portrait-image');
+  await expect(hudPortrait).toBeVisible();
+  await expect(hudPortrait).toHaveAttribute('src', CHARACTER_AVATAR_ASSET_PATHS.female_oracle_ranger);
+  await expect(hudPortrait).not.toHaveAttribute('src', /\/assets\/generated\/character-creation\/cc_/);
 
   await page.getByTestId('character-info-button').click();
   const heroInfoWindow = page.getByTestId('character-info-popup');
@@ -153,6 +158,22 @@ test('created character identity is reflected in the next game screen', async ({
     'src',
     CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
   );
+});
+
+test('main HUD portrait uses avatar assets and maps mage to mystic', async ({ page }) => {
+  const baseState = createBootstrapState();
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await openGame(page, createBootstrapState({
+    character: {
+      ...baseState.character!,
+      classId: 'mage',
+    },
+  }));
+
+  const hudPortrait = page.getByTestId('character-portrait-image');
+  await expect(hudPortrait).toBeVisible();
+  await expect(hudPortrait).toHaveAttribute('src', CHARACTER_AVATAR_ASSET_PATHS.male_nocturne_mystic);
+  await expect(hudPortrait).not.toHaveAttribute('src', /\/assets\/generated\/character-creation\/cc_/);
 });
 
 for (const viewport of [
