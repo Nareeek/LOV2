@@ -31,6 +31,7 @@ import type {
   WorldWindowId,
 } from '../../game/types.js';
 import { BottomTray } from './BottomTray.js';
+import { PET_VARIANTS } from './GamePanels.data.js';
 import {
   EnemyInfoWindow,
   HeroInfoWindow,
@@ -39,9 +40,10 @@ import { renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindo
 import { HudFrame } from './HudFrame.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
-const COMBAT_AUTO_RESOLVE_DELAY_MS = 1100;
-const COMBAT_REPLAY_TURN_MS = 430;
-const COMBAT_REPLAY_REWARD_DELAY_MS = 500;
+const COMBAT_AUTO_RESOLVE_DELAY_MS = 450;
+const COMBAT_REPLAY_TURN_MS = 650;
+const COMBAT_REPLAY_REWARD_DELAY_MS = 650;
+const SELECTED_PET_STORAGE_KEY = 'lov2.selectedPetId';
 
 export function GameShell({
   state,
@@ -64,7 +66,7 @@ export function GameShell({
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(state.quests[0]?.id ?? null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(exerciseDefinitions[0]?.id ?? null);
   const [selectedItemStackId, setSelectedItemStackId] = useState<string | null>(null);
-  const [selectedPetId, setSelectedPetId] = useState('kitten');
+  const [selectedPetId, setSelectedPetId] = useState(readInitialSelectedPetId);
   const [selectedStoreItemId, setSelectedStoreItemId] = useState<string | null>(null);
   const [selectedForgeStackId, setSelectedForgeStackId] = useState<string | null>(null);
   const [selectedArenaEnemyId, setSelectedArenaEnemyId] = useState<string | null>(state.enemies[0]?.id ?? null);
@@ -116,6 +118,14 @@ export function GameShell({
     }
     setSelectedForgeStackId(null);
   }, [selectedForgeStackId, state.inventory]);
+
+  useEffect(() => {
+    persistSelectedPetId(selectedPetId);
+  }, [selectedPetId]);
+
+  const handleSelectPet = useCallback((petId: string) => {
+    setSelectedPetId(isKnownPetId(petId) ? petId : 'kitten');
+  }, []);
 
   const scenes = state.scenes.length ? state.scenes : sceneDefinitions;
   const sceneById = useMemo(() => new Map(scenes.map((scene) => [scene.id, scene])), [scenes]);
@@ -511,7 +521,26 @@ export function GameShell({
 
   const handleIntentRef = useRef(handleIntent);
   const autoResolvedCombatIdRef = useRef<string | null>(null);
+  const autoClaimedTravelIdRef = useRef<string | null>(null);
   handleIntentRef.current = handleIntent;
+
+  useEffect(() => {
+    if (!activeTravel || !activeTravelReady || busy || pendingCombat || rewardVisible) {
+      return;
+    }
+    if (autoClaimedTravelIdRef.current === activeTravel.id) {
+      return;
+    }
+
+    autoClaimedTravelIdRef.current = activeTravel.id;
+    void handleIntentRef.current({ type: 'claimTravel', travelId: activeTravel.id });
+  }, [activeTravel, activeTravelReady, busy, pendingCombat, rewardVisible]);
+
+  useEffect(() => {
+    if (!activeTravel) {
+      autoClaimedTravelIdRef.current = null;
+    }
+  }, [activeTravel]);
 
   useEffect(() => {
     if (baseStage !== 'combat' || !pendingCombat || replayActive || rewardVisible) {
@@ -659,7 +688,7 @@ export function GameShell({
               sheetTab={sheetTab}
               selectedItemStackId={selectedItemStackId}
               selectedPetId={selectedPetId}
-              onSelectPet={setSelectedPetId}
+              onSelectPet={handleSelectPet}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
               enemyInfoContent={enemyInfoContent}
@@ -678,7 +707,6 @@ export function GameShell({
               petAssistAvailable={Boolean(displayedCombatPetId)}
               selectedPetId={displayedCombatPetId}
               battlePetId={resolvedBattlePetId}
-              busy={busy}
               visibleReplayTurns={visibleReplayTurns}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
@@ -734,4 +762,25 @@ function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'com
     return 'travel';
   }
   return 'world';
+}
+
+function isKnownPetId(petId: string) {
+  return PET_VARIANTS.some((pet) => pet.id === petId);
+}
+
+function readInitialSelectedPetId() {
+  if (typeof window === 'undefined') {
+    return 'kitten';
+  }
+
+  const storedPetId = window.localStorage.getItem(SELECTED_PET_STORAGE_KEY);
+  return storedPetId && isKnownPetId(storedPetId) ? storedPetId : 'kitten';
+}
+
+function persistSelectedPetId(petId: string) {
+  if (typeof window === 'undefined' || !isKnownPetId(petId)) {
+    return;
+  }
+
+  window.localStorage.setItem(SELECTED_PET_STORAGE_KEY, petId);
 }

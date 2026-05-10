@@ -1452,32 +1452,57 @@
   transform: translateX(-50%);
 }
 
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-stage {
+  inset: 96px 34px 20px;
+  align-items: end;
+  overflow: hidden;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter {
+  align-self: end;
+  width: auto;
+  height: min(82%, 590px);
+  max-width: min(27vw, 450px);
+  max-height: 82%;
+  object-fit: contain;
+  object-position: center bottom;
+  transform-origin: 50% 100%;
+}
+
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.hero {
-  --idle-x: -22%;
-  --strike-x: -9%;
-  --hit-x: -26%;
+  --idle-x: -14%;
+  --strike-x: -3%;
+  --hit-x: -18%;
+  height: min(82%, 590px);
+  transform: translateX(var(--idle-x)) scale(1);
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.enemy {
-  --idle-x: 5%;
-  --strike-x: -10%;
-  --hit-x: 11%;
+  --idle-x: 4%;
+  --strike-x: -7%;
+  --hit-x: 8%;
+  height: min(82%, 590px);
+  transform: translateX(var(--idle-x)) scale(1);
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.attacking.turn-0 {
-  animation: lov-fighter-strike-a 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: lov-fighter-strike-a 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.attacking.turn-1 {
-  animation: lov-fighter-strike-b 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: lov-fighter-strike-b 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.hit.turn-0 {
-  animation: lov-fighter-hit-a 320ms ease both;
+  animation: lov-fighter-hit-a 460ms ease both;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.hit.turn-1 {
-  animation: lov-fighter-hit-b 320ms ease both;
+  animation: lov-fighter-hit-b 460ms ease both;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .shell-reset-damage {
+  animation-duration: 1300ms;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-pet-card {
@@ -1499,14 +1524,26 @@
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet-wrap {
-  left: clamp(18%, 24%, 28%);
-  bottom: 6px;
-  width: min(12%, 138px);
+  left: clamp(20%, 26%, 30%);
+  bottom: 18px;
+  width: min(10vw, 136px);
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet-wrap.pet-wyrmlet {
-  bottom: 4px;
-  width: min(12.5%, 148px);
+  bottom: 16px;
+  width: min(11vw, 150px);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet {
+  transform-origin: 50% 100%;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet.armed {
+  transform: translateX(0) translateY(0) scale(1);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet.assisting {
+  animation: lov-battle-pet-ground-lunge 520ms ease;
 }
 
 @keyframes lov-fighter-strike-a {
@@ -1516,7 +1553,7 @@
   }
 
   38% {
-    transform: translateX(var(--strike-x)) translateY(-4px) scale(1.025);
+    transform: translateX(var(--strike-x)) scale(1.025);
   }
 }
 
@@ -1527,7 +1564,18 @@
   }
 
   38% {
-    transform: translateX(var(--strike-x)) translateY(-4px) scale(1.025);
+    transform: translateX(var(--strike-x)) scale(1.025);
+  }
+}
+
+@keyframes lov-battle-pet-ground-lunge {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+
+  40% {
+    transform: translateX(22px) translateY(0) scale(1.04);
   }
 }
 
@@ -1727,5 +1775,815 @@
   .lov-enemy-info-shell .lov-window-close {
     width: 48px;
     min-height: 48px;
+  }
+}
+
+/* Compact hero info: keep the rich sheet, but stop it from spanning the arena. */
+.stage-frame.shell-reset-stage .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell:not(.lov-enemy-info-shell)) {
+  inset: clamp(16px, 2.4vh, 32px) clamp(24px, 7vw, 128px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) {
+  width: min(1080px, calc(100vw - 104px)) !important;
+  height: min(760px, calc(100vh - 88px)) !important;
+  max-width: 1080px !important;
+  max-height: 760px !important;
+
+  --window-width: min(1080px, calc(100vw - 104px)) !important;
+  --window-height: min(760px, calc(100vh - 88px)) !important;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-window-header {
+  min-height: 48px;
+  padding: 6px 18px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-window-body {
+  padding: 8px 10px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-window-footer {
+  min-height: 54px;
+  padding: 8px 0 10px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-close-button {
+  min-width: 210px;
+  min-height: 38px;
+  font-size: 1.2rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-layout {
+  grid-template-columns: minmax(330px, 0.43fr) minmax(420px, 0.57fr);
+  gap: 10px;
+  padding: 8px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window {
+  padding: 14px;
+  gap: 8px;
+  border-radius: 18px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-header {
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-header img,
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-identity-art {
+  width: 60px;
+  height: 60px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-header strong {
+  font-size: clamp(1.45rem, 2vw, 1.9rem);
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-header span {
+  font-size: clamp(0.92rem, 1.25vw, 1.08rem);
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stats {
+  padding-left: 42px;
+  column-gap: 24px;
+  row-gap: 7px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat {
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat::before {
+  left: -40px;
+  width: 28px;
+  height: 28px;
+  font-size: 1.25rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat.stat-strength::before,
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat.stat-intuition::before {
+  left: -38px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat.stat-agility::before,
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+  left: -28px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(1rem, 1.35vw, 1.22rem);
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-quick-slots {
+  grid-template-columns: repeat(4, 44px);
+  gap: 7px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-quick-slot {
+  width: 44px;
+  height: 44px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-motto-box {
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 1rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 8px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-profile-screen-window .lov-profile-reward {
+  min-height: 58px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll {
+  gap: 8px;
+  padding: 0;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-header {
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-header strong {
+  font-size: 1.18rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-header span {
+  font-size: 0.82rem;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-stage {
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  gap: 8px;
+  min-height: 0;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-column {
+  gap: 7px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-slot {
+  min-height: 58px;
+  border-radius: 10px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-slot .item-chip img {
+  width: 34px;
+  height: 34px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-center {
+  border-radius: 14px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-hero {
+  width: min(120%, 340px);
+  height: 96%;
+  bottom: 0;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-pet {
+  width: min(22%, 76px);
+  right: 7%;
+  bottom: 2%;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-race-sign {
+  top: 12px;
+  right: 12px;
+  width: 46px;
+  height: 46px;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-quickbar {
+  grid-template-columns: repeat(6, 44px);
+  gap: 8px;
+  justify-content: center;
+}
+
+.lov-hero-info-shell:not(.lov-enemy-info-shell) .lov-hero-info-side .lov-paperdoll-quickbar .lov-quick-slot {
+  width: 44px;
+  height: 44px;
+}
+
+/* Final character-info modal fit: same compact proportions as the in-screen hero card. */
+.stage-frame.shell-reset-stage .stage-main > .shell-reset-modal-layer:has([data-testid="character-info-popup"]) {
+  inset: clamp(12px, 2vh, 24px) clamp(24px, 9vw, 170px) clamp(28px, 4vh, 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-testid="character-info-popup"].lov-hero-info-shell {
+  width: min(1040px, calc(100vw - 160px)) !important;
+  height: min(700px, calc(100vh - 210px)) !important;
+  max-width: 1040px !important;
+  max-height: 700px !important;
+
+  --window-width: min(1040px, calc(100vw - 160px)) !important;
+  --window-height: min(700px, calc(100vh - 210px)) !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-header {
+  min-height: 52px !important;
+  padding: 8px 18px !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-header h2 {
+  font-size: clamp(1.55rem, 2.2vw, 2.2rem) !important;
+  line-height: 1 !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-close {
+  width: 48px !important;
+  min-height: 48px !important;
+  font-size: 1.35rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-body {
+  padding: 8px 10px !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-footer {
+  min-height: 50px !important;
+  padding: 6px 0 8px !important;
+}
+
+[data-testid="character-info-popup"] .lov-close-button {
+  min-width: 200px !important;
+  min-height: 36px !important;
+  font-size: 1.12rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-hero-info-layout {
+  grid-template-columns: minmax(320px, 0.44fr) minmax(410px, 0.56fr) !important;
+  gap: 10px !important;
+  padding: 8px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window {
+  padding: 12px !important;
+  gap: 7px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header {
+  grid-template-columns: 58px minmax(0, 1fr) !important;
+  gap: 9px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header img,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-identity-art {
+  width: 58px !important;
+  height: 58px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header strong {
+  font-size: clamp(1.35rem, 1.8vw, 1.75rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header span {
+  font-size: clamp(0.82rem, 1.1vw, 0.98rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stats {
+  padding-left: 38px !important;
+  column-gap: 22px !important;
+  row-gap: 6px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat {
+  min-height: 36px !important;
+  padding: 5px 9px !important;
+  border-radius: 11px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat::before {
+  left: -36px !important;
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 1.16rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-strength::before,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-intuition::before {
+  left: -34px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-agility::before,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+  left: -26px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(0.94rem, 1.2vw, 1.12rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-quick-slots {
+  grid-template-columns: repeat(4, 40px) !important;
+  gap: 6px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-quick-slot {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-motto-box {
+  min-height: 40px !important;
+  padding: 7px 9px !important;
+  font-size: 0.9rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-reward-gallery {
+  gap: 4px !important;
+  min-height: 0 !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 0.92rem !important;
+  line-height: 1 !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 6px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-reward {
+  min-height: 42px !important;
+  border-radius: 10px !important;
+  font-size: 0.62rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-hero-info-side {
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll.profile,
+[data-testid="character-info-popup"] .lov-paperdoll {
+  grid-template-rows: auto minmax(0, 1fr) 36px !important;
+  gap: 7px !important;
+  min-height: 0 !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-header {
+  padding: 6px 10px !important;
+  border-radius: 12px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-header strong {
+  font-size: 1.08rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-header span {
+  font-size: 0.76rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-stage {
+  grid-template-columns: 44px minmax(0, 1fr) 44px !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-column {
+  gap: 5px !important;
+  min-height: 0 !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-slot {
+  min-height: 42px !important;
+  padding: 4px !important;
+  border-radius: 10px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-slot .item-chip img {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-center {
+  min-height: 0 !important;
+  border-radius: 13px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-hero {
+  width: min(110%, 300px) !important;
+  height: 92% !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-pet {
+  width: min(20%, 66px) !important;
+  right: 6% !important;
+  bottom: 2% !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-race-sign {
+  top: 10px !important;
+  right: 10px !important;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+[data-testid="character-info-popup"] .lov-prestige-bar {
+  width: min(84%, 340px) !important;
+  min-width: 0 !important;
+  min-height: 34px !important;
+  padding: 6px 14px !important;
+  font-size: 0.94rem !important;
+  align-self: end !important;
+}
+
+/* Compact store and forge windows: same contained feel as the hero info card. */
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-store-shell),
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-forge-shell) {
+  inset: clamp(14px, 2vh, 28px) clamp(34px, 9vw, 170px) clamp(72px, 12vh, 130px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell {
+  width: min(1120px, calc(100vw - 170px)) !important;
+  height: min(720px, calc(100vh - 150px)) !important;
+  max-width: 1120px !important;
+  max-height: 720px !important;
+  border-radius: 22px !important;
+
+  --window-width: min(1120px, calc(100vw - 170px)) !important;
+  --window-height: min(720px, calc(100vh - 150px)) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-window-header,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-window-header {
+  min-height: 50px !important;
+  padding: 7px 18px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-window-header h2,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-window-header h2 {
+  font-size: clamp(1.45rem, 2vw, 2rem) !important;
+  line-height: 1 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-window-close,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-window-close {
+  width: 48px !important;
+  min-height: 48px !important;
+  font-size: 1.35rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-window-body,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-window-body {
+  padding: 0 12px 8px !important;
+  overflow: hidden !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-window-footer,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-window-footer {
+  min-height: 52px !important;
+  padding: 7px 0 9px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-close-button,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-close-button {
+  min-width: 205px !important;
+  min-height: 38px !important;
+  font-size: 1.12rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-tabs {
+  gap: 10px !important;
+  min-height: 70px !important;
+  padding: 12px 0 8px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-tabs button {
+  min-width: 112px !important;
+  min-height: 50px !important;
+  padding: 0 18px !important;
+  border-radius: 18px 18px 0 0 !important;
+  font-size: 1.05rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-currency {
+  gap: 8px !important;
+  padding-right: 4px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-currency span,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-currency span {
+  width: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  font-size: 1rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell.tab-shop .lov-store-layout,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-layout {
+  height: 100% !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(300px, 0.42fr) minmax(420px, 0.58fr) !important;
+  gap: 12px !important;
+  padding: 10px 0 0 !important;
+  overflow: hidden !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-panel,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-panel {
+  border-radius: 16px !important;
+  min-height: 0 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel {
+  padding: 12px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel h3,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel h3 {
+  margin-bottom: 9px !important;
+  font-size: 1.45rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-hint {
+  margin: 0 0 8px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel .lov-inventory-grid,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel .lov-inventory-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(68px, 1fr) !important;
+  gap: 8px !important;
+  padding-right: 8px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel .lov-grid-item,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel .lov-grid-empty,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel .lov-grid-item,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel .lov-grid-empty {
+  min-height: 68px !important;
+  border-radius: 10px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel .lov-grid-item .item-chip img,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel .lov-grid-item .item-chip img {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel::after {
+  right: 12px !important;
+  bottom: 12px !important;
+  max-width: calc(100% - 24px) !important;
+  padding: 5px 9px !important;
+  font-size: 0.68rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-panel,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-panel {
+  gap: 8px !important;
+  padding: 12px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-scene-card {
+  grid-template-columns: minmax(190px, 1fr) minmax(180px, 0.9fr) !important;
+  gap: 8px !important;
+  min-height: 116px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-illustration,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-illustration {
+  min-height: 116px !important;
+  border-radius: 14px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-speech-bubble.merchant,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-speech-bubble.forge {
+  top: 16px !important;
+  right: 16px !important;
+  min-width: min(170px, 72%) !important;
+  padding: 9px 16px !important;
+  border-radius: 22px !important;
+  font-size: 1.45rem !important;
+  line-height: 1 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-hover,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-instruction {
+  min-height: 116px !important;
+  padding: 12px !important;
+  border-radius: 14px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-hover h4,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-instruction strong {
+  margin-bottom: 5px !important;
+  font-size: 1rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-hover p,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-hover small,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-instruction > span {
+  font-size: 0.78rem !important;
+  line-height: 1.25 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-hover .lov-item-stat-tags span,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-instruction .lov-item-stat-tags span {
+  padding: 4px 8px !important;
+  font-size: 0.7rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-stock-panel {
+  gap: 6px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-stock-panel > strong {
+  font-size: 0.98rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-grid {
+  grid-auto-rows: minmax(66px, auto) !important;
+  gap: 7px !important;
+  padding-right: 8px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-item {
+  min-height: 66px !important;
+  gap: 3px !important;
+  padding: 7px 9px !important;
+  border-width: 1px !important;
+  border-radius: 10px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-item .item-chip {
+  grid-template-columns: 38px minmax(0, 1fr) !important;
+  gap: 8px !important;
+  font-size: 0.76rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-item .item-chip img {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 9px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-item-price {
+  font-size: 0.78rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-item-action {
+  padding: 3px 8px !important;
+  font-size: 0.62rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-refresh-button,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-upgrade-button {
+  min-height: 38px !important;
+  border-radius: 13px !important;
+  font-size: 0.95rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell.tab-work .lov-work-layout,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell.tab-contracts .lov-contracts-layout {
+  height: 100% !important;
+  min-height: 0 !important;
+  gap: 10px !important;
+  padding: 10px 0 0 !important;
+  overflow: hidden !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-banner {
+  gap: 7px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-banner p,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contracts-layout p {
+  font-size: 0.9rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-bonus-strip {
+  gap: 6px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-bonus-strip span,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-bonus-strip strong {
+  min-height: 38px !important;
+  border-radius: 10px !important;
+  font-size: 0.78rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-friends-bonus {
+  min-height: 34px !important;
+  font-size: 0.82rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-main {
+  grid-template-columns: minmax(220px, 0.9fr) minmax(300px, 1.1fr) !important;
+  gap: 10px !important;
+  min-height: 0 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-illustration,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-card,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contract-card {
+  border-radius: 14px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-card {
+  gap: 8px !important;
+  padding: 14px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-card h3,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contracts-layout h3 {
+  font-size: 1.15rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-work-card strong {
+  font-size: 1.08rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-progress-card {
+  gap: 5px !important;
+  padding: 9px !important;
+  border-radius: 12px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contract-list {
+  gap: 8px !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contract-top,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contract-bottom {
+  padding: 8px 10px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contract-top strong,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-contract-bottom strong {
+  font-size: 0.95rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-currency {
+  gap: 8px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-workbench {
+  grid-template-columns: minmax(170px, 0.8fr) minmax(240px, 1fr) !important;
+  gap: 12px !important;
+  min-height: 0 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-upgrade-card {
+  gap: 10px !important;
+  min-height: 0 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-anvil-slot {
+  min-height: 82px !important;
+  border-radius: 14px !important;
+}
+
+@media (max-width: 1200px), (max-height: 760px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-store-shell),
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-forge-shell) {
+    inset: 56px 22px 72px !important;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell {
+    width: min(980px, calc(100vw - 80px)) !important;
+    height: min(620px, calc(100vh - 130px)) !important;
+
+    --window-width: min(980px, calc(100vw - 80px)) !important;
+    --window-height: min(620px, calc(100vh - 130px)) !important;
   }
 }

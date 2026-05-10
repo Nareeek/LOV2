@@ -20,7 +20,7 @@ import {
   type Race,
   type TravelTask,
 } from '@lov2/shared';
-import { characterImagePath } from '../../game/characterIdentity.js';
+import { characterAvatarPath, characterImagePath } from '../../game/characterIdentity.js';
 import type { GameIntent, MetaTab, RouteState, SheetTab } from '../../game/types.js';
 import { assetPath } from './assets.js';
 import {
@@ -75,7 +75,7 @@ import {
 } from './GamePanels.logic.js';
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
-import { enemyAssetId, enemyDisplayName } from './enemyPresentation.js';
+import { enemyAssetId, enemyAvatarAssetId, enemyDisplayName } from './enemyPresentation.js';
 export function TravelStage({
   state,
   activeTravel,
@@ -94,7 +94,7 @@ export function TravelStage({
   const activeQuest = activeTravel?.questId ? state.quests.find((quest) => quest.id === activeTravel.questId) : undefined;
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
   const progressPercent = progress?.percent ?? 0;
-  const canRushTravel = Boolean(!busy && activeTravel && (activeTravelReady || (state.character?.gems ?? 0) >= 1));
+  const canRushTravel = Boolean(!busy && activeTravel && !activeTravelReady && (state.character?.gems ?? 0) >= 1);
   const characterImageSrc = state.character ? characterImagePath(state.character) : null;
 
   return (
@@ -127,7 +127,7 @@ export function TravelStage({
           className="lov-skip-button"
           data-testid="travel-rush-button"
           disabled={!canRushTravel}
-          onClick={() => activeTravel && onIntent({ type: 'claimTravel', travelId: activeTravel.id, rush: !activeTravelReady })}
+          onClick={() => activeTravel && onIntent({ type: 'claimTravel', travelId: activeTravel.id, rush: true })}
         >
           Не хочу ждать! · 1 жемчужина
         </button>
@@ -156,7 +156,6 @@ export function CombatStage({
   petAssistAvailable,
   selectedPetId,
   battlePetId,
-  busy = false,
   replayTurns,
   onIntent,
 }: {
@@ -172,7 +171,6 @@ export function CombatStage({
   petAssistAvailable: boolean;
   selectedPetId: string;
   battlePetId: string | null;
-  busy?: boolean;
   replayTurns: CombatTurn[] | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
@@ -182,8 +180,10 @@ export function CombatStage({
   }
 
   const heroSrc = characterImagePath(character);
+  const heroAvatarSrc = characterAvatarPath(character);
   const displayedEnemyName = enemyDisplayName(enemy);
   const displayedEnemyAssetId = enemyAssetId(enemy);
+  const displayedEnemyAvatarAssetId = enemyAvatarAssetId(enemy) ?? displayedEnemyAssetId;
   const activePetId = battlePetId ?? selectedPetId;
   const selectedPet = PET_VARIANTS.find((pet) => pet.id === activePetId) ?? PET_VARIANTS[2]!;
   const selectedPetDefinition = state.items.find((item) => item.id === activePetId && item.slot === 'pet');
@@ -221,7 +221,7 @@ export function CombatStage({
             <UiIcon name="info" />
           </button>
           <div className="lov-combat-avatar hero">
-            <img src={heroSrc} alt="" data-testid="combat-character-avatar" />
+            <img src={heroAvatarSrc} alt="" data-testid="combat-character-avatar" />
           </div>
           <div className="lov-combat-meta">
             <strong>{character.name}</strong>
@@ -237,7 +237,6 @@ export function CombatStage({
           type="button"
           className="lov-skip-battle"
           data-testid="combat-skip-button"
-          disabled={busy}
           onClick={() => onIntent({ type: 'showReward' })}
         >
           Пропустить бой
@@ -253,7 +252,7 @@ export function CombatStage({
             <small>{enemyHealth}</small>
           </div>
           <div className="lov-combat-avatar enemy">
-            <img src={assetPath(displayedEnemyAssetId)} alt="" />
+            <img src={assetPath(displayedEnemyAvatarAssetId)} alt="" />
           </div>
           <button
             type="button"

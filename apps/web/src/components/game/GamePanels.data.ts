@@ -42,9 +42,9 @@ export const META_LABELS: Record<MetaTab, string> = {
   help: 'Помощь',
 };
 export const CLASS_BONUSES: Record<string, Partial<CharacterStats>> = {
-  swordsman: { [STAT_STRENGTH]: 2 },
-  ranger: { [STAT_AGILITY]: 2 },
-  mage: { [STAT_INTUITION]: 2 },
+  swordsman: { [STAT_STRENGTH]: 7 },
+  ranger: { [STAT_AGILITY]: 7 },
+  mage: { [STAT_INTUITION]: 7 },
 };
 export const APPEARANCE_OPTIONS: Record<AppearanceKey, AppearanceOption[]> = {
   face: [

@@ -40,9 +40,9 @@ import { NotificationsGateway } from './notifications.gateway.js';
 import { TravelQueueService } from './travel-queue.service.js';
 
 const CLASS_STAT_BONUSES: Record<CharacterClassId, Partial<CharacterStats>> = {
-  swordsman: { сила: 2 },
-  ranger: { ловкость: 2 },
-  mage: { интуиция: 2 },
+  swordsman: { сила: 7 },
+  ranger: { ловкость: 7 },
+  mage: { интуиция: 7 },
 };
 
 const ENERGY_REFILL_OPTIONS = {
