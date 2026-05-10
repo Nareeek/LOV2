@@ -492,8 +492,16 @@ export class GameCommandsService {
 
     return [{ definition, enhancementLevel: entry.enhancementLevel }];
   });
-    const verifiedPetDefinition = input.petId
-      ? gameData.items.find((item) => item.id === input.petId && item.slot === 'pet')
+    const verifiedPetStack = input.petId
+      ? equipped.find(
+          (entry) =>
+            entry.characterId === character.id &&
+            entry.itemId === input.petId &&
+            entry.equippedSlot === 'pet',
+        )
+      : undefined;
+    const verifiedPetDefinition = verifiedPetStack
+      ? gameData.items.find((item) => item.id === verifiedPetStack.itemId && item.slot === 'pet')
       : undefined;
     const verifiedPetCombatStats = verifiedPetDefinition
       ? validPetCombatStats(verifiedPetDefinition)

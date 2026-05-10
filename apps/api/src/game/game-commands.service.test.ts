@@ -1084,7 +1084,7 @@ describe('GameCommandsService combat pet authority', () => {
   };
 
   function createHarness(
-    equipped: Array<{
+    inventory: Array<{
       id: string;
       characterId: string;
       itemId: string;
@@ -1109,7 +1109,33 @@ describe('GameCommandsService combat pet authority', () => {
         findFirst: vi.fn().mockResolvedValue(character),
         update: vi.fn().mockResolvedValue(character),
       },
-      inventoryStack: { findMany: vi.fn().mockResolvedValue(equipped) },
+      inventoryStack: {
+        findMany: vi.fn(async ({ where }: { where?: Record<string, unknown> } = {}) =>
+          inventory.filter((stack) => {
+            if (where?.characterId && stack.characterId !== where.characterId) {
+              return false;
+            }
+            if (where?.itemId && stack.itemId !== where.itemId) {
+              return false;
+            }
+            if (where?.equippedSlot) {
+              const equippedSlot = where.equippedSlot;
+              if (
+                equippedSlot &&
+                typeof equippedSlot === 'object' &&
+                'not' in equippedSlot &&
+                stack.equippedSlot === (equippedSlot as { not: unknown }).not
+              ) {
+                return false;
+              }
+              if (typeof equippedSlot === 'string' && stack.equippedSlot !== equippedSlot) {
+                return false;
+              }
+            }
+            return true;
+          }),
+        ),
+      },
       questProgress: { findMany: vi.fn().mockResolvedValue([]) },
       travelTask: { findMany: vi.fn().mockResolvedValue([]) },
       combatEncounter: {
@@ -1199,14 +1225,59 @@ describe('GameCommandsService combat pet authority', () => {
     },
   );
 
-  it('grants pet assist for a selected catalog pet using server stats', async () => {
+  it('does not grant pet assist for unowned catalog petId', async () => {
     const { service, transactionClient } = createHarness([]);
 
     await service.resolveCombat(character.userId, combat.id, { petId: 'wyrmlet' });
 
     const log = resolvedLog(transactionClient);
-    expect(log.petId).toBe('wyrmlet');
-    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(true);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+  });
+
+  it('does not grant pet assist for an owned but unequipped pet', async () => {
+    const petCombatStats = { level: 7, health: 2345 };
+    const { service, transactionClient } = createHarness([
+      {
+        id: 'stack-pet',
+        characterId: character.id,
+        itemId: 'ember-whelp',
+        quantity: 1,
+        enhancementLevel: 0,
+        equippedSlot: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ]);
+
+    await withEmberWhelpPetCombatStats(petCombatStats, async () => {
+      await service.resolveCombat(character.userId, combat.id, { petId: 'ember-whelp' });
+    });
+
+    const log = resolvedLog(transactionClient);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+  });
+
+  it('does not grant pet assist for an equipped non-pet item', async () => {
+    const { service, transactionClient } = createHarness([
+      {
+        id: 'stack-weapon',
+        characterId: character.id,
+        itemId: 'duelist-rapier',
+        quantity: 1,
+        enhancementLevel: 0,
+        equippedSlot: 'pet',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ]);
+
+    await service.resolveCombat(character.userId, combat.id, { petId: 'duelist-rapier' });
+
+    const log = resolvedLog(transactionClient);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
   });
 
   it('resolves combat without pet assist when no pet is requested', async () => {
