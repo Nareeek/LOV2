@@ -17,6 +17,7 @@ const CHARACTER_CREATION_ASSET_PATHS = {
 } as const;
 
 const CHARACTER_AVATAR_ASSET_PATHS = {
+  male_nocturne_swordsman: '/assets/generated/character-icons/avatar_male_nocturne_swordsman.png',
   male_nocturne_mystic: '/assets/generated/character-icons/avatar_male_nocturne_mystic.png',
   female_oracle_ranger: '/assets/generated/character-icons/avatar_female_oracle_ranger.png',
 } as const;
@@ -151,9 +152,9 @@ test('created character identity is reflected in the next game screen', async ({
   await expect(heroInfoWindow.locator('.lov-profile-header span')).toContainText(rangerClass.label);
   await expect(heroInfoWindow.getByTestId('hero-info-character-image')).toHaveAttribute(
     'src',
-    CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
+    CHARACTER_AVATAR_ASSET_PATHS.female_oracle_ranger,
   );
-  await expect(heroInfoWindow.getByTestId('hero-info-race-sign')).toHaveAttribute('src', RACE_SIGN_ASSET_PATHS.oracle);
+  await expect(heroInfoWindow.getByTestId('hero-info-race-sign')).toHaveCount(0);
   await expect(heroInfoWindow.getByTestId('paperdoll-character-image')).toHaveAttribute(
     'src',
     CHARACTER_CREATION_ASSET_PATHS.female_oracle_ranger,
@@ -229,7 +230,7 @@ for (const viewport of [
     await expect(heroInfoWindow.getByTestId('world-window-bottom-close')).toBeVisible();
     await expect(heroInfoWindow.getByTestId('hero-info-character-image')).toHaveAttribute(
       'src',
-      CHARACTER_CREATION_ASSET_PATHS.male_nocturne_swordsman,
+      CHARACTER_AVATAR_ASSET_PATHS.male_nocturne_swordsman,
     );
     await expectContained(heroInfoWindow, page.getByTestId('world-stage'));
     await expectWiderThan(
@@ -271,7 +272,7 @@ test('world windows stay inside the playfield on a narrow desktop viewport', asy
 
   const playfield = page.locator('.stage-main').first();
 
-  await expectTavernAndArenaWindows(page, playfield);
+  await expectTavernAndArenaWindows(page);
 
   await page.getByTestId('hotspot-hub-store').click();
   const storeWindow = page.getByTestId('store-sheet');
@@ -340,12 +341,10 @@ test('tavern quests and arena actions stay visible on a wide desktop viewport', 
   await page.setViewportSize({ width: 1366, height: 768 });
   await openGame(page, createBootstrapState());
 
-  const playfield = page.locator('.stage-main').first();
-
-  await expectTavernAndArenaWindows(page, playfield);
+  await expectTavernAndArenaWindows(page);
 });
 
-test('failed travel start keeps the player in world and shows backend feedback', async ({ page }) => {
+test('failed travel start keeps the player in world', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   let startTravelRequests = 0;
   await openGame(page, createBootstrapState(), {
@@ -370,10 +369,10 @@ test('failed travel start keeps the player in world and shows backend feedback',
   await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
   await expect(page.getByTestId('travel-screen')).toHaveCount(0);
   await expect(page.getByTestId('tavern-window')).toBeVisible();
-  await expect(page.getByTestId('game-message')).toContainText('Недостаточно энергии');
+  await expect(page.getByTestId('game-message')).toHaveCount(0);
 });
 
-test('successful travel start switches to travel and shows success feedback', async ({ page }) => {
+test('successful travel start switches to travel', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   const travelState = createBootstrapState({
     travels: [
@@ -407,7 +406,7 @@ test('successful travel start switches to travel and shows success feedback', as
 
   await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-travel(?: |$)/);
   await expect(page.getByTestId('travel-screen')).toBeVisible();
-  await expect(page.getByTestId('game-message')).toContainText('Путь начался');
+  await expect(page.getByTestId('game-message')).toHaveCount(0);
 });
 
 test('busy travel start disables duplicate contract clicks', async ({ page }) => {
@@ -440,11 +439,11 @@ test('busy travel start disables duplicate contract clicks', async ({ page }) =>
   await expect(firstTask).toBeDisabled();
   await expect.poll(() => startTravelRequests).toBe(1);
   releaseStartTravel();
-  await expect(page.getByTestId('game-message')).toContainText('Маршрут временно закрыт');
+  await expect(page.getByTestId('game-message')).toHaveCount(0);
   expect(startTravelRequests).toBe(1);
 });
 
-test('failed travel claim keeps the player in travel and shows backend feedback', async ({ page }) => {
+test('failed travel claim keeps the player in travel', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await openGame(
     page,
@@ -480,10 +479,10 @@ test('failed travel claim keeps the player in travel and shows backend feedback'
 
   await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-travel(?: |$)/);
   await expect(page.getByTestId('combat-screen')).toHaveCount(0);
-  await expect(page.getByTestId('game-message')).toContainText('Недостаточно жемчужин');
+  await expect(page.getByTestId('game-message')).toHaveCount(0);
 });
 
-test('failed arena start keeps the arena window open and shows backend feedback', async ({ page }) => {
+test('failed arena start keeps the arena window open', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await openGame(page, createBootstrapState(), {
     onApiRequest: async (pathname, route) => {
@@ -505,7 +504,7 @@ test('failed arena start keeps the arena window open and shows backend feedback'
   await expect(page.getByTestId('world-stage')).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
   await expect(page.getByTestId('combat-screen')).toHaveCount(0);
   await expect(page.getByTestId('arena-window')).toBeVisible();
-  await expect(page.getByTestId('game-message')).toContainText('Сначала завершите текущее путешествие');
+  await expect(page.getByTestId('game-message')).toHaveCount(0);
 });
 
 test('sheet close control and bag slot count stay reachable on a narrow desktop viewport', async ({ page }) => {
@@ -541,6 +540,7 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expect(page.getByTestId('combat-screen')).toBeVisible();
   await expect(page.getByTestId('combat-skip-button')).toBeVisible();
   await expect(page.getByTestId('pet-assist-button')).toBeVisible();
+  await expect(page.getByTestId('combat-summoned-pet')).toHaveCount(0);
   await expect(page.locator('.lov-fighter.hero')).toBeVisible();
   await expect(page.locator('.lov-fighter.enemy')).toBeVisible();
   await expect(page.locator('.lov-combat-header.enemy')).toContainText('Роман');
@@ -592,7 +592,7 @@ test('lost combat shows a defeat result without zero rewards', async ({ page }) 
   await expect(page.getByTestId('reward-continue-button')).toBeVisible();
 });
 
-async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
+async function expectTavernAndArenaWindows(page: Page) {
   await page.getByTestId('hotspot-hub-tavern').click();
   const tavernWindow = page.getByTestId('tavern-window');
   const tavernTasks = tavernWindow.locator('[data-testid^="task-ribbon-"]');
@@ -600,7 +600,7 @@ async function expectTavernAndArenaWindows(page: Page, playfield: Locator) {
   await expect(tavernWindow).toBeVisible();
   await expect(stage).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
   await expect(stage).not.toHaveClass(/stage-mode-worldWindow/);
-  await expectContained(tavernWindow, playfield);
+  await expectContained(tavernWindow, stage);
   await expect(tavernTasks).toHaveCount(4);
   for (let index = 0; index < 4; index += 1) {
     await expect(tavernTasks.nth(index)).toBeVisible();

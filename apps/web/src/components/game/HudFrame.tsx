@@ -86,6 +86,16 @@ export function HudFrame({
         </button>
         <button
           type="button"
+          className="lov-topbar-gift-button"
+          data-testid="action-gifts-topbar"
+          aria-label="ÐŸÐ¾Ð´Ð°Ñ€ÐºÐ¸"
+          title="ÐŸÐ¾Ð´Ð°Ñ€ÐºÐ¸"
+          onClick={() => onIntent({ type: 'openWindow', windowId: 'settings' })}
+        >
+          <UiIcon name="gift" />
+        </button>
+        <button
+          type="button"
           className="lov-leaderboard-button"
           data-testid="action-leaderboard"
           aria-label="Рейтинг"

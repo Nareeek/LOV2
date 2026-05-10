@@ -156,7 +156,6 @@ export function CombatStage({
   petAssistAvailable,
   selectedPetId,
   battlePetId,
-  combatLocked,
   busy = false,
   replayTurns,
   onIntent,
@@ -173,7 +172,6 @@ export function CombatStage({
   petAssistAvailable: boolean;
   selectedPetId: string;
   battlePetId: string | null;
-  combatLocked: boolean;
   busy?: boolean;
   replayTurns: CombatTurn[] | undefined;
   onIntent: (intent: GameIntent) => void;
@@ -196,7 +194,6 @@ export function CombatStage({
   const recentTurns = latestReplayTurn ? [latestReplayTurn] : [];
   const petSummoned = Boolean(battlePetId || petAssistArmed);
   const petActing = petSummoned && latestReplayTurn?.actor === 'pet';
-  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPetName, displayedEnemyName, character.name) : null;
   const displayedPetHealth = petMaxHealth > 0 ? petHealth : selectedPetCombatStats?.health ?? selectedPet.hp;
   const displayedPetMaxHealth = petMaxHealth > 0 ? petMaxHealth : selectedPetCombatStats?.health ?? selectedPet.hp;
   const latestTarget = targetForTurn(latestReplayTurn);
@@ -240,7 +237,7 @@ export function CombatStage({
           type="button"
           className="lov-skip-battle"
           data-testid="combat-skip-button"
-          disabled={busy || combatLocked}
+          disabled={busy}
           onClick={() => onIntent({ type: 'showReward' })}
         >
           Пропустить бой
@@ -293,28 +290,27 @@ export function CombatStage({
         ) : null}
       </div>
 
-      {latestTurnLabel ? (
-        <div className={`lov-combat-turn-callout actor-${latestReplayTurn?.actor ?? 'none'}`}>
-          <strong>{latestTurnLabel.title}</strong>
-          <span>{latestTurnLabel.detail}</span>
-        </div>
-      ) : null}
-
       <div className="lov-battle-bottom">
-        <div className="lov-pet-card">
+        <div className={`lov-pet-card ${petButtonActive ? 'active' : ''}`}>
           <button
             type="button"
             className={`lov-toggle-chip ${petButtonActive ? 'active' : ''}`}
-            data-testid="pet-assist-button"
-            disabled={combatLocked || !petAssistAvailable}
+            disabled={!petAssistAvailable}
             onClick={() => onIntent({ type: 'togglePetAssist' })}
           >
             Вызывать питомца
           </button>
           <div className="lov-pet-card-body">
-            <div className="lov-pet-card-image">
+            <button
+              type="button"
+              className="lov-pet-card-image"
+              data-testid="pet-assist-button"
+              aria-label="Вызвать питомца"
+              disabled={!petAssistAvailable}
+              onClick={() => onIntent({ type: 'togglePetAssist' })}
+            >
               <img src={assetPath(selectedPet.assetId)} alt="" />
-            </div>
+            </button>
             <div className="lov-pet-card-copy">
               <strong>{selectedPetName}</strong>
               <span>{selectedPetLevel} уровень</span>
@@ -333,7 +329,7 @@ export function CombatStage({
             <span
               key={`${turn.turn}-${turn.actor}-${turn.damage}-${index}`}
               className={`shell-reset-damage ${damageTargetClass(turn)} actor-${turn.actor} ${turn.critical ? 'critical' : ''}`}
-              style={{ '--float-index': `${index}` } as CSSProperties}
+              style={{ '--damage-stack-offset': `${index * 30}px` } as CSSProperties}
             >
               -{turn.damage}
             </span>
@@ -384,16 +380,6 @@ function fighterMotionClass(
     classes.push('attacking', pulseClass);
   }
   return classes.join(' ');
-}
-
-function combatTurnLabel(turn: CombatTurn, petName: string, enemyName: string, heroName: string) {
-  const actor = turn.actor === 'pet' ? petName : turn.actor === 'character' ? heroName : enemyName;
-  const turnTarget = targetForTurn(turn);
-  const target = turnTarget === 'pet' ? petName : turnTarget === 'enemy' ? enemyName : heroName;
-  return {
-    title: turn.critical ? 'Критический удар' : 'Удар',
-    detail: `${actor} → ${target}: ${turn.damage}`,
-  };
 }
 
 function rewardPetForCombat(latestResolvedCombat: CombatEncounter | undefined, battlePetId?: string | null) {

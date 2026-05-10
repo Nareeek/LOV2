@@ -94,9 +94,10 @@ describe('game data', () => {
   });
 
   it('defines positive combat stats for pet items', () => {
-    const pet = gameData.items.find((item) => item.id === 'ember-whelp');
+    const pets = gameData.items.filter((item) => item.slot === 'pet');
 
-    expect(pet?.petCombatStats).toEqual({ level: 12, health: 1800 });
+    expect(pets.map((pet) => pet.id)).toEqual(['foxling', 'wyrmlet', 'kitten', 'ember-whelp']);
+    expect(pets.every((pet) => pet.petCombatStats && pet.petCombatStats.level > 0 && pet.petCombatStats.health > 0)).toBe(true);
   });
 
   it('rejects pet items without positive integer combat stats', () => {

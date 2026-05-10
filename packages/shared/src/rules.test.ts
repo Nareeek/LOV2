@@ -112,4 +112,41 @@ describe('game rules', () => {
       expect(enemyHits[index]).toBeGreaterThanOrEqual(enemyHits[index - 1]!);
     }
   });
+
+  it('lets a called pet take the first allied action', () => {
+    const stats = {
+      ['\u0441\u0438\u043b\u0430']: 5,
+      ['\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c']: 4,
+      ['\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f']: 3,
+      ['\u0443\u0434\u0430\u0447\u0430']: 2,
+    } as EnemyDefinition['stats'];
+    const enemy: EnemyDefinition = {
+      id: 'quick-pet-target',
+      nameRu: 'Pet target',
+      level: 1,
+      health: 20,
+      armor: 0,
+      boss: false,
+      stats,
+      reward: { experience: 5, gold: 1, gems: 0, itemIds: [] },
+    };
+
+    const combat = resolveCombat({
+      characterLevel: 3,
+      characterHealth: 160,
+      characterStats: {
+        ['\u0441\u0438\u043b\u0430']: 30,
+        ['\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c']: 20,
+        ['\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f']: 15,
+        ['\u0443\u0434\u0430\u0447\u0430']: 10,
+      },
+      enemy,
+      reward: enemy.reward,
+      characterArmor: 0,
+      pet: { id: 'wyrmlet', level: 14, health: 1950 },
+    });
+
+    expect(combat.petId).toBe('wyrmlet');
+    expect(combat.turns[0]?.actor).toBe('pet');
+  });
 });

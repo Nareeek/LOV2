@@ -24,7 +24,6 @@ export function GameShellCombatStage({
   petAssistAvailable,
   selectedPetId,
   battlePetId,
-  combatLocked,
   busy,
   rewardBattlePetId,
   visibleReplayTurns,
@@ -45,8 +44,7 @@ export function GameShellCombatStage({
   petAssistArmed: boolean;
   petAssistAvailable: boolean;
   selectedPetId: string;
-  battlePetId: string;
-  combatLocked: boolean;
+  battlePetId: string | null;
   busy: boolean;
   rewardBattlePetId: string | null | undefined;
   visibleReplayTurns: CombatLog['turns'];
@@ -77,7 +75,6 @@ export function GameShellCombatStage({
           petAssistAvailable={petAssistAvailable}
           selectedPetId={selectedPetId}
           battlePetId={battlePetId}
-          combatLocked={combatLocked || busy}
           busy={busy}
           replayTurns={visibleReplayTurns}
           onIntent={onIntent}

@@ -1079,14 +1079,14 @@ describe('GameCommandsService combat pet authority', () => {
   it('does not grant pet assist for arbitrary client petId', async () => {
     const { service, transactionClient } = createHarness([]);
 
-    await service.resolveCombat(character.userId, combat.id, { petId: 'kitten' });
+    await service.resolveCombat(character.userId, combat.id, { petId: 'missing-pet' });
 
     const log = resolvedLog(transactionClient);
     expect(log.petId).toBeUndefined();
     expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
   });
 
-  it.each([{ petId: undefined }, { petId: 'kitten' }])(
+  it.each([{ petId: undefined }, { petId: 'duelist-rapier' }])(
     'does not grant pet assist for missing or invalid petId',
     async ({ petId }) => {
       const { service, transactionClient } = createHarness([
@@ -1109,6 +1109,16 @@ describe('GameCommandsService combat pet authority', () => {
       expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
     },
   );
+
+  it('grants pet assist for a selected catalog pet using server stats', async () => {
+    const { service, transactionClient } = createHarness([]);
+
+    await service.resolveCombat(character.userId, combat.id, { petId: 'wyrmlet' });
+
+    const log = resolvedLog(transactionClient);
+    expect(log.petId).toBe('wyrmlet');
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(true);
+  });
 
   it('resolves combat without pet assist when no pet is requested', async () => {
     const { service, transactionClient } = createHarness([]);

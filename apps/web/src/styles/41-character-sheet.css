@@ -38,7 +38,37 @@
 .lov-sheet.tab-pets .lov-paperdoll,
 .lov-sheet.tab-profile .lov-paperdoll,
 .lov-sheet.tab-appearance .lov-paperdoll {
-  gap: 10px;
+  gap: 8px;
+}
+
+.lov-sheet.tab-character .lov-paperdoll-header,
+.lov-sheet.tab-inventory .lov-paperdoll-header,
+.lov-sheet.tab-achievements .lov-paperdoll-header,
+.lov-sheet.tab-pets .lov-paperdoll-header,
+.lov-sheet.tab-profile .lov-paperdoll-header,
+.lov-sheet.tab-appearance .lov-paperdoll-header {
+  padding: 6px 12px;
+  border-radius: 14px;
+}
+
+.lov-sheet.tab-character .lov-paperdoll-header strong,
+.lov-sheet.tab-inventory .lov-paperdoll-header strong,
+.lov-sheet.tab-achievements .lov-paperdoll-header strong,
+.lov-sheet.tab-pets .lov-paperdoll-header strong,
+.lov-sheet.tab-profile .lov-paperdoll-header strong,
+.lov-sheet.tab-appearance .lov-paperdoll-header strong {
+  font-size: 1.18rem;
+  line-height: 1.05;
+}
+
+.lov-sheet.tab-character .lov-paperdoll-header span,
+.lov-sheet.tab-inventory .lov-paperdoll-header span,
+.lov-sheet.tab-achievements .lov-paperdoll-header span,
+.lov-sheet.tab-pets .lov-paperdoll-header span,
+.lov-sheet.tab-profile .lov-paperdoll-header span,
+.lov-sheet.tab-appearance .lov-paperdoll-header span {
+  font-size: 0.86rem;
+  line-height: 1.05;
 }
 
 .lov-sheet.tab-character .lov-paperdoll-stage,
@@ -119,12 +149,123 @@
 .lov-sheet.tab-pets .lov-paperdoll-hero,
 .lov-sheet.tab-profile .lov-paperdoll-hero,
 .lov-sheet.tab-appearance .lov-paperdoll-hero {
-  width: min(118%, 430px);
-  height: 98%;
+  width: min(146%, 540px);
+  height: 108%;
   max-height: none;
-  bottom: 0;
+  bottom: -2%;
   object-fit: contain;
   object-position: center bottom;
+}
+
+.lov-sheet.tab-character .lov-paperdoll-race-sign,
+.lov-sheet.tab-inventory .lov-paperdoll-race-sign,
+.lov-sheet.tab-achievements .lov-paperdoll-race-sign,
+.lov-sheet.tab-pets .lov-paperdoll-race-sign,
+.lov-sheet.tab-profile .lov-paperdoll-race-sign,
+.lov-sheet.tab-appearance .lov-paperdoll-race-sign {
+  top: 14px;
+  right: 14px;
+  left: auto;
+  width: 64px;
+  height: 64px;
+}
+
+.lov-sheet.tab-pets .lov-sheet-left {
+  overflow: hidden;
+}
+
+.lov-sheet.tab-pets .lov-pet-screen {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto auto auto minmax(110px, 0.8fr) auto auto;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.lov-sheet.tab-pets .lov-panel-header h2 {
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  line-height: 1;
+}
+
+.lov-sheet.tab-pets .lov-pet-thumb-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lov-sheet.tab-pets .lov-pet-thumb {
+  min-height: 0;
+  height: clamp(72px, 11vh, 96px);
+  border-radius: 10px;
+}
+
+.lov-sheet.tab-pets .lov-pet-thumb img {
+  object-fit: contain;
+  padding: 6px;
+}
+
+.lov-sheet.tab-pets .lov-pet-progress-head {
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.lov-sheet.tab-pets .lov-pet-level {
+  min-height: 68px;
+  font-size: 2rem;
+}
+
+.lov-sheet.tab-pets .lov-pet-name {
+  gap: 5px;
+}
+
+.lov-sheet.tab-pets .lov-pet-name strong {
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  line-height: 1;
+}
+
+.lov-sheet.tab-pets .lov-pet-name .meter {
+  min-height: 30px;
+}
+
+.lov-sheet.tab-pets .lov-pet-preview {
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.lov-sheet.tab-pets .lov-pet-preview img {
+  object-fit: contain;
+  padding: 6px;
+}
+
+.lov-sheet.tab-pets .lov-pet-core-stats {
+  gap: 8px;
+}
+
+.lov-sheet.tab-pets .lov-pet-core-stats span,
+.lov-sheet.tab-pets .lov-pet-satiety,
+.lov-sheet.tab-pets .lov-pet-food {
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  font-size: 1.28rem;
+}
+
+.lov-sheet.tab-pets .lov-pet-feeding {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.8fr) 86px;
+  gap: 8px;
+}
+
+.lov-sheet.tab-pets .lov-pet-satiety strong {
+  font-size: 1rem;
+}
+
+.lov-sheet.tab-pets .lov-pet-feed-buttons {
+  gap: 6px;
+}
+
+.lov-sheet.tab-pets .lov-pet-feed-buttons button {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 1.2rem;
 }
 
 .lov-sheet.tab-character .lov-paperdoll-pet,
@@ -271,4 +412,3 @@
     grid-template-columns: 74px minmax(0, 1fr) 74px;
   }
 }
-

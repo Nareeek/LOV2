@@ -493,12 +493,7 @@ export class GameCommandsService {
     return [{ definition, enhancementLevel: entry.enhancementLevel }];
   });
     const verifiedPetDefinition = input.petId
-      ? gameData.items.find(
-          (item) =>
-            item.id === input.petId &&
-            item.slot === 'pet' &&
-            equipped.some((entry) => entry.itemId === item.id && entry.equippedSlot === 'pet'),
-        )
+      ? gameData.items.find((item) => item.id === input.petId && item.slot === 'pet')
       : undefined;
     const verifiedPetCombatStats = verifiedPetDefinition
       ? validPetCombatStats(verifiedPetDefinition)

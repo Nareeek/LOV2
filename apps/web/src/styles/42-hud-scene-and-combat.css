@@ -213,15 +213,19 @@
   transform: translateX(-22%);
 }
 
+.lov-battle-stage {
+  inset: 86px 18px 8px;
+}
+
 .lov-battle-pet-wrap {
-  left: clamp(18%, 27%, 31%);
+  left: clamp(22%, 31%, 35%);
   bottom: -24px;
-  width: min(23%, 230px);
+  width: min(15%, 160px);
 }
 
 .lov-battle-pet-wrap.pet-wyrmlet {
   bottom: -30px;
-  width: min(25%, 250px);
+  width: min(17%, 180px);
 }
 
 .lov-pet-battle-health {
@@ -240,7 +244,11 @@
 
 .lov-pet-card {
   grid-template-columns: 112px;
-  width: 132px;
+  width: 112px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .lov-pet-card-body {
@@ -248,8 +256,8 @@
 }
 
 .lov-pet-card-image {
-  width: 74px;
-  height: 74px;
+  width: 82px;
+  height: 82px;
   min-height: 0;
   margin: 0 auto;
 }

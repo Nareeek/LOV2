@@ -314,9 +314,9 @@
 
 .lov-battle-pet-wrap {
   position: absolute;
-  left: clamp(14%, 24%, 28%);
+  left: clamp(18%, 27%, 32%);
   bottom: -4px;
-  width: min(21%, 210px);
+  width: min(14%, 150px);
 }
 
 .lov-battle-pet {
@@ -341,7 +341,7 @@
 
 .lov-battle-pet-wrap.pet-wyrmlet {
   bottom: -10px;
-  width: min(23%, 230px);
+  width: min(16%, 170px);
 }
 
 .lov-pet-battle-health {
@@ -355,24 +355,6 @@
 
 .lov-pet-battle-health .lov-health-track {
   height: 14px;
-}
-
-.lov-combat-turn-callout {
-  position: absolute;
-  left: 50%;
-  top: 126px;
-  z-index: 4;
-  transform: translateX(-50%);
-  display: grid;
-  gap: 4px;
-  min-width: 280px;
-  padding: 10px 16px;
-  border: 1px solid rgba(218, 182, 122, 0.84);
-  border-radius: 16px;
-  background: rgba(24, 20, 23, 0.82);
-  color: #f8ecd0;
-  text-align: center;
-  font-family: Georgia, serif;
 }
 
 .lov-battle-pet.assisting {
@@ -409,22 +391,48 @@
   grid-template-columns: 104px minmax(0, 1fr);
   gap: 12px;
   padding: 12px;
-  border: 1px solid rgba(218, 182, 122, 0.82);
+  border: 1px solid rgba(218, 182, 122, 0.62);
   border-radius: 18px;
-  background: linear-gradient(180deg, #efe2c4, #dcc6a1);
-  box-shadow: 0 16px 24px rgba(0, 0, 0, 0.24);
+  background: transparent;
+  box-shadow: none;
+}
+
+.lov-pet-card > .lov-toggle-chip {
+  display: none;
 }
 
 .lov-pet-card-image {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid rgba(238, 218, 160, 0.82);
   overflow: hidden;
-  border-radius: 14px;
-  background: linear-gradient(180deg, #86b05d, #4d6a34);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 247, 210, 0.12), transparent 58%),
+    rgba(20, 18, 20, 0.42);
+  cursor: pointer;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 6px 12px rgba(0, 0, 0, 0.22);
+}
+
+.lov-pet-card-image:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.lov-pet-card-image:not(:disabled):hover,
+.lov-pet-card-image:not(:disabled):focus-visible {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .lov-pet-card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.34));
 }
 
 .lov-pet-card-copy {
@@ -638,4 +646,3 @@
 .lov-victory-window.is-defeat .lov-victory-right h2 {
   color: #ffe4d6;
 }
-

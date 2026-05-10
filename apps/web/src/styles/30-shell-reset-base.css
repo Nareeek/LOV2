@@ -737,17 +737,17 @@
 }
 
 .shell-reset-damage.to-enemy {
-  top: 34%;
+  top: calc(34% - var(--damage-stack-offset, 0px));
   right: 22%;
 }
 
 .shell-reset-damage.to-hero {
-  top: 36%;
+  top: calc(36% - var(--damage-stack-offset, 0px));
   left: 22%;
 }
 
 .shell-reset-damage.to-pet {
-  top: 58%;
+  top: calc(58% - var(--damage-stack-offset, 0px));
   left: 27%;
 }
 
@@ -1113,4 +1113,3 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-

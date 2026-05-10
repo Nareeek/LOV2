@@ -253,10 +253,12 @@
   right: -4%;
 }
 
-.lov-hero-info-side .lov-wing-badge {
+.lov-hero-info-side .lov-paperdoll-race-sign {
   right: 10px;
   top: 10px;
-  font-size: 2rem;
+  left: auto;
+  width: 44px;
+  height: 44px;
 }
 
 .lov-hero-info-side .lov-prestige-bar {
@@ -795,4 +797,3 @@
     min-height: 48px;
   }
 }
-
