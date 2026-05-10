@@ -312,22 +312,39 @@ test('world windows stay inside the playfield on a narrow desktop viewport', asy
 
 test('travel screen hides story prompt and placeholder counters', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
-  await openGame(
-    page,
-    createBootstrapState({
-      travels: [
-        {
-          id: 'travel-clean-ui',
-          characterId: 'character-1',
-          locationId: gameData.quests[0]!.locationId,
-          questId: gameData.quests[0]!.id,
-          status: 'traveling',
-          startedAt: new Date(Date.parse(NOW) - 1000).toISOString(),
-          completesAt: new Date(Date.parse(NOW) + 30000).toISOString(),
-        },
-      ],
-    }),
-  );
+  const startedAt = Date.now();
+  const travelState = createBootstrapState({
+    travels: [
+      {
+        id: 'travel-clean-ui',
+        characterId: 'character-1',
+        locationId: gameData.quests[0]!.locationId,
+        questId: gameData.quests[0]!.id,
+        status: 'traveling',
+        startedAt: new Date(startedAt - 1000).toISOString(),
+        completesAt: new Date(startedAt + 30000).toISOString(),
+      },
+    ],
+  });
+  let startTravelRequests = 0;
+  await openGame(page, createBootstrapState(), {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/travel/start' && route.request().method() === 'POST') {
+        startTravelRequests += 1;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(travelState),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-tavern').click();
+  await page.getByTestId(`task-ribbon-${gameData.quests[0]!.id}`).click();
+  await expect.poll(() => startTravelRequests).toBe(1);
 
   const travelScreen = page.getByTestId('travel-screen');
   await expect(travelScreen).toBeVisible();
