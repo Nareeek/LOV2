@@ -12,6 +12,8 @@ const ENEMY_ASSETS: Record<string, string> = {
   'baron-of-ashes': 'enemy-ash-baron',
 };
 
+const ENEMY_AVATAR_ASSETS: Partial<Record<string, string>> = {};
+
 const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   'mist-bandit': 'Роман',
   'harbor-wraith': 'Алексей',
@@ -24,6 +26,10 @@ export function enemyDisplayName(enemy: EnemyDefinition) {
 
 export function enemyAssetId(enemy: EnemyDefinition) {
   return ENEMY_ASSETS[enemy.id] ?? 'enemy-ash-baron';
+}
+
+export function enemyAvatarAssetId(enemy: EnemyDefinition) {
+  return ENEMY_AVATAR_ASSETS[enemy.id] ?? null;
 }
 
 export function enemyStatRows(enemy: EnemyDefinition) {

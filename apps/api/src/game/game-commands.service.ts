@@ -40,9 +40,9 @@ import { NotificationsGateway } from './notifications.gateway.js';
 import { TravelQueueService } from './travel-queue.service.js';
 
 const CLASS_STAT_BONUSES: Record<CharacterClassId, Partial<CharacterStats>> = {
-  swordsman: { сила: 2 },
-  ranger: { ловкость: 2 },
-  mage: { интуиция: 2 },
+  swordsman: { сила: 7 },
+  ranger: { ловкость: 7 },
+  mage: { интуиция: 7 },
 };
 
 const ENERGY_REFILL_OPTIONS = {
@@ -492,13 +492,16 @@ export class GameCommandsService {
 
     return [{ definition, enhancementLevel: entry.enhancementLevel }];
   });
-    const verifiedPetDefinition = input.petId
-      ? gameData.items.find(
-          (item) =>
-            item.id === input.petId &&
-            item.slot === 'pet' &&
-            equipped.some((entry) => entry.itemId === item.id && entry.equippedSlot === 'pet'),
+    const verifiedPetStack = input.petId
+      ? equipped.find(
+          (entry) =>
+            entry.characterId === character.id &&
+            entry.itemId === input.petId &&
+            entry.equippedSlot === 'pet',
         )
+      : undefined;
+    const verifiedPetDefinition = verifiedPetStack
+      ? gameData.items.find((item) => item.id === verifiedPetStack.itemId && item.slot === 'pet')
       : undefined;
     const verifiedPetCombatStats = verifiedPetDefinition
       ? validPetCombatStats(verifiedPetDefinition)

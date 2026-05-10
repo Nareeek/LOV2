@@ -8,7 +8,6 @@ import {
   type BootstrapState,
   type SceneAction,
   type SceneDefinition,
-  type SceneHotspot,
   type SceneId,
 } from '@lov2/shared';
 import { apiClient } from '../../lib/api.js';
@@ -32,6 +31,7 @@ import type {
   WorldWindowId,
 } from '../../game/types.js';
 import { BottomTray } from './BottomTray.js';
+import { PET_VARIANTS } from './GamePanels.data.js';
 import {
   EnemyInfoWindow,
   HeroInfoWindow,
@@ -40,9 +40,10 @@ import { renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindo
 import { HudFrame } from './HudFrame.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
-const COMBAT_AUTO_RESOLVE_DELAY_MS = 5200;
-const COMBAT_REPLAY_TURN_MS = 2400;
-const COMBAT_REPLAY_REWARD_DELAY_MS = 1800;
+const COMBAT_AUTO_RESOLVE_DELAY_MS = 450;
+const COMBAT_REPLAY_TURN_MS = 650;
+const COMBAT_REPLAY_REWARD_DELAY_MS = 650;
+const SELECTED_PET_STORAGE_KEY = 'lov2.selectedPetId';
 
 export function GameShell({
   state,
@@ -65,13 +66,11 @@ export function GameShell({
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(state.quests[0]?.id ?? null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(exerciseDefinitions[0]?.id ?? null);
   const [selectedItemStackId, setSelectedItemStackId] = useState<string | null>(null);
-  const [selectedPetId, setSelectedPetId] = useState('kitten');
+  const [selectedPetId, setSelectedPetId] = useState(readInitialSelectedPetId);
   const [selectedStoreItemId, setSelectedStoreItemId] = useState<string | null>(null);
   const [selectedForgeStackId, setSelectedForgeStackId] = useState<string | null>(null);
   const [selectedArenaEnemyId, setSelectedArenaEnemyId] = useState<string | null>(state.enemies[0]?.id ?? null);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('Добро пожаловать в ночной двор.');
-  const [messageTone, setMessageTone] = useState<'neutral' | 'success' | 'error'>('neutral');
   const [clock, setClock] = useState(() => Date.now());
   const [petAssistArmed, setPetAssistArmed] = useState(false);
   const [battlePetId, setBattlePetId] = useState<string | null>(null);
@@ -120,6 +119,14 @@ export function GameShell({
     setSelectedForgeStackId(null);
   }, [selectedForgeStackId, state.inventory]);
 
+  useEffect(() => {
+    persistSelectedPetId(selectedPetId);
+  }, [selectedPetId]);
+
+  const handleSelectPet = useCallback((petId: string) => {
+    setSelectedPetId(isKnownPetId(petId) ? petId : 'kitten');
+  }, []);
+
   const scenes = state.scenes.length ? state.scenes : sceneDefinitions;
   const sceneById = useMemo(() => new Map(scenes.map((scene) => [scene.id, scene])), [scenes]);
   const sceneId: SceneId = worldLocation === 'courtyard' ? 'hub' : 'map';
@@ -146,7 +153,8 @@ export function GameShell({
     return item?.slot === 'pet';
   });
   const equippedPetId = equippedPetStack?.itemId ?? null;
-  const activeBattlePetId = resolvedBattlePetId ?? (petAssistArmed ? equippedPetId : null);
+  const displayedCombatPetId = equippedPetId ?? selectedPetId;
+  const activeBattlePetId = resolvedBattlePetId ?? (petAssistArmed ? displayedCombatPetId : null);
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
   const stageMode: StageMode = baseStage;
@@ -220,21 +228,15 @@ export function GameShell({
   }, [activeScene.hotspots, state.questProgress]);
 
   const run = useCallback(
-    async <T,>(action: () => Promise<T>, success: string) => {
+    async <T,>(action: () => Promise<T>) => {
       setBusy(true);
-      setMessage('');
-      setMessageTone('neutral');
       try {
         const result = await action();
         if (isBootstrap(result)) {
           onBootstrap(result);
         }
-        setMessage(success);
-        setMessageTone('success');
         return result;
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : 'Что-то пошло не так');
-        setMessageTone('error');
+      } catch {
         return null;
       } finally {
         setBusy(false);
@@ -334,7 +336,7 @@ export function GameShell({
           return;
         }
         case 'acceptTask':
-          await run(() => apiClient.acceptQuest(intent.questId), 'Контракт принят.');
+          await run(() => apiClient.acceptQuest(intent.questId));
           setSelectedQuestId(intent.questId);
           setWorldWindow('tavern');
           return;
@@ -342,15 +344,12 @@ export function GameShell({
           setReturnLocation(worldLocation);
           const questProgress = state.questProgress.find((quest) => quest.questId === intent.questId);
           if (!questProgress || questProgress.status !== 'active') {
-            const accepted = await run(() => apiClient.acceptQuest(intent.questId), 'Контракт принят.');
+            const accepted = await run(() => apiClient.acceptQuest(intent.questId));
             if (!accepted) {
               return;
             }
           }
-          const started = await run(
-            () => apiClient.startTravel({ locationId: intent.locationId, questId: intent.questId }),
-            'Путь начался.',
-          );
+          const started = await run(() => apiClient.startTravel({ locationId: intent.locationId, questId: intent.questId }));
           if (!started) {
             return;
           }
@@ -365,13 +364,10 @@ export function GameShell({
         }
         case 'claimTravel':
           {
-            const claimed = await run(
-              () => apiClient.claimTravel(
-                intent.travelId,
-                intent.rush === undefined ? {} : { rush: intent.rush },
-              ),
-              'Вы добрались до места.',
-            );
+            const claimed = await run(() => apiClient.claimTravel(
+              intent.travelId,
+              intent.rush === undefined ? {} : { rush: intent.rush },
+            ));
             if (!claimed) {
               return;
             }
@@ -386,7 +382,7 @@ export function GameShell({
           return;
         case 'startArena':
           setReturnLocation(worldLocation);
-          const arenaStarted = await run(() => apiClient.startArena({ enemyId: intent.enemyId }), 'Соперник вызван.');
+          const arenaStarted = await run(() => apiClient.startArena({ enemyId: intent.enemyId }));
           if (!arenaStarted) {
             return;
           }
@@ -399,15 +395,13 @@ export function GameShell({
           setBaseStage('combat');
           return;
         case 'resolveCombat': {
-          const usedPetId = petAssistArmed ? equippedPetId : null;
-          const resolved = await run(
-            () => apiClient.resolveCombat(intent.combatId, usedPetId ? { petId: usedPetId } : {}),
-            'Дуэль завершена.',
-          );
+          autoResolvedCombatIdRef.current = intent.combatId;
+          const usedPetId = petAssistArmed ? displayedCombatPetId : null;
+          const resolved = await run(() => apiClient.resolveCombat(intent.combatId, usedPetId ? { petId: usedPetId } : {}));
           if (!resolved) {
             return;
           }
-          setBattlePetId(usedPetId);
+          setBattlePetId(usedPetId ?? (petAssistArmed ? displayedCombatPetId : null));
           setReplayTurnCount(0);
           setReplayActive(true);
           setRewardVisible(false);
@@ -416,22 +410,37 @@ export function GameShell({
           return;
         }
         case 'togglePetAssist':
-          if (replayActive || rewardVisible || battlePetId || !equippedPetId) {
+          if (rewardVisible || !displayedCombatPetId) {
+            return;
+          }
+          if (pendingCombat && !activeCombatLog && !replayActive && !petAssistArmed) {
+            const usedPetId = displayedCombatPetId;
+            autoResolvedCombatIdRef.current = pendingCombat.id;
+            setBattlePetId(usedPetId);
+            setPetAssistArmed(true);
+            const resolved = await run(() => apiClient.resolveCombat(pendingCombat.id, { petId: usedPetId }));
+            if (!resolved) {
+              setBattlePetId(null);
+              setPetAssistArmed(false);
+              return;
+            }
+            setReplayTurnCount(0);
+            setReplayActive(true);
+            setRewardVisible(false);
+            setPetAssistArmed(false);
+            setBaseStage('combat');
             return;
           }
           setPetAssistArmed((value) => !value);
           return;
         case 'showReward': {
           if (pendingCombat) {
-            const usedPetId = petAssistArmed ? equippedPetId : null;
-            const resolved = await run(
-              () => apiClient.resolveCombat(pendingCombat.id, usedPetId ? { petId: usedPetId } : {}),
-              'Дуэль завершена.',
-            );
+            const usedPetId = petAssistArmed ? displayedCombatPetId : null;
+            const resolved = await run(() => apiClient.resolveCombat(pendingCombat.id, usedPetId ? { petId: usedPetId } : {}));
             if (!resolved) {
               return;
             }
-            setBattlePetId(usedPetId);
+            setBattlePetId(usedPetId ?? (petAssistArmed ? displayedCombatPetId : null));
             setPetAssistArmed(false);
           }
           setReplayActive(false);
@@ -449,35 +458,35 @@ export function GameShell({
           setInfoWindow('petInfo');
           return;
         case 'equipItem':
-          await run(() => apiClient.equipItem(intent.inventoryStackId), 'Предмет экипирован.');
+          await run(() => apiClient.equipItem(intent.inventoryStackId));
           setSelectedItemStackId(intent.inventoryStackId);
           setInfoWindow('none');
           return;
         case 'unequipItem':
-          await run(() => apiClient.unequipItem(intent.inventoryStackId), 'Предмет снят.');
+          await run(() => apiClient.unequipItem(intent.inventoryStackId));
           setSelectedItemStackId(intent.inventoryStackId);
           setInfoWindow('none');
           return;
         case 'purchaseItem':
           setSelectedStoreItemId(intent.itemId);
-          await run(() => apiClient.purchaseItem({ itemId: intent.itemId }), 'Покупка добавлена в рюкзак.');
+          await run(() => apiClient.purchaseItem({ itemId: intent.itemId }));
           setWorldWindow('store');
           return;
         case 'selectForgeItem':
           setSelectedForgeStackId(intent.inventoryStackId);
           return;
         case 'upgradeItem':
-          await run(() => apiClient.upgradeItem({ inventoryStackId: intent.inventoryStackId }), 'Предмет усилен.');
+          await run(() => apiClient.upgradeItem({ inventoryStackId: intent.inventoryStackId }));
           setSelectedForgeStackId(intent.inventoryStackId);
           setWorldWindow('forge');
           return;
         case 'allocateStat':
-          await run(() => apiClient.allocateStats({ stat: intent.stat, points: 1 }), `+1 к ${intent.stat}`);
+          await run(() => apiClient.allocateStats({ stat: intent.stat, points: 1 }));
           setBaseStage('sheet');
           setSheetTab('character');
           return;
         case 'refillEnergy':
-          await run(() => apiClient.refillEnergy({ mode: intent.mode }), 'Энергия пополнена.');
+          await run(() => apiClient.refillEnergy({ mode: intent.mode }));
           setWorldWindow('tavern');
           return;
         default:
@@ -485,12 +494,14 @@ export function GameShell({
       }
     },
     [
+      activeCombatLog,
       baseStage,
       closeReward,
       closeSheet,
       closeWorldWindow,
       battlePetId,
       busy,
+      displayedCombatPetId,
       equippedPetId,
       openLocation,
       openSheet,
@@ -510,7 +521,26 @@ export function GameShell({
 
   const handleIntentRef = useRef(handleIntent);
   const autoResolvedCombatIdRef = useRef<string | null>(null);
+  const autoClaimedTravelIdRef = useRef<string | null>(null);
   handleIntentRef.current = handleIntent;
+
+  useEffect(() => {
+    if (!activeTravel || !activeTravelReady || busy || pendingCombat || rewardVisible) {
+      return;
+    }
+    if (autoClaimedTravelIdRef.current === activeTravel.id) {
+      return;
+    }
+
+    autoClaimedTravelIdRef.current = activeTravel.id;
+    void handleIntentRef.current({ type: 'claimTravel', travelId: activeTravel.id });
+  }, [activeTravel, activeTravelReady, busy, pendingCombat, rewardVisible]);
+
+  useEffect(() => {
+    if (!activeTravel) {
+      autoClaimedTravelIdRef.current = null;
+    }
+  }, [activeTravel]);
 
   useEffect(() => {
     if (baseStage !== 'combat' || !pendingCombat || replayActive || rewardVisible) {
@@ -535,10 +565,7 @@ export function GameShell({
   }, [pendingCombat]);
 
   const handleHotspotClick = useCallback(
-    async (action: SceneAction, hotspot: SceneHotspot) => {
-      setMessage(hotspot.descriptionRu);
-      setMessageTone('neutral');
-
+    async (action: SceneAction) => {
       if (action.type === 'openScene') {
         await handleIntent({
           type: 'openLocation',
@@ -661,7 +688,7 @@ export function GameShell({
               sheetTab={sheetTab}
               selectedItemStackId={selectedItemStackId}
               selectedPetId={selectedPetId}
-              onSelectPet={setSelectedPetId}
+              onSelectPet={handleSelectPet}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
               enemyInfoContent={enemyInfoContent}
@@ -677,11 +704,9 @@ export function GameShell({
               combatEnemy={combatEnemy}
               replayFrame={replayFrame}
               petAssistArmed={petAssistArmed}
-              petAssistAvailable={Boolean(equippedPetId)}
-              selectedPetId={equippedPetId ?? selectedPetId}
-              battlePetId={resolvedBattlePetId ?? equippedPetId ?? selectedPetId}
-              combatLocked={replayActive || rewardVisible || Boolean(activeCombatLog)}
-              busy={busy}
+              petAssistAvailable={Boolean(displayedCombatPetId)}
+              selectedPetId={displayedCombatPetId}
+              battlePetId={resolvedBattlePetId}
               visibleReplayTurns={visibleReplayTurns}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
@@ -699,11 +724,6 @@ export function GameShell({
 
           {showBottomTray ? <BottomTray activeTab={metaTab} onSelectTab={handleMetaTabSelect} /> : null}
 
-          {message ? (
-            <p className={`shell-reset-message lov-game-message tone-${messageTone}`} data-testid="game-message" role="status" aria-live="polite">
-              {message}
-            </p>
-          ) : null}
         </section>
       </section>
     </main>
@@ -742,4 +762,25 @@ function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'com
     return 'travel';
   }
   return 'world';
+}
+
+function isKnownPetId(petId: string) {
+  return PET_VARIANTS.some((pet) => pet.id === petId);
+}
+
+function readInitialSelectedPetId() {
+  if (typeof window === 'undefined') {
+    return 'kitten';
+  }
+
+  const storedPetId = window.localStorage.getItem(SELECTED_PET_STORAGE_KEY);
+  return storedPetId && isKnownPetId(storedPetId) ? storedPetId : 'kitten';
+}
+
+function persistSelectedPetId(petId: string) {
+  if (typeof window === 'undefined' || !isKnownPetId(petId)) {
+    return;
+  }
+
+  window.localStorage.setItem(SELECTED_PET_STORAGE_KEY, petId);
 }

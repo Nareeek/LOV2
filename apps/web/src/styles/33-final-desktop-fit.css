@@ -12,41 +12,6 @@
   display: none !important;
 }
 
-.shell-reset-message.lov-game-message {
-  display: block !important;
-  position: absolute;
-  left: max(18px, calc(var(--stage-left-rail-size, 0px) + 24px));
-  right: max(18px, calc(var(--stage-right-rail-size, 0px) + 24px));
-  top: calc(var(--stage-topbar-height) + 14px);
-  bottom: auto;
-  z-index: 30;
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 9px 16px;
-  border-radius: 18px;
-  border-color: rgba(222, 183, 97, 0.74);
-  color: #fff6df;
-  background: rgba(31, 25, 25, 0.92);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.36),
-    inset 0 0 0 1px rgba(255, 233, 177, 0.12);
-}
-
-.stage-mode-sheet .shell-reset-message.lov-game-message,
-.stage-mode-combat .shell-reset-message.lov-game-message {
-  top: 18px;
-}
-
-.shell-reset-message.lov-game-message.tone-error {
-  border-color: rgba(238, 117, 93, 0.84);
-  background: rgba(67, 28, 26, 0.94);
-}
-
-.shell-reset-message.lov-game-message.tone-success {
-  border-color: rgba(143, 199, 111, 0.74);
-  background: rgba(31, 55, 38, 0.92);
-}
-
 .lov-topbar {
   display: flex;
   align-items: center;
@@ -702,7 +667,10 @@
 
 .lov-pet-card {
   gap: 8px;
-  padding: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .lov-pet-card-body {

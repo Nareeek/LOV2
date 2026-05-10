@@ -799,14 +799,23 @@
   object-fit: contain;
 }
 
-.lov-wing-badge {
+.lov-paperdoll-race-sign {
   position: absolute;
-  right: 16px;
-  top: 16px;
-  color: #f4f5ff;
-  font-size: 3rem;
-  line-height: 1;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+  left: 18%;
+  top: 18%;
+  z-index: 3;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.44));
+}
+
+img.lov-paperdoll-race-sign {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: auto;
+    bottom: auto;
 }
 
 .lov-paperdoll-slot {

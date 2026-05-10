@@ -12,9 +12,11 @@ import {
   resolveCombat,
   spendEnergy,
   statsWithEquipment,
+  type CharacterClassId,
   type CombatEncounter,
   type CombatLog,
   type PetCombatStats,
+  type StatKey,
 } from '@lov2/shared';
 import { GameCommandsService } from './game-commands.service.js';
 
@@ -706,6 +708,93 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
   });
 });
 
+describe('GameCommandsService character creation', () => {
+  const now = new Date('2026-05-07T12:00:00.000Z');
+
+  function createCreationHarness() {
+    const user = {
+      id: 'user-create',
+      email: 'create@example.test',
+      displayName: 'Create',
+      passwordHash: 'hash',
+      createdAt: now,
+    };
+    let createdCharacter: Record<string, unknown> | null = null;
+    const prisma = {
+      user: { findUnique: vi.fn().mockResolvedValue(user) },
+      character: {
+        findFirst: vi.fn(async ({ where }: { where: { userId: string } }) =>
+          createdCharacter?.userId === where.userId ? createdCharacter : null,
+        ),
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          createdCharacter = {
+            id: 'character-created',
+            userId: data.userId,
+            name: data.name,
+            raceId: data.raceId,
+            gender: data.gender,
+            classId: data.classId,
+            level: 1,
+            experience: 0,
+            rebirths: 0,
+            health: data.health,
+            maxHealth: data.maxHealth,
+            unspentStatPoints: 0,
+            stats: data.stats,
+            gold: 0,
+            gems: 0,
+            energy: data.energy,
+            maxEnergy: data.maxEnergy,
+            energyUpdatedAt: data.energyUpdatedAt,
+            createdAt: now,
+            updatedAt: now,
+          };
+          return createdCharacter;
+        }),
+        update: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          createdCharacter = { ...createdCharacter, ...data };
+          return createdCharacter;
+        }),
+      },
+      inventoryStack: { findMany: vi.fn().mockResolvedValue([]) },
+      questProgress: { findMany: vi.fn().mockResolvedValue([]) },
+      travelTask: { findMany: vi.fn().mockResolvedValue([]) },
+      combatEncounter: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const notifications = { emitCharacterEvent: vi.fn() };
+    const travelQueue = { scheduleArrival: vi.fn() };
+    const service = new GameCommandsService(
+      prisma as unknown as ConstructorParameters<typeof GameCommandsService>[0],
+      notifications as unknown as ConstructorParameters<typeof GameCommandsService>[1],
+      travelQueue as unknown as ConstructorParameters<typeof GameCommandsService>[2],
+    );
+
+    return { service };
+  }
+
+  it.each([
+    { classId: 'swordsman' as CharacterClassId, raceId: 'oracle', primaryStat: 'сила' as StatKey },
+    { classId: 'ranger' as CharacterClassId, raceId: 'oracle', primaryStat: 'ловкость' as StatKey },
+    { classId: 'mage' as CharacterClassId, raceId: 'veiled', primaryStat: 'интуиция' as StatKey },
+  ])('makes $primaryStat the leading stat for a new $classId', async ({ classId, raceId, primaryStat }) => {
+    const { service } = createCreationHarness();
+    const state = await service.createCharacter('user-create', {
+      name: 'Даррид',
+      raceId,
+      gender: 'male',
+      classId,
+    });
+
+    const stats = state.character!.stats;
+    const primaryValue = stats[primaryStat];
+    for (const [stat, value] of Object.entries(stats) as Array<[StatKey, number]>) {
+      if (stat !== primaryStat) {
+        expect(primaryValue).toBeGreaterThan(value);
+      }
+    }
+  });
+});
+
 describe('GameCommandsService command idempotency', () => {
   const now = new Date('2026-05-07T12:00:00.000Z');
   const baseStats = {
@@ -995,7 +1084,7 @@ describe('GameCommandsService combat pet authority', () => {
   };
 
   function createHarness(
-    equipped: Array<{
+    inventory: Array<{
       id: string;
       characterId: string;
       itemId: string;
@@ -1020,7 +1109,33 @@ describe('GameCommandsService combat pet authority', () => {
         findFirst: vi.fn().mockResolvedValue(character),
         update: vi.fn().mockResolvedValue(character),
       },
-      inventoryStack: { findMany: vi.fn().mockResolvedValue(equipped) },
+      inventoryStack: {
+        findMany: vi.fn(async ({ where }: { where?: Record<string, unknown> } = {}) =>
+          inventory.filter((stack) => {
+            if (where?.characterId && stack.characterId !== where.characterId) {
+              return false;
+            }
+            if (where?.itemId && stack.itemId !== where.itemId) {
+              return false;
+            }
+            if (where?.equippedSlot) {
+              const equippedSlot = where.equippedSlot;
+              if (
+                equippedSlot &&
+                typeof equippedSlot === 'object' &&
+                'not' in equippedSlot &&
+                stack.equippedSlot === (equippedSlot as { not: unknown }).not
+              ) {
+                return false;
+              }
+              if (typeof equippedSlot === 'string' && stack.equippedSlot !== equippedSlot) {
+                return false;
+              }
+            }
+            return true;
+          }),
+        ),
+      },
       questProgress: { findMany: vi.fn().mockResolvedValue([]) },
       travelTask: { findMany: vi.fn().mockResolvedValue([]) },
       combatEncounter: {
@@ -1079,14 +1194,14 @@ describe('GameCommandsService combat pet authority', () => {
   it('does not grant pet assist for arbitrary client petId', async () => {
     const { service, transactionClient } = createHarness([]);
 
-    await service.resolveCombat(character.userId, combat.id, { petId: 'kitten' });
+    await service.resolveCombat(character.userId, combat.id, { petId: 'missing-pet' });
 
     const log = resolvedLog(transactionClient);
     expect(log.petId).toBeUndefined();
     expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
   });
 
-  it.each([{ petId: undefined }, { petId: 'kitten' }])(
+  it.each([{ petId: undefined }, { petId: 'duelist-rapier' }])(
     'does not grant pet assist for missing or invalid petId',
     async ({ petId }) => {
       const { service, transactionClient } = createHarness([
@@ -1109,6 +1224,61 @@ describe('GameCommandsService combat pet authority', () => {
       expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
     },
   );
+
+  it('does not grant pet assist for unowned catalog petId', async () => {
+    const { service, transactionClient } = createHarness([]);
+
+    await service.resolveCombat(character.userId, combat.id, { petId: 'wyrmlet' });
+
+    const log = resolvedLog(transactionClient);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+  });
+
+  it('does not grant pet assist for an owned but unequipped pet', async () => {
+    const petCombatStats = { level: 7, health: 2345 };
+    const { service, transactionClient } = createHarness([
+      {
+        id: 'stack-pet',
+        characterId: character.id,
+        itemId: 'ember-whelp',
+        quantity: 1,
+        enhancementLevel: 0,
+        equippedSlot: null,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ]);
+
+    await withEmberWhelpPetCombatStats(petCombatStats, async () => {
+      await service.resolveCombat(character.userId, combat.id, { petId: 'ember-whelp' });
+    });
+
+    const log = resolvedLog(transactionClient);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+  });
+
+  it('does not grant pet assist for an equipped non-pet item', async () => {
+    const { service, transactionClient } = createHarness([
+      {
+        id: 'stack-weapon',
+        characterId: character.id,
+        itemId: 'duelist-rapier',
+        quantity: 1,
+        enhancementLevel: 0,
+        equippedSlot: 'pet',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ]);
+
+    await service.resolveCombat(character.userId, combat.id, { petId: 'duelist-rapier' });
+
+    const log = resolvedLog(transactionClient);
+    expect(log.petId).toBeUndefined();
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+  });
 
   it('resolves combat without pet assist when no pet is requested', async () => {
     const { service, transactionClient } = createHarness([]);

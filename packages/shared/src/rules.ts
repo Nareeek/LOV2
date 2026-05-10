@@ -153,7 +153,7 @@ export function resolveCombat(params: {
   let enemyHealth = params.enemy.health;
   let petHealth = params.pet?.health ?? 0;
   let turn = 1;
-  let allyTurn: 'character' | 'pet' = 'character';
+  let allyTurn: 'character' | 'pet' = params.pet ? 'pet' : 'character';
   let allyHitCount = 0;
   let enemyHitCount = 0;
   let lastAllyDamage = 0;

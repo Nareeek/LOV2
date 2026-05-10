@@ -20,7 +20,7 @@ import {
   type Race,
   type TravelTask,
 } from '@lov2/shared';
-import { characterImagePath } from '../../game/characterIdentity.js';
+import { characterAvatarPath, characterImagePath } from '../../game/characterIdentity.js';
 import type { GameIntent, MetaTab, RouteState, SheetTab } from '../../game/types.js';
 import { assetPath } from './assets.js';
 import {
@@ -75,7 +75,7 @@ import {
 } from './GamePanels.logic.js';
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
-import { enemyAssetId, enemyDisplayName } from './enemyPresentation.js';
+import { enemyAssetId, enemyAvatarAssetId, enemyDisplayName } from './enemyPresentation.js';
 export function TravelStage({
   state,
   activeTravel,
@@ -94,7 +94,7 @@ export function TravelStage({
   const activeQuest = activeTravel?.questId ? state.quests.find((quest) => quest.id === activeTravel.questId) : undefined;
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
   const progressPercent = progress?.percent ?? 0;
-  const canRushTravel = Boolean(!busy && activeTravel && (activeTravelReady || (state.character?.gems ?? 0) >= 1));
+  const canRushTravel = Boolean(!busy && activeTravel && !activeTravelReady && (state.character?.gems ?? 0) >= 1);
   const characterImageSrc = state.character ? characterImagePath(state.character) : null;
 
   return (
@@ -127,7 +127,7 @@ export function TravelStage({
           className="lov-skip-button"
           data-testid="travel-rush-button"
           disabled={!canRushTravel}
-          onClick={() => activeTravel && onIntent({ type: 'claimTravel', travelId: activeTravel.id, rush: !activeTravelReady })}
+          onClick={() => activeTravel && onIntent({ type: 'claimTravel', travelId: activeTravel.id, rush: true })}
         >
           Не хочу ждать! · 1 жемчужина
         </button>
@@ -156,8 +156,6 @@ export function CombatStage({
   petAssistAvailable,
   selectedPetId,
   battlePetId,
-  combatLocked,
-  busy = false,
   replayTurns,
   onIntent,
 }: {
@@ -173,8 +171,6 @@ export function CombatStage({
   petAssistAvailable: boolean;
   selectedPetId: string;
   battlePetId: string | null;
-  combatLocked: boolean;
-  busy?: boolean;
   replayTurns: CombatTurn[] | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
@@ -184,8 +180,10 @@ export function CombatStage({
   }
 
   const heroSrc = characterImagePath(character);
+  const heroAvatarSrc = characterAvatarPath(character);
   const displayedEnemyName = enemyDisplayName(enemy);
   const displayedEnemyAssetId = enemyAssetId(enemy);
+  const displayedEnemyAvatarAssetId = enemyAvatarAssetId(enemy) ?? displayedEnemyAssetId;
   const activePetId = battlePetId ?? selectedPetId;
   const selectedPet = PET_VARIANTS.find((pet) => pet.id === activePetId) ?? PET_VARIANTS[2]!;
   const selectedPetDefinition = state.items.find((item) => item.id === activePetId && item.slot === 'pet');
@@ -196,7 +194,6 @@ export function CombatStage({
   const recentTurns = latestReplayTurn ? [latestReplayTurn] : [];
   const petSummoned = Boolean(battlePetId || petAssistArmed);
   const petActing = petSummoned && latestReplayTurn?.actor === 'pet';
-  const latestTurnLabel = latestReplayTurn ? combatTurnLabel(latestReplayTurn, selectedPetName, displayedEnemyName, character.name) : null;
   const displayedPetHealth = petMaxHealth > 0 ? petHealth : selectedPetCombatStats?.health ?? selectedPet.hp;
   const displayedPetMaxHealth = petMaxHealth > 0 ? petMaxHealth : selectedPetCombatStats?.health ?? selectedPet.hp;
   const latestTarget = targetForTurn(latestReplayTurn);
@@ -224,7 +221,7 @@ export function CombatStage({
             <UiIcon name="info" />
           </button>
           <div className="lov-combat-avatar hero">
-            <img src={heroSrc} alt="" data-testid="combat-character-avatar" />
+            <img src={heroAvatarSrc} alt="" data-testid="combat-character-avatar" />
           </div>
           <div className="lov-combat-meta">
             <strong>{character.name}</strong>
@@ -240,7 +237,6 @@ export function CombatStage({
           type="button"
           className="lov-skip-battle"
           data-testid="combat-skip-button"
-          disabled={busy || combatLocked}
           onClick={() => onIntent({ type: 'showReward' })}
         >
           Пропустить бой
@@ -256,7 +252,7 @@ export function CombatStage({
             <small>{enemyHealth}</small>
           </div>
           <div className="lov-combat-avatar enemy">
-            <img src={assetPath(displayedEnemyAssetId)} alt="" />
+            <img src={assetPath(displayedEnemyAvatarAssetId)} alt="" />
           </div>
           <button
             type="button"
@@ -293,28 +289,27 @@ export function CombatStage({
         ) : null}
       </div>
 
-      {latestTurnLabel ? (
-        <div className={`lov-combat-turn-callout actor-${latestReplayTurn?.actor ?? 'none'}`}>
-          <strong>{latestTurnLabel.title}</strong>
-          <span>{latestTurnLabel.detail}</span>
-        </div>
-      ) : null}
-
       <div className="lov-battle-bottom">
-        <div className="lov-pet-card">
+        <div className={`lov-pet-card ${petButtonActive ? 'active' : ''}`}>
           <button
             type="button"
             className={`lov-toggle-chip ${petButtonActive ? 'active' : ''}`}
-            data-testid="pet-assist-button"
-            disabled={combatLocked || !petAssistAvailable}
+            disabled={!petAssistAvailable}
             onClick={() => onIntent({ type: 'togglePetAssist' })}
           >
             Вызывать питомца
           </button>
           <div className="lov-pet-card-body">
-            <div className="lov-pet-card-image">
+            <button
+              type="button"
+              className="lov-pet-card-image"
+              data-testid="pet-assist-button"
+              aria-label="Вызвать питомца"
+              disabled={!petAssistAvailable}
+              onClick={() => onIntent({ type: 'togglePetAssist' })}
+            >
               <img src={assetPath(selectedPet.assetId)} alt="" />
-            </div>
+            </button>
             <div className="lov-pet-card-copy">
               <strong>{selectedPetName}</strong>
               <span>{selectedPetLevel} уровень</span>
@@ -333,7 +328,7 @@ export function CombatStage({
             <span
               key={`${turn.turn}-${turn.actor}-${turn.damage}-${index}`}
               className={`shell-reset-damage ${damageTargetClass(turn)} actor-${turn.actor} ${turn.critical ? 'critical' : ''}`}
-              style={{ '--float-index': `${index}` } as CSSProperties}
+              style={{ '--damage-stack-offset': `${index * 30}px` } as CSSProperties}
             >
               -{turn.damage}
             </span>
@@ -384,16 +379,6 @@ function fighterMotionClass(
     classes.push('attacking', pulseClass);
   }
   return classes.join(' ');
-}
-
-function combatTurnLabel(turn: CombatTurn, petName: string, enemyName: string, heroName: string) {
-  const actor = turn.actor === 'pet' ? petName : turn.actor === 'character' ? heroName : enemyName;
-  const turnTarget = targetForTurn(turn);
-  const target = turnTarget === 'pet' ? petName : turnTarget === 'enemy' ? enemyName : heroName;
-  return {
-    title: turn.critical ? 'Критический удар' : 'Удар',
-    detail: `${actor} → ${target}: ${turn.damage}`,
-  };
 }
 
 function rewardPetForCombat(latestResolvedCombat: CombatEncounter | undefined, battlePetId?: string | null) {

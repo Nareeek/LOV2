@@ -21,6 +21,7 @@ import {
   type TravelTask,
 } from '@lov2/shared';
 import {
+  characterAvatarPath,
   characterImagePath,
   characterRaceClassLabel,
   characterRaceSignPath,
@@ -500,8 +501,7 @@ export function HeroInfoWindow({
   const race = state.races.find((entry) => entry.id === character.raceId);
   const raceLabel = race?.nameRu ?? character.raceId;
   const raceClassLabel = characterRaceClassLabel(raceLabel, character.classId);
-  const characterImageSrc = characterImagePath(character);
-  const raceSignSrc = characterRaceSignPath(character.raceId);
+  const characterAvatarSrc = characterAvatarPath(character);
   const equippedBySlot = getEquippedBySlot(state);
   const equippedEntries = Object.values(equippedBySlot).filter((entry): entry is EquippedEntry => Boolean(entry));
   const totals = buildCharacterTotals(state, equippedEntries);
@@ -521,8 +521,7 @@ export function HeroInfoWindow({
           <div className="lov-profile-screen lov-profile-screen-window">
             <div className="lov-profile-header">
               <div className="lov-profile-identity-art">
-                <img src={characterImageSrc} alt="" data-testid="hero-info-character-image" />
-                <img className="lov-profile-race-sign" src={raceSignSrc} alt="" data-testid="hero-info-race-sign" />
+                <img src={characterAvatarSrc} alt="" data-testid="hero-info-character-image" />
               </div>
               <div>
                 <strong>{character.name}</strong>
@@ -725,6 +724,7 @@ function PaperDollPanel({
   onIntent: (intent: GameIntent) => void;
 }) {
   const heroSrc = characterImagePath(character);
+  const raceSignSrc = characterRaceSignPath(character.raceId);
   const paperDollPetAssetId = selectedPetAssetId ?? 'pet-wyvern';
 
   return (
@@ -750,7 +750,7 @@ function PaperDollPanel({
         <div className="lov-paperdoll-center">
           <img className="lov-paperdoll-hero" src={heroSrc} alt="" data-testid="paperdoll-character-image" />
           {equippedBySlot.pet || selectedPetAssetId ? <img className="lov-paperdoll-pet" src={assetPath(paperDollPetAssetId)} alt="" /> : null}
-          <span className="lov-wing-badge">🪽</span>
+          <img className="lov-paperdoll-race-sign" src={raceSignSrc} alt="" data-testid="paperdoll-race-sign" />
         </div>
 
         <div className="lov-paperdoll-column right">
