@@ -58,7 +58,7 @@ describe('game data', () => {
       locationId: 'fog-harbor',
       enemyId: 'harbor-wraith',
       energyCost: 3,
-      reward: { experience: 180, gold: 95, gems: 1, itemIds: ['moon-vest'] },
+      reward: { experience: 180, gold: 95, gems: 0, itemIds: ['moon-vest'] },
     });
     expect(gameData.locations.some((location) => location.id === quest?.locationId)).toBe(true);
     expect(gameData.enemies.some((enemy) => enemy.id === quest?.enemyId)).toBe(true);
@@ -133,6 +133,11 @@ describe('game data', () => {
     withRewardItemIds(enemy!, ['missing-wraith-drop'], () => {
       expect(() => validateGameData()).toThrow(/enemy harbor-wraith reward references missing item/);
     });
+  });
+
+  it('does not grant gems from quest or enemy combat rewards', () => {
+    expect(gameData.quests.every((quest) => quest.reward.gems === 0)).toBe(true);
+    expect(gameData.enemies.every((enemy) => enemy.reward.gems === 0)).toBe(true);
   });
 
   it('assigns positive energy costs to all starter quests', () => {

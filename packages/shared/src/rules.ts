@@ -195,8 +195,7 @@ export function resolveCombat(params: {
   let characterHealth = params.characterHealth;
   let enemyHealth = params.enemy.health;
   let petHealth = params.pet?.health ?? 0;
-  let petFood = Math.max(0, Math.floor(params.pet?.food ?? (params.pet ? 1 : 0)));
-  let petFoodSpent = 0;
+  const petFood = Math.max(0, Math.floor(params.pet?.food ?? (params.pet ? 1 : 0)));
   let petTurns = 0;
   let turn = 1;
   let allyTurn: 'character' | 'pet' = params.pet && petFood > 0 ? 'pet' : 'character';
@@ -235,8 +234,6 @@ export function resolveCombat(params: {
       lastAllyDamage = damage;
       enemyHealth = Math.max(0, enemyHealth - damage);
       if (isPetTurn) {
-        petFood = Math.max(0, petFood - 1);
-        petFoodSpent += 1;
         petTurns += 1;
       }
       turns.push({
@@ -282,7 +279,8 @@ export function resolveCombat(params: {
   }
 
   const won = enemyHealth <= 0 || characterHealth >= enemyHealth;
-  const petExperienceGained = petTurns > 0 ? petTurns * (won ? 3 : 1) : 0;
+  const petFoodSpent = petTurns > 0 ? 1 : 0;
+  const petExperienceGained = petTurns > 0 && won ? 1 : 0;
 
   return {
     winner: won ? 'character' : 'enemy',
