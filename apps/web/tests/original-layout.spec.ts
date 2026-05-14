@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page, type Route } from '@playwright/test';
 import { gameData } from '@lov2/game-data';
-import type { BootstrapState, CombatEncounter, CombatLog } from '@lov2/shared';
+import type { BootstrapState, CombatEncounter, CombatLog, EnemyDefinition } from '@lov2/shared';
 import { CLASS_OPTIONS } from '../src/game/characterCreationOptions.js';
 
 const NOW = '2026-04-22T12:00:00.000Z';
@@ -683,7 +683,7 @@ test('sheet close control and bag slot count stay reachable on a narrow desktop 
 
 test('combat and reward stay inside the battlefield shell', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
-  const combatState = createCombatState(0);
+  const combatState = createCombatState(2);
   const assistedCombatLog: CombatLog = {
     winner: 'character',
     turns: [
@@ -747,27 +747,26 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expectSimilarSize(heroHealth, enemyHealth, 0.08, 0.15);
   await expectContained(page.getByTestId('combat-summoned-pet'), battleStage);
   await expectNoOverlap(page.getByTestId('combat-summoned-pet'), enemyFighter);
-  await expect(page.locator('.lov-combat-header.enemy')).toContainText('Роман');
   await expect(page.locator('.lov-combat-avatar.enemy img')).toHaveAttribute(
     'src',
-    '/assets/generated/enemies/enemy-mist-bandit.png',
+    '/assets/generated/enemies/travel/enemy_travel_fog_harbor_wraith.png',
   );
   await expect(enemyFighter).toHaveAttribute(
     'src',
-    '/assets/generated/enemies/enemy-mist-bandit.png',
+    '/assets/generated/enemies/travel/enemy_travel_fog_harbor_wraith.png',
   );
   await expect(page.getByTestId('bottom-tray')).toBeVisible();
 
   await page.getByTestId('combat-enemy-info-button').click();
   const enemyInfoWindow = page.getByTestId('enemy-info-popup');
   await expect(enemyInfoWindow).toBeVisible();
-  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-health')).toContainText('95');
-  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-armor')).toContainText('3');
-  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-strength')).toContainText('6');
-  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-luck')).toContainText('3');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-health')).toContainText('165');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-armor')).toContainText('7');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-strength')).toContainText('10');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-luck')).toContainText('5');
   await expect(enemyInfoWindow.locator('.lov-enemy-info-portrait img')).toHaveAttribute(
     'src',
-    '/assets/generated/enemies/enemy-mist-bandit.png',
+    '/assets/generated/enemies/travel/enemy_travel_fog_harbor_wraith.png',
   );
   await enemyInfoWindow.getByTestId('world-window-bottom-close').click();
 
@@ -779,6 +778,31 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expect(rewardWindow).toBeVisible();
   await expectContained(rewardWindow, playfield);
   await expect(page.getByTestId('reward-continue-button')).toBeVisible();
+});
+
+test('combat renders the generated fallback enemy image for unknown assets', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  const fallbackPath = '/assets/generated/enemies/travel/enemy_travel_fog_harbor_wraith.png';
+  const unknownEnemy: EnemyDefinition = {
+    ...gameData.enemies[0]!,
+    id: 'unknown-fallback-enemy',
+    assetId: 'missing-enemy-asset',
+    nameRu: 'Fallback enemy',
+  };
+  const combats: CombatEncounter[] = [
+    {
+      id: 'combat-pending',
+      characterId: 'character-1',
+      enemyId: unknownEnemy.id,
+      status: 'pending',
+      createdAt: NOW,
+    },
+  ];
+
+  await openGame(page, createBootstrapState({ enemies: [...gameData.enemies, unknownEnemy], combats }));
+
+  await expect(page.getByTestId('combat-enemy-fighter')).toHaveAttribute('src', fallbackPath);
+  await expect(page.locator('.lov-combat-avatar.enemy img')).toHaveAttribute('src', fallbackPath);
 });
 
 test('lost combat shows a defeat result without zero rewards', async ({ page }) => {

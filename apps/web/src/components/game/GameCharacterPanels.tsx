@@ -83,7 +83,7 @@ import {
 } from './GamePanels.logic.js';
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
-import { enemyAssetId, enemyDisplayName, enemyStatRows } from './enemyPresentation.js';
+import { enemyDisplayName, enemyImagePath, enemyStatRows } from './enemyPresentation.js';
 export function CharacterSheet({
   state,
   activeTab,
@@ -634,7 +634,7 @@ export function EnemyInfoWindow({
 
   const stats = enemyStatRows(enemy);
   const displayedEnemyName = enemyDisplayName(enemy);
-  const displayedEnemyAssetId = enemyAssetId(enemy);
+  const displayedEnemyImagePath = enemyImagePath(enemy);
 
   return (
     <WorldWindowShell
@@ -649,7 +649,7 @@ export function EnemyInfoWindow({
         <section className="lov-sheet-left lov-hero-info-main">
           <div className="lov-profile-screen lov-profile-screen-window">
             <div className="lov-profile-header">
-              <img src={assetPath(displayedEnemyAssetId)} alt="" />
+              <img src={displayedEnemyImagePath} alt="" />
               <div>
                 <strong>{displayedEnemyName}</strong>
                 <span>{enemy.boss ? 'Босс' : 'Противник'} · {enemy.level} уровень</span>
@@ -668,7 +668,7 @@ export function EnemyInfoWindow({
 
         <section className="lov-sheet-right lov-hero-info-side">
           <div className="lov-enemy-info-portrait">
-            <img src={assetPath(displayedEnemyAssetId)} alt="" />
+            <img src={displayedEnemyImagePath} alt="" />
           </div>
         </section>
       </div>
