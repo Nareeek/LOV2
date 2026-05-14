@@ -75,7 +75,7 @@ import {
 import { ItemChip, Meter, UiIcon } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
 import { InventoryGrid } from './GameCharacterPanels.js';
-import { enemyAssetId, enemyDisplayName, enemyStatRows } from './enemyPresentation.js';
+import { enemyDisplayName, enemyImagePath, enemyStatRows } from './enemyPresentation.js';
 export function TavernWindow({
   state,
   selectedQuest,
@@ -232,7 +232,7 @@ export function ArenaPreviewWindow({
 
   const stats = enemyStatRows(enemy);
   const opponentName = enemyDisplayName(enemy);
-  const opponentAsset = enemyAssetId(enemy);
+  const opponentImagePath = enemyImagePath(enemy);
 
   return (
     <WorldWindowShell
@@ -280,7 +280,7 @@ export function ArenaPreviewWindow({
         </section>
 
         <section className="lov-arena-preview">
-          <img src={assetPath(opponentAsset)} alt="" />
+          <img src={opponentImagePath} alt="" />
         </section>
       </div>
 

@@ -75,7 +75,7 @@ import {
 } from './GamePanels.logic.js';
 import { ItemChip, Meter } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
-import { enemyAssetId, enemyAvatarAssetId, enemyDisplayName } from './enemyPresentation.js';
+import { enemyAvatarImagePath, enemyDisplayName, enemyImagePath } from './enemyPresentation.js';
 export function TravelStage({
   state,
   activeTravel,
@@ -226,8 +226,8 @@ export function CombatStage({
   const heroSrc = characterImagePath(character);
   const heroAvatarSrc = characterAvatarPath(character);
   const displayedEnemyName = enemyDisplayName(enemy);
-  const displayedEnemyAssetId = enemyAssetId(enemy);
-  const displayedEnemyAvatarAssetId = enemyAvatarAssetId(enemy) ?? displayedEnemyAssetId;
+  const displayedEnemyImagePath = enemyImagePath(enemy);
+  const displayedEnemyAvatarImagePath = enemyAvatarImagePath(enemy);
   const activePetId = battlePetId ?? selectedPetId;
   const selectedPet = PET_VARIANTS.find((pet) => pet.id === activePetId) ?? PET_VARIANTS[2]!;
   const selectedPetDefinition = state.items.find((item) => item.id === activePetId && item.slot === 'pet');
@@ -299,7 +299,7 @@ export function CombatStage({
             aria-label="Сведения о противнике"
             onClick={() => onIntent({ type: 'openInfo', windowId: 'enemyInfo' })}
           >
-            <img src={assetPath(displayedEnemyAvatarAssetId)} alt="" />
+            <img src={displayedEnemyAvatarImagePath} alt="" />
           </button>
         </div>
       </div>
@@ -311,7 +311,7 @@ export function CombatStage({
         <div className="lov-fighter-slot enemy">
           <img
             className={`lov-fighter enemy ${enemyMotionClass}`}
-            src={assetPath(displayedEnemyAssetId)}
+            src={displayedEnemyImagePath}
             alt=""
             data-testid="combat-enemy-fighter"
           />
