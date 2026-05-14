@@ -33,7 +33,6 @@ import { assetPath } from './assets.js';
 import {
   APPEARANCE_OPTIONS,
   DRAG_STACK_TYPE,
-  DRAG_STORE_ITEM_TYPE,
   EXERCISE_BRIEFS,
   JOURNAL_COPY,
   LEADERBOARD_CATEGORIES,
@@ -66,6 +65,7 @@ import {
   buildProfileSummaryStats,
   buildStatBreakdowns,
   buildTravelProgress,
+  BACKPACK_SLOT_COUNT,
   formatDuration,
   formatPrice,
   getBackpackStacks,
@@ -120,7 +120,7 @@ export function CharacterSheet({
   const raceSignSrc = characterRaceSignPath(character.raceId);
   const equippedBySlot = getEquippedBySlot(state);
   const equippedEntries = Object.values(equippedBySlot).filter((entry): entry is EquippedEntry => Boolean(entry));
-  const backpack = orderBackpackStacks(getBackpackStacks(state), inventorySlotOrder, 24);
+  const backpack = orderBackpackStacks(getBackpackStacks(state), inventorySlotOrder, BACKPACK_SLOT_COUNT);
   const totals = buildCharacterTotals(state, equippedEntries);
   const breakdowns = buildStatBreakdowns(state, race, equippedEntries);
   const healthBreakdown = buildHealthBreakdown(state, race, equippedEntries);
@@ -298,7 +298,7 @@ export function CharacterSheet({
               }}
               dataTestId="inventory-panel"
               draggable
-              fillSlots={24}
+              fillSlots={BACKPACK_SLOT_COUNT}
             />
           </div>
         ) : null}
@@ -881,39 +881,49 @@ export function InventoryGrid({
   selectedStackId,
   onSelect,
   onDropStack,
+  onDropStoreItem,
   dataTestId,
   draggable = false,
-  fillSlots = 18,
+  fillSlots = BACKPACK_SLOT_COUNT,
 }: {
   state: BootstrapState;
   stacks: Array<InventoryStack | null>;
   selectedStackId: string | null;
   onSelect: (inventoryStackId: string) => void;
   onDropStack?: (inventoryStackId: string, slotIndex: number) => void;
+  onDropStoreItem?: (itemId: string, slotIndex: number) => void;
   dataTestId?: string;
   draggable?: boolean;
   fillSlots?: number;
 }) {
-  const cells: Array<InventoryStack | null> = [...stacks];
+  const cells: Array<InventoryStack | null> = stacks.slice(0, fillSlots);
   while (cells.length < fillSlots) {
     cells.push(null);
   }
+  const acceptsDrops = Boolean(onDropStack || onDropStoreItem);
+  const handleDrop = (event: DragEvent<HTMLElement>, slotIndex: number) => {
+    if (!acceptsDrops) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const inventoryStackId = readDraggedStackId(event);
+    if (inventoryStackId && onDropStack) {
+      onDropStack(inventoryStackId, slotIndex);
+      return;
+    }
+    const storeItemId = readDraggedStoreItemId(event);
+    if (storeItemId && onDropStoreItem) {
+      onDropStoreItem(storeItemId, slotIndex);
+    }
+  };
 
   return (
     <div
       className="shell-reset-grid lov-inventory-grid"
       data-testid={dataTestId}
-      onDragOver={(event) => onDropStack && event.preventDefault()}
-      onDrop={(event) => {
-        if (!onDropStack) {
-          return;
-        }
-        event.preventDefault();
-        const inventoryStackId = readDraggedStackId(event);
-        if (inventoryStackId) {
-          onDropStack(inventoryStackId, 0);
-        }
-      }}
+      onDragOver={(event) => acceptsDrops && event.preventDefault()}
+      onDrop={(event) => handleDrop(event, 0)}
     >
       {cells.map((stack, index) => {
         if (!stack) {
@@ -921,18 +931,8 @@ export function InventoryGrid({
             <span
               key={`empty-${index}`}
               className="lov-grid-empty"
-              onDragOver={(event) => onDropStack && event.preventDefault()}
-              onDrop={(event) => {
-                if (!onDropStack) {
-                  return;
-                }
-                event.preventDefault();
-                event.stopPropagation();
-                const inventoryStackId = readDraggedStackId(event);
-                if (inventoryStackId) {
-                  onDropStack(inventoryStackId, index);
-                }
-              }}
+              onDragOver={(event) => acceptsDrops && event.preventDefault()}
+              onDrop={(event) => handleDrop(event, index)}
             />
           );
         }
@@ -953,18 +953,8 @@ export function InventoryGrid({
               event.dataTransfer.effectAllowed = 'move';
               event.dataTransfer.setData(DRAG_STACK_TYPE, stack.id);
             }}
-            onDragOver={(event) => onDropStack && event.preventDefault()}
-            onDrop={(event) => {
-              if (!onDropStack) {
-                return;
-              }
-              event.preventDefault();
-              event.stopPropagation();
-              const inventoryStackId = readDraggedStackId(event);
-              if (inventoryStackId) {
-                onDropStack(inventoryStackId, index);
-              }
-            }}
+            onDragOver={(event) => acceptsDrops && event.preventDefault()}
+            onDrop={(event) => handleDrop(event, index)}
           >
             <ItemChip item={item} compact />
             {stack.quantity > 1 ? <small className="lov-item-quantity">x{stack.quantity}</small> : null}

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
 import { gameData } from '@lov2/game-data';
 import {
+  BACKPACK_SLOT_COUNT,
   DEFAULT_MAX_ENERGY,
   ENERGY_REFILL_LARGE,
   ENERGY_REFILL_LARGE_GEMS_COST,
@@ -848,6 +849,64 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       petId: 'ember-whelp',
       amount: 6,
     });
+  });
+
+  it('purchases a class-matching shop item when the backpack has a free slot', async () => {
+    const { service, state } = createVerticalHarness({ characterOverride: { gold: 500 } });
+
+    const purchased = await service.purchaseItem(state.user.id, { itemId: 'duelist-rapier' });
+
+    expect(state.character.gold).toBe(380);
+    expect(purchased.inventory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ itemId: 'duelist-rapier', quantity: 1 }),
+      ]),
+    );
+    expect(state.inventory.filter((stack) => !stack.equippedSlot)).toHaveLength(1);
+    expect(state.events.find((event) => event.type === 'inventory.updated')?.payload).toMatchObject({
+      action: 'purchase',
+      itemId: 'duelist-rapier',
+      currency: 'gold',
+      amount: 120,
+    });
+  });
+
+  it('rejects pets and off-class equipment in the standard shop', async () => {
+    const { service, state } = createVerticalHarness({ characterOverride: { gold: 500, gems: 10 } });
+
+    await expect(service.purchaseItem(state.user.id, { itemId: 'ember-whelp' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(service.purchaseItem(state.user.id, { itemId: 'starter-staff' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+
+    expect(state.inventory).toHaveLength(0);
+    expect(state.character.gold).toBe(500);
+    expect(state.character.gems).toBe(10);
+  });
+
+  it('rejects shop purchases when the backpack is full', async () => {
+    const { service, state } = createVerticalHarness({ characterOverride: { gold: 500 } });
+    for (let index = 0; index < BACKPACK_SLOT_COUNT; index += 1) {
+      state.inventory.push({
+        id: `full-stack-${index}`,
+        characterId: state.character.id,
+        itemId: 'lucky-onyx',
+        quantity: 1,
+        enhancementLevel: 0,
+        equippedSlot: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    await expect(service.purchaseItem(state.user.id, { itemId: 'duelist-rapier' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+
+    expect(state.inventory).toHaveLength(BACKPACK_SLOT_COUNT);
+    expect(state.character.gold).toBe(500);
   });
 
   it('claims unlinked legacy travel as non-quest combat without location quest fallback', async () => {

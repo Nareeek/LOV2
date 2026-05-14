@@ -546,7 +546,7 @@ test('failed arena start keeps the arena window open', async ({ page }) => {
   await expect(page.getByTestId('game-message')).toHaveCount(0);
 });
 
-test('store purchase adds a duplicate item as a separate inventory cell', async ({ page }) => {
+test('store purchase requires dragging class stock into a free backpack slot', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   const baseState = createBootstrapState();
   const purchasedState = createBootstrapState({
@@ -578,13 +578,60 @@ test('store purchase adds a duplicate item as a separate inventory cell', async 
 
   await page.getByTestId('hotspot-hub-store').click();
   const storeWindow = page.getByTestId('store-sheet');
+
+  await expect(storeWindow.getByTestId('store-item-duelist-rapier')).toBeVisible();
+  await expect(storeWindow.getByTestId('store-item-ember-whelp')).toHaveCount(0);
+  await expect(storeWindow.getByTestId('store-item-starter-staff')).toHaveCount(0);
+
   await storeWindow.getByTestId('store-item-duelist-rapier').click();
+  await expect.poll(() => purchaseRequests).toBe(0);
+  await expect(storeWindow.getByTestId('store-feedback')).toContainText(/перетаскиванием/i);
+
+  await storeWindow
+    .getByTestId('store-item-duelist-rapier')
+    .dragTo(storeWindow.locator('[data-testid="inventory-panel"] .lov-grid-empty').first());
 
   await expect.poll(() => purchaseRequests).toBe(1);
   const rapierName = gameData.items.find((item) => item.id === 'duelist-rapier')!.nameRu;
   const rapierCells = storeWindow.locator('[data-testid="inventory-panel"] .lov-grid-item').filter({ hasText: rapierName });
   await expect(rapierCells).toHaveCount(2);
   await expect(rapierCells.locator('.lov-item-quantity')).toHaveCount(0);
+  await expect(page.locator('[data-testid="inventory-panel"] > *')).toHaveCount(24);
+});
+
+test('full backpack blocks drag-drop shop purchase without growing slots', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  const baseState = createBootstrapState();
+  const fullInventory = Array.from({ length: 24 }, (_, index) => ({
+    id: `stack-full-${index}`,
+    characterId: baseState.character!.id,
+    itemId: index % 2 === 0 ? 'duelist-rapier' : 'lucky-onyx',
+    quantity: 1,
+  }));
+  let purchaseRequests = 0;
+
+  await openGame(page, createBootstrapState({ inventory: fullInventory }), {
+    onApiRequest: async (pathname) => {
+      if (pathname === '/shop/purchase') {
+        purchaseRequests += 1;
+        return false;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-store').click();
+  const storeWindow = page.getByTestId('store-sheet');
+  await expect(storeWindow.getByTestId('store-backpack-capacity')).toHaveText('24/24');
+  await expect(storeWindow.locator('[data-testid="inventory-panel"] > *')).toHaveCount(24);
+
+  await storeWindow
+    .getByTestId('store-item-duelist-rapier')
+    .dragTo(storeWindow.locator('[data-testid="inventory-panel"]').first());
+
+  await expect.poll(() => purchaseRequests).toBe(0);
+  await expect(storeWindow.getByTestId('store-feedback')).toContainText(/Рюкзак полон/i);
+  await expect(storeWindow.locator('[data-testid="inventory-panel"] > *')).toHaveCount(24);
 });
 
 test('sheet close control and bag slot count stay reachable on a narrow desktop viewport', async ({ page }) => {

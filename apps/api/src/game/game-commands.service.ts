@@ -8,6 +8,7 @@ import {
 import type { Character as DbCharacter, Prisma } from '@prisma/client';
 import { gameData } from '@lov2/game-data';
 import {
+  BACKPACK_SLOT_COUNT,
   DEFAULT_MAX_ENERGY,
   ENERGY_REFILL_LARGE,
   ENERGY_REFILL_LARGE_GEMS_COST,
@@ -16,7 +17,9 @@ import {
   armorFromEquipment,
   canRebirth,
   forgeUpgradeCost,
+  hasBackpackCapacity,
   hasEnoughEnergy,
+  isStandardShopItem,
   levelFromExperience,
   maxHealthForStats,
   refillEnergy as refillEnergyMeter,
@@ -882,6 +885,9 @@ export class GameCommandsService {
     if (!item) {
       throw new NotFoundException('Предмет не найден');
     }
+    if (!isStandardShopItem(item, character.classId)) {
+      throw new BadRequestException('Этот товар не продаётся в обычном магазине');
+    }
 
     const priceGems = item.priceGems ?? 0;
     const currency = priceGems > 0 ? 'gems' : 'gold';
@@ -895,6 +901,14 @@ export class GameCommandsService {
     }
 
     await this.prisma.$transaction(async (tx) => {
+      const inventory = await tx.inventoryStack.findMany({
+        where: { characterId: character.id },
+        select: { equippedSlot: true },
+      });
+      if (!hasBackpackCapacity(inventory, BACKPACK_SLOT_COUNT)) {
+        throw new BadRequestException('Рюкзак полон');
+      }
+
       await tx.character.update({
         where: { id: character.id },
         data: currency === 'gems' ? { gems: { decrement: amount } } : { gold: { decrement: amount } },

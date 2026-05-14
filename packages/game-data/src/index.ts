@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type {
+  CharacterClassId,
   EnemyDefinition,
   ItemDefinition,
   LocationDefinition,
@@ -10,6 +11,7 @@ import type {
 } from '@lov2/shared';
 
 export const GAME_DATA_VERSION = '2026.04.vertical-slice.2';
+const CHARACTER_CLASS_IDS: CharacterClassId[] = ['swordsman', 'ranger', 'mage'];
 
 export const STAT_KEYS: StatKey[] = ['сила', 'ловкость', 'интуиция', 'удача'];
 
@@ -78,6 +80,7 @@ export const items: ItemDefinition[] = [
     descriptionRu: 'Простой меч для первых дуэлей мечника.',
     iconAssetId: 'icon-starter-sword',
     slot: 'weapon',
+    classIds: ['swordsman'],
     rarity: 'common',
     priceGold: 0,
     forgeable: true,
@@ -89,6 +92,7 @@ export const items: ItemDefinition[] = [
     descriptionRu: 'Легкий лук и колчан стрел для первых вылазок лучника.',
     iconAssetId: 'icon-starter-bow',
     slot: 'weapon',
+    classIds: ['ranger'],
     rarity: 'common',
     priceGold: 0,
     forgeable: true,
@@ -100,6 +104,7 @@ export const items: ItemDefinition[] = [
     descriptionRu: 'Посох ученика для первых заклинаний мага.',
     iconAssetId: 'icon-starter-staff',
     slot: 'weapon',
+    classIds: ['mage'],
     rarity: 'common',
     priceGold: 0,
     forgeable: true,
@@ -111,6 +116,7 @@ export const items: ItemDefinition[] = [
     descriptionRu: 'Легкий клинок для первых ночных контрактов.',
     iconAssetId: 'icon-rapier',
     slot: 'weapon',
+    classIds: ['swordsman'],
     rarity: 'uncommon',
     priceGold: 120,
     forgeable: true,
@@ -122,6 +128,7 @@ export const items: ItemDefinition[] = [
     descriptionRu: 'Гибкая броня с серебряной нитью.',
     iconAssetId: 'icon-vest',
     slot: 'armor',
+    classIds: ['mage'],
     rarity: 'uncommon',
     priceGold: 160,
     armorBonus: 8,
@@ -540,6 +547,7 @@ export function validateGameData(): void {
   }
 
   const knownAssetIds = new Set<string>(gameAssetIds);
+  const knownClassIds = new Set<string>(CHARACTER_CLASS_IDS);
   for (const item of items) {
     if (!knownAssetIds.has(item.iconAssetId)) {
       throw new Error(`item ${item.id} references missing icon asset ${item.iconAssetId}`);
@@ -547,6 +555,20 @@ export function validateGameData(): void {
 
     if (item.slot !== 'pet' && item.petCombatStats) {
       throw new Error(`non-pet item ${item.id} defines pet combat stats`);
+    }
+
+    if (item.classIds) {
+      if (item.classIds.length === 0) {
+        throw new Error(`item ${item.id} defines empty classIds`);
+      }
+      if (new Set(item.classIds).size !== item.classIds.length) {
+        throw new Error(`item ${item.id} defines duplicate classIds`);
+      }
+      for (const classId of item.classIds) {
+        if (!knownClassIds.has(classId)) {
+          throw new Error(`item ${item.id} references missing class ${classId}`);
+        }
+      }
     }
 
     if (item.slot === 'pet') {
