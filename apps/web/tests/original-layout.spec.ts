@@ -233,6 +233,24 @@ for (const viewport of [
       CHARACTER_AVATAR_ASSET_PATHS.male_nocturne_swordsman,
     );
     await expectContained(heroInfoWindow, page.getByTestId('world-stage'));
+    await expectContained(heroInfoWindow.locator('.lov-hero-info-layout'), heroInfoWindow.locator('.lov-window-body'));
+    await expectContained(
+      heroInfoWindow.locator('.lov-profile-screen-window .lov-profile-stats'),
+      heroInfoWindow.locator('.lov-profile-screen-window'),
+    );
+    await expectContained(heroInfoWindow.locator('.lov-paperdoll-center'), heroInfoWindow.locator('.lov-hero-info-side'));
+    await expectMaxHeightRatio(
+      heroInfoWindow.locator('.lov-profile-screen-window .lov-profile-stats'),
+      heroInfoWindow.locator('.lov-profile-screen-window'),
+      0.38,
+    );
+    await expectMaxWidthRatio(
+      heroInfoWindow.locator('.lov-paperdoll-center'),
+      heroInfoWindow.locator('.lov-hero-info-side'),
+      0.78,
+    );
+    await expectContained(heroInfoWindow.getByTestId('world-window-close-button'), heroInfoWindow);
+    await expectContained(heroInfoWindow.getByTestId('world-window-bottom-close'), heroInfoWindow);
     await expectWiderThan(
       heroInfoWindow.getByTestId('hero-info-stat-health'),
       heroInfoWindow.getByTestId('hero-info-stat-strength'),
@@ -636,6 +654,11 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   });
 
   const playfield = page.locator('.stage-main').first();
+  const battleStage = page.locator('.lov-battle-stage');
+  const heroFighter = page.getByTestId('combat-character-fighter');
+  const enemyFighter = page.getByTestId('combat-enemy-fighter');
+  const heroHealth = page.locator('.lov-combat-header.ally .lov-health-track');
+  const enemyHealth = page.locator('.lov-combat-header.enemy .lov-health-track');
 
   await expect(page.getByTestId('combat-screen')).toBeVisible();
   await expect(page.getByTestId('combat-skip-button')).toBeVisible();
@@ -643,14 +666,23 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expect(page.getByTestId('combat-summoned-pet')).toHaveCount(0);
   await page.getByTestId('pet-assist-button').click();
   await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
-  await expect(page.locator('.lov-fighter.hero')).toBeVisible();
-  await expect(page.locator('.lov-fighter.enemy')).toBeVisible();
+  await expect(heroFighter).toBeVisible();
+  await expect(enemyFighter).toBeVisible();
+  await expectContained(heroFighter, battleStage);
+  await expectContained(enemyFighter, battleStage);
+  await expectBottomAligned(heroFighter, battleStage, 30);
+  await expectBottomAligned(enemyFighter, battleStage, 30);
+  await expectContainBottomObjectFit(heroFighter);
+  await expectContainBottomObjectFit(enemyFighter);
+  await expectSimilarSize(heroHealth, enemyHealth, 0.08, 0.15);
+  await expectContained(page.getByTestId('combat-summoned-pet'), battleStage);
+  await expectNoOverlap(page.getByTestId('combat-summoned-pet'), enemyFighter);
   await expect(page.locator('.lov-combat-header.enemy')).toContainText('Роман');
   await expect(page.locator('.lov-combat-avatar.enemy img')).toHaveAttribute(
     'src',
     '/assets/generated/enemies/enemy-mist-bandit.png',
   );
-  await expect(page.locator('.lov-fighter.enemy')).toHaveAttribute(
+  await expect(enemyFighter).toHaveAttribute(
     'src',
     '/assets/generated/enemies/enemy-mist-bandit.png',
   );
@@ -670,6 +702,7 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await enemyInfoWindow.getByTestId('world-window-bottom-close').click();
 
   await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
+  await expectContained(page.getByTestId('combat-summoned-pet'), battleStage);
 
   await page.getByTestId('combat-skip-button').click();
   const rewardWindow = page.getByTestId('reward-screen');
@@ -1021,6 +1054,30 @@ async function expectContained(locator: Locator, container: Locator) {
   expect(box!.y + box!.height).toBeLessThanOrEqual(containerBox!.y + containerBox!.height + 4);
 }
 
+async function expectBottomAligned(locator: Locator, container: Locator, maxGap: number) {
+  const [box, containerBox] = await Promise.all([locator.boundingBox(), container.boundingBox()]);
+
+  expect(box).not.toBeNull();
+  expect(containerBox).not.toBeNull();
+
+  const bottomGap = containerBox!.y + containerBox!.height - (box!.y + box!.height);
+  expect(bottomGap).toBeGreaterThanOrEqual(-4);
+  expect(bottomGap).toBeLessThanOrEqual(maxGap);
+}
+
+async function expectContainBottomObjectFit(locator: Locator) {
+  const style = await locator.evaluate((element) => {
+    const computed = window.getComputedStyle(element);
+    return {
+      objectFit: computed.objectFit,
+      objectPosition: computed.objectPosition,
+    };
+  });
+
+  expect(style.objectFit).toBe('contain');
+  expect(style.objectPosition === '50% 100%' || style.objectPosition.includes('bottom')).toBe(true);
+}
+
 async function expectBelow(locator: Locator, anchor: Locator, minGap = 0) {
   const [box, anchorBox] = await Promise.all([locator.boundingBox(), anchor.boundingBox()]);
 
@@ -1035,6 +1092,34 @@ async function expectWiderThan(wide: Locator, narrow: Locator) {
   expect(wideBox).not.toBeNull();
   expect(narrowBox).not.toBeNull();
   expect(wideBox!.width).toBeGreaterThan(narrowBox!.width * 1.55);
+}
+
+async function expectSimilarSize(first: Locator, second: Locator, widthTolerance: number, heightTolerance: number) {
+  const [firstBox, secondBox] = await Promise.all([first.boundingBox(), second.boundingBox()]);
+
+  expect(firstBox).not.toBeNull();
+  expect(secondBox).not.toBeNull();
+
+  const widthDelta = Math.abs(firstBox!.width - secondBox!.width);
+  const heightDelta = Math.abs(firstBox!.height - secondBox!.height);
+  expect(widthDelta).toBeLessThanOrEqual(Math.max(firstBox!.width, secondBox!.width) * widthTolerance);
+  expect(heightDelta).toBeLessThanOrEqual(Math.max(firstBox!.height, secondBox!.height) * heightTolerance);
+}
+
+async function expectMaxHeightRatio(locator: Locator, container: Locator, maxRatio: number) {
+  const [box, containerBox] = await Promise.all([locator.boundingBox(), container.boundingBox()]);
+
+  expect(box).not.toBeNull();
+  expect(containerBox).not.toBeNull();
+  expect(box!.height).toBeLessThanOrEqual(containerBox!.height * maxRatio);
+}
+
+async function expectMaxWidthRatio(locator: Locator, container: Locator, maxRatio: number) {
+  const [box, containerBox] = await Promise.all([locator.boundingBox(), container.boundingBox()]);
+
+  expect(box).not.toBeNull();
+  expect(containerBox).not.toBeNull();
+  expect(box!.width).toBeLessThanOrEqual(containerBox!.width * maxRatio);
 }
 
 async function expectAlmostFullWidth(locator: Locator, container: Locator) {

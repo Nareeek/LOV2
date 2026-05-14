@@ -255,8 +255,17 @@ export function CombatStage({
       </div>
 
       <div className="lov-battle-stage">
-        <img className={`lov-fighter hero ${heroMotionClass}`} src={heroSrc} alt="" data-testid="combat-character-fighter" />
-        <img className={`lov-fighter enemy ${enemyMotionClass}`} src={assetPath(displayedEnemyAssetId)} alt="" />
+        <div className="lov-fighter-slot hero">
+          <img className={`lov-fighter hero ${heroMotionClass}`} src={heroSrc} alt="" data-testid="combat-character-fighter" />
+        </div>
+        <div className="lov-fighter-slot enemy">
+          <img
+            className={`lov-fighter enemy ${enemyMotionClass}`}
+            src={assetPath(displayedEnemyAssetId)}
+            alt=""
+            data-testid="combat-enemy-fighter"
+          />
+        </div>
         {petSummoned ? (
           <div className={`lov-battle-pet-wrap pet-${selectedPet.id}`}>
             <img
