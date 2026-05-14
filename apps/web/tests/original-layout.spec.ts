@@ -595,13 +595,53 @@ test('sheet close control and bag slot count stay reachable on a narrow desktop 
 
 test('combat and reward stay inside the battlefield shell', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
-  await openGame(page, createCombatState(0));
+  const combatState = createCombatState(0);
+  const assistedCombatLog: CombatLog = {
+    winner: 'character',
+    turns: [
+      { turn: 1, actor: 'pet', damage: 120, critical: false, targetHealth: 430 },
+      { turn: 2, actor: 'character', damage: 430, critical: true, targetHealth: 0 },
+    ],
+    reward: gameData.quests[2]!.reward,
+    petId: 'ember-whelp',
+    petFoodSpent: 1,
+    petExperienceGained: 1,
+    petTurns: 1,
+  };
+  const assistedState: BootstrapState = {
+    ...combatState,
+    combats: combatState.combats.map((combat) =>
+      combat.id === 'combat-pending'
+        ? {
+            ...combat,
+            status: 'won' as const,
+            log: assistedCombatLog,
+          }
+        : combat,
+    ),
+  };
+  await openGame(page, combatState, {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/combat/combat-pending/resolve' && route.request().method() === 'POST') {
+        expect(route.request().postDataJSON()).toEqual({ petId: 'ember-whelp' });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(assistedState),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
 
   const playfield = page.locator('.stage-main').first();
 
   await expect(page.getByTestId('combat-screen')).toBeVisible();
   await expect(page.getByTestId('combat-skip-button')).toBeVisible();
   await expect(page.getByTestId('pet-assist-button')).toBeVisible();
+  await expect(page.getByTestId('combat-summoned-pet')).toHaveCount(0);
+  await page.getByTestId('pet-assist-button').click();
   await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
   await expect(page.locator('.lov-fighter.hero')).toBeVisible();
   await expect(page.locator('.lov-fighter.enemy')).toBeVisible();

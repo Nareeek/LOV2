@@ -121,8 +121,8 @@ describe('game rules', () => {
     const enemyHits = combat.turns.filter((turn) => turn.actor === 'enemy').map((turn) => turn.damage);
 
     expect(combat.petId).toBe('kitten');
-    expect(combat.petFoodSpent).toBeGreaterThan(0);
-    expect(combat.petExperienceGained).toBeGreaterThan(0);
+    expect(combat.petFoodSpent).toBe(1);
+    expect(combat.petExperienceGained).toBe(1);
     expect(combat.turns.some((turn) => turn.actor === 'pet')).toBe(true);
     expect(allyHits.length).toBeGreaterThan(1);
     for (let index = 1; index < allyHits.length; index += 1) {
@@ -168,5 +168,44 @@ describe('game rules', () => {
 
     expect(combat.petId).toBe('wyrmlet');
     expect(combat.turns[0]?.actor).toBe('pet');
+  });
+
+  it('spends one pet food and grants no pet XP when a called pet participates in a loss', () => {
+    const stats = {
+      ['\u0441\u0438\u043b\u0430']: 80,
+      ['\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c']: 1,
+      ['\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f']: 80,
+      ['\u0443\u0434\u0430\u0447\u0430']: 1,
+    } as EnemyDefinition['stats'];
+    const enemy: EnemyDefinition = {
+      id: 'pet-loss-target',
+      nameRu: 'Pet loss target',
+      level: 1,
+      health: 5000,
+      armor: 0,
+      boss: false,
+      stats,
+      reward: { experience: 5, gold: 1, gems: 0, itemIds: [] },
+    };
+
+    const combat = resolveCombat({
+      characterLevel: 3,
+      characterHealth: 20,
+      characterStats: {
+        ['\u0441\u0438\u043b\u0430']: 30,
+        ['\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c']: 20,
+        ['\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f']: 15,
+        ['\u0443\u0434\u0430\u0447\u0430']: 10,
+      },
+      enemy,
+      reward: enemy.reward,
+      characterArmor: 0,
+      pet: { id: 'wyrmlet', level: 14, health: 10, food: 8 },
+    });
+
+    expect(combat.winner).toBe('enemy');
+    expect(combat.turns.some((turn) => turn.actor === 'pet')).toBe(true);
+    expect(combat.petFoodSpent).toBe(1);
+    expect(combat.petExperienceGained).toBeUndefined();
   });
 });

@@ -123,18 +123,6 @@ export function GameShell({
     persistSelectedPetId(selectedPetId);
   }, [selectedPetId]);
 
-  useEffect(() => {
-    const roster = state.petRoster ?? [];
-    const current = roster.find((pet) => pet.petId === selectedPetId);
-    if (current && current.food > 0) {
-      return;
-    }
-    const firstFedPet = roster.find((pet) => pet.food > 0);
-    if (firstFedPet) {
-      setSelectedPetId(firstFedPet.petId);
-    }
-  }, [selectedPetId, state.petRoster]);
-
   const handleSelectPet = useCallback((petId: string) => {
     setSelectedPetId(isKnownPetId(petId) ? petId : 'kitten');
   }, []);
@@ -158,10 +146,30 @@ export function GameShell({
   const selectedItem = selectedItemStack ? state.items.find((item) => item.id === selectedItemStack.itemId) : undefined;
   const selectedForgeStack = selectedForgeStackId ? state.inventory.find((stack) => stack.id === selectedForgeStackId) : undefined;
   const petRoster = state.petRoster ?? [];
-  const selectedPetRoster = petRoster.find((pet) => pet.petId === selectedPetId);
-  const displayedCombatPetId = selectedPetRoster && selectedPetRoster.food > 0 ? selectedPetRoster.petId : selectedPetId;
-  const fedCombatPetId = selectedPetRoster && selectedPetRoster.food > 0 ? selectedPetRoster.petId : null;
-  const activeBattlePetId = resolvedBattlePetId ?? (fedCombatPetId ? displayedCombatPetId : null);
+  const equippedPetStack = state.inventory.find((stack) => stack.equippedSlot === 'pet');
+  const equippedPetId = equippedPetStack?.itemId && isKnownPetId(equippedPetStack.itemId)
+    ? equippedPetStack.itemId
+    : null;
+  const equippedPetRoster = equippedPetId
+    ? petRoster.find((pet) => pet.petId === equippedPetId)
+    : undefined;
+  const equippedPetDefinition = equippedPetId
+    ? state.items.find((item) => item.id === equippedPetId && item.slot === 'pet')
+    : undefined;
+  const displayedCombatPetId = equippedPetId ?? selectedPetId;
+  const usableCombatPetId =
+    equippedPetId && equippedPetRoster && equippedPetRoster.food > 0 && equippedPetDefinition?.petCombatStats
+      ? equippedPetId
+      : null;
+  const activeBattlePetId = resolvedBattlePetId;
+  const petAssistAlreadyUsed = Boolean(battlePetId || resolvedBattlePetId || petAssistArmed || activeCombatLog);
+  const petAssistAvailable = Boolean(
+    pendingCombat &&
+      usableCombatPetId &&
+      !petAssistAlreadyUsed &&
+      !replayActive &&
+      !rewardVisible,
+  );
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
   const stageMode: StageMode = baseStage;
@@ -403,12 +411,11 @@ export function GameShell({
           return;
         case 'resolveCombat': {
           autoResolvedCombatIdRef.current = intent.combatId;
-          const usedPetId = fedCombatPetId;
-          const resolved = await run(() => apiClient.resolveCombat(intent.combatId, usedPetId ? { petId: usedPetId } : {}));
+          const resolved = await run(() => apiClient.resolveCombat(intent.combatId, {}));
           if (!resolved) {
             return;
           }
-          setBattlePetId(usedPetId ?? (petAssistArmed ? displayedCombatPetId : null));
+          setBattlePetId(null);
           setReplayTurnCount(0);
           setReplayActive(true);
           setRewardVisible(false);
@@ -417,11 +424,14 @@ export function GameShell({
           return;
         }
         case 'togglePetAssist':
-          if (rewardVisible || !fedCombatPetId) {
+          if (!petAssistAvailable || !pendingCombat || activeCombatLog || replayActive) {
             return;
           }
           if (pendingCombat && !activeCombatLog && !replayActive && !petAssistArmed) {
-            const usedPetId = fedCombatPetId;
+            const usedPetId = usableCombatPetId;
+            if (!usedPetId) {
+              return;
+            }
             autoResolvedCombatIdRef.current = pendingCombat.id;
             setBattlePetId(usedPetId);
             setPetAssistArmed(true);
@@ -431,6 +441,7 @@ export function GameShell({
               setPetAssistArmed(false);
               return;
             }
+            setBattlePetId(resolvedPetIdForCombat(resolved, pendingCombat.id));
             setReplayTurnCount(0);
             setReplayActive(true);
             setRewardVisible(false);
@@ -442,12 +453,11 @@ export function GameShell({
           return;
         case 'showReward': {
           if (pendingCombat) {
-            const usedPetId = fedCombatPetId;
-            const resolved = await run(() => apiClient.resolveCombat(pendingCombat.id, usedPetId ? { petId: usedPetId } : {}));
+            const resolved = await run(() => apiClient.resolveCombat(pendingCombat.id, {}));
             if (!resolved) {
               return;
             }
-            setBattlePetId(usedPetId ?? (petAssistArmed ? displayedCombatPetId : null));
+            setBattlePetId(null);
             setPetAssistArmed(false);
           }
           setReplayActive(false);
@@ -514,18 +524,19 @@ export function GameShell({
       battlePetId,
       busy,
       displayedCombatPetId,
-      fedCombatPetId,
       openLocation,
       openSheet,
       openWorldWindow,
       run,
       pendingCombat,
       petAssistArmed,
+      petAssistAvailable,
       replayActive,
       rewardVisible,
       selectedArenaEnemyId,
       selectedPetId,
       state.enemies,
+      usableCombatPetId,
       state.questProgress,
       worldLocation,
     ],
@@ -716,7 +727,7 @@ export function GameShell({
               combatEnemy={combatEnemy}
               replayFrame={replayFrame}
               petAssistArmed={petAssistArmed}
-              petAssistAvailable={Boolean(fedCombatPetId)}
+              petAssistAvailable={petAssistAvailable}
               selectedPetId={displayedCombatPetId}
               battlePetId={activeBattlePetId}
               visibleReplayTurns={visibleReplayTurns}
@@ -775,6 +786,10 @@ function initialStageFromState(state: BootstrapState): 'world' | 'travel' | 'com
     return 'travel';
   }
   return 'world';
+}
+
+function resolvedPetIdForCombat(state: BootstrapState, combatId: string) {
+  return state.combats.find((combat) => combat.id === combatId)?.log?.petId ?? null;
 }
 
 function isKnownPetId(petId: string) {

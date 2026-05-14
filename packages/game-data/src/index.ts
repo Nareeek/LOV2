@@ -232,7 +232,7 @@ export const enemies: EnemyDefinition[] = [
     armor: 7,
     boss: false,
     stats: { сила: 10, ловкость: 7, интуиция: 9, удача: 5 },
-    reward: { experience: 140, gold: 80, gems: 1, itemIds: ['moon-vest'] },
+    reward: { experience: 140, gold: 80, gems: 0, itemIds: ['moon-vest'] },
   },
   {
     id: 'baron-of-ashes',
@@ -242,7 +242,7 @@ export const enemies: EnemyDefinition[] = [
     armor: 140,
     boss: true,
     stats: { сила: 16, ловкость: 11, интуиция: 13, удача: 8 },
-    reward: { experience: 320, gold: 180, gems: 4, itemIds: ['lucky-onyx', 'ember-whelp'] },
+    reward: { experience: 320, gold: 180, gems: 0, itemIds: ['lucky-onyx', 'ember-whelp'] },
   },
 ];
 
@@ -263,7 +263,7 @@ export const quests: QuestDefinition[] = [
     locationId: 'fog-harbor',
     enemyId: 'harbor-wraith',
     energyCost: 3,
-    reward: { experience: 160, gold: 90, gems: 1, itemIds: ['moon-vest'] },
+    reward: { experience: 160, gold: 90, gems: 0, itemIds: ['moon-vest'] },
   },
   {
     id: 'ash-baron-duel',
@@ -272,7 +272,7 @@ export const quests: QuestDefinition[] = [
     locationId: 'crimson-arena',
     enemyId: 'baron-of-ashes',
     energyCost: 4,
-    reward: { experience: 360, gold: 220, gems: 5, itemIds: ['lucky-onyx', 'ember-whelp'] },
+    reward: { experience: 360, gold: 220, gems: 0, itemIds: ['lucky-onyx', 'ember-whelp'] },
   },
   {
     id: 'ember-whelp-first-flight',
@@ -281,7 +281,7 @@ export const quests: QuestDefinition[] = [
     locationId: 'fog-harbor',
     enemyId: 'harbor-wraith',
     energyCost: 3,
-    reward: { experience: 180, gold: 95, gems: 1, itemIds: ['moon-vest'] },
+    reward: { experience: 180, gold: 95, gems: 0, itemIds: ['moon-vest'] },
   },
 ];
 
@@ -519,6 +519,9 @@ export function validateGameData(): void {
 
   const itemIds = new Set(items.map((item) => item.id));
   for (const quest of quests) {
+    if (quest.reward.gems !== 0) {
+      throw new Error(`quest ${quest.id} reward must not grant gems`);
+    }
     for (const itemId of quest.reward.itemIds) {
       if (!itemIds.has(itemId)) {
         throw new Error(`quest ${quest.id} reward references missing item ${itemId}`);
@@ -526,6 +529,9 @@ export function validateGameData(): void {
     }
   }
   for (const enemy of enemies) {
+    if (enemy.reward.gems !== 0) {
+      throw new Error(`enemy ${enemy.id} reward must not grant gems`);
+    }
     for (const itemId of enemy.reward.itemIds) {
       if (!itemIds.has(itemId)) {
         throw new Error(`enemy ${enemy.id} reward references missing item ${itemId}`);
