@@ -15,6 +15,7 @@ export const ENERGY_REFILL_SMALL = 5;
 export const ENERGY_REFILL_LARGE = 25;
 export const ENERGY_REFILL_SMALL_GEMS_COST = 1;
 export const ENERGY_REFILL_LARGE_GEMS_COST = 5;
+export const BACKPACK_SLOT_COUNT = 24;
 
 export const STAT_STRENGTH = '\u0441\u0438\u043b\u0430' as StatKey;
 export const STAT_AGILITY = '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c' as StatKey;
@@ -38,6 +39,31 @@ export function primaryDamageStatForClass(classId: CharacterClassId): StatKey {
     default:
       return STAT_STRENGTH;
   }
+}
+
+export function itemMatchesHeroClass(
+  item: Pick<ItemDefinition, 'classIds'>,
+  classId: CharacterClassId,
+): boolean {
+  return !item.classIds?.length || item.classIds.includes(classId);
+}
+
+export function isStandardShopItem(
+  item: Pick<ItemDefinition, 'slot' | 'classIds'>,
+  classId: CharacterClassId,
+): boolean {
+  return item.slot !== 'pet' && itemMatchesHeroClass(item, classId);
+}
+
+export function backpackStackCount(inventory: Array<{ equippedSlot?: unknown }>): number {
+  return inventory.filter((stack) => !stack.equippedSlot).length;
+}
+
+export function hasBackpackCapacity(
+  inventory: Array<{ equippedSlot?: unknown }>,
+  maxSlots = BACKPACK_SLOT_COUNT,
+): boolean {
+  return backpackStackCount(inventory) < maxSlots;
 }
 
 export function damageRangeForClass(

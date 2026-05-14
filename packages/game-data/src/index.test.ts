@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { gameData, gameAssetIds, sceneDefinitions, validateGameData } from './index.js';
-import type { PetCombatStats } from '@lov2/shared';
+import { isStandardShopItem, type CharacterClassId, type PetCombatStats } from '@lov2/shared';
 
 type RewardOwner = (typeof gameData.quests | typeof gameData.enemies)[number];
 
@@ -39,6 +39,37 @@ function withRewardItemIds<T>(owner: RewardOwner, itemIds: string[], callback: (
     return callback();
   } finally {
     owner.reward.itemIds = originalItemIds;
+  }
+}
+
+function withClassIds<T>(
+  itemId: string,
+  classIds: CharacterClassId[] | undefined,
+  callback: () => T,
+): T {
+  const item = gameData.items.find((entry) => entry.id === itemId);
+  if (!item) {
+    throw new Error(`missing test item ${itemId}`);
+  }
+
+  const mutableItem = item as typeof item & { classIds?: CharacterClassId[] };
+  const hadClassIds = Object.hasOwn(mutableItem, 'classIds');
+  const originalClassIds = mutableItem.classIds;
+
+  try {
+    if (classIds) {
+      mutableItem.classIds = classIds;
+    } else {
+      delete mutableItem.classIds;
+    }
+
+    return callback();
+  } finally {
+    if (hadClassIds && originalClassIds) {
+      mutableItem.classIds = originalClassIds;
+    } else {
+      delete mutableItem.classIds;
+    }
   }
 }
 
@@ -98,6 +129,32 @@ describe('game data', () => {
 
     expect(pets.map((pet) => pet.id)).toEqual(['foxling', 'wyrmlet', 'kitten', 'ember-whelp']);
     expect(pets.every((pet) => pet.petCombatStats && pet.petCombatStats.level > 0 && pet.petCombatStats.health > 0)).toBe(true);
+  });
+
+  it('defines standard shop stock by class without pets', () => {
+    const shopIdsByClass = {
+      swordsman: gameData.items.filter((item) => isStandardShopItem(item, 'swordsman')).map((item) => item.id),
+      ranger: gameData.items.filter((item) => isStandardShopItem(item, 'ranger')).map((item) => item.id),
+      mage: gameData.items.filter((item) => isStandardShopItem(item, 'mage')).map((item) => item.id),
+    };
+
+    expect(shopIdsByClass.swordsman).toEqual(expect.arrayContaining(['starter-sword', 'duelist-rapier', 'lucky-onyx']));
+    expect(shopIdsByClass.ranger).toEqual(expect.arrayContaining(['starter-bow', 'lucky-onyx']));
+    expect(shopIdsByClass.mage).toEqual(expect.arrayContaining(['starter-staff', 'moon-vest', 'lucky-onyx']));
+    expect(shopIdsByClass.swordsman).not.toContain('starter-staff');
+    expect(shopIdsByClass.ranger).not.toContain('duelist-rapier');
+    expect(shopIdsByClass.mage).not.toContain('starter-bow');
+    expect(Object.values(shopIdsByClass).flat()).not.toContain('ember-whelp');
+  });
+
+  it('rejects invalid item class metadata', () => {
+    withClassIds('duelist-rapier', ['mage', 'mage'], () => {
+      expect(() => validateGameData()).toThrow(/duplicate classIds/);
+    });
+
+    withClassIds('duelist-rapier', ['missing-class' as CharacterClassId], () => {
+      expect(() => validateGameData()).toThrow(/references missing class/);
+    });
   });
 
   it('rejects pet items without positive integer combat stats', () => {

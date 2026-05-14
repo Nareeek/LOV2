@@ -867,16 +867,43 @@
 
 .lov-store-shell .lov-store-bag-panel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   padding: 26px 24px 24px;
   overflow: hidden;
 }
 
 .lov-store-shell .lov-store-bag-panel h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 18px;
   color: #f7ecd0;
   font-size: clamp(2rem, 2.35vw, 2.55rem);
   font-weight: 700;
+}
+
+.lov-store-shell .lov-bag-capacity {
+  padding: 5px 10px;
+  border: 1px solid rgba(246, 204, 111, 0.58);
+  border-radius: 10px;
+  background: rgba(28, 24, 20, 0.62);
+  color: #f7e6bd;
+  font-family: system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.lov-store-shell .lov-store-feedback,
+.lov-store-shell .lov-store-empty-stock {
+  margin: 12px 0 0;
+  color: #dbf1e7;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.lov-store-shell .lov-store-feedback.danger {
+  color: #ffd2ba;
 }
 
 .lov-store-shell .lov-store-bag-panel .lov-inventory-grid {
@@ -2318,6 +2345,7 @@
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel,
 .stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel {
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
   padding: 12px !important;
 }
 
@@ -2325,6 +2353,19 @@
 .stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-panel h3 {
   margin-bottom: 9px !important;
   font-size: 1.45rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-bag-capacity {
+  padding: 3px 7px !important;
+  border-radius: 8px !important;
+  font-size: 0.7rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-feedback,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-empty-stock {
+  margin-top: 7px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell .lov-forge-bag-hint {

@@ -106,6 +106,7 @@ export interface ItemDefinition {
   descriptionRu: string;
   iconAssetId: string;
   slot?: EquipmentSlot;
+  classIds?: CharacterClassId[];
   rarity: ItemRarity;
   priceGold: number;
   priceGems?: number;

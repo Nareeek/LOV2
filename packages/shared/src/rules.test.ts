@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BACKPACK_SLOT_COUNT,
   DEFAULT_MAX_ENERGY,
   ENERGY_REFILL_LARGE,
   ENERGY_REFILL_SMALL,
+  backpackStackCount,
   experienceForLevel,
   getDailyEnergyResetBoundary,
   hasEnoughEnergy,
+  hasBackpackCapacity,
+  isStandardShopItem,
+  itemMatchesHeroClass,
   levelFromExperience,
   maxHealthForStats,
   damageRangeForClass,
@@ -16,7 +21,7 @@ import {
   spendEnergy,
   statAllocationGoldCost,
 } from './rules.js';
-import type { EnemyDefinition } from './types.js';
+import type { EnemyDefinition, InventoryStack, ItemDefinition } from './types.js';
 
 describe('game rules', () => {
   it('uses monotonic experience levels', () => {
@@ -42,6 +47,40 @@ describe('game rules', () => {
     expect(damageRangeForClass(stats, 'ranger', 1).min).toBeGreaterThan(
       damageRangeForClass(stats, 'swordsman', 1).min,
     );
+  });
+
+  it('filters standard shop items by pet slot and hero class metadata', () => {
+    const genericItem = { slot: 'amulet' } as ItemDefinition;
+    const mageItem = { slot: 'weapon', classIds: ['mage'] } as ItemDefinition;
+    const petItem = { slot: 'pet', classIds: ['mage'] } as ItemDefinition;
+
+    expect(itemMatchesHeroClass(genericItem, 'ranger')).toBe(true);
+    expect(itemMatchesHeroClass(mageItem, 'mage')).toBe(true);
+    expect(itemMatchesHeroClass(mageItem, 'swordsman')).toBe(false);
+    expect(isStandardShopItem(genericItem, 'swordsman')).toBe(true);
+    expect(isStandardShopItem(mageItem, 'swordsman')).toBe(false);
+    expect(isStandardShopItem(petItem, 'mage')).toBe(false);
+  });
+
+  it('counts only backpack stacks against fixed capacity', () => {
+    const inventory = Array.from({ length: BACKPACK_SLOT_COUNT }, (_, index) => ({
+      id: `stack-${index}`,
+      characterId: 'character-1',
+      itemId: 'duelist-rapier',
+      quantity: 1,
+    })) as InventoryStack[];
+
+    inventory.push({
+      id: 'equipped-stack',
+      characterId: 'character-1',
+      itemId: 'starter-sword',
+      quantity: 1,
+      equippedSlot: 'weapon',
+    });
+
+    expect(backpackStackCount(inventory)).toBe(BACKPACK_SLOT_COUNT);
+    expect(hasBackpackCapacity(inventory)).toBe(false);
+    expect(hasBackpackCapacity(inventory.slice(0, BACKPACK_SLOT_COUNT - 1))).toBe(true);
   });
 
   it('prices manual stat allocation from the current stat value', () => {

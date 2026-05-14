@@ -55,12 +55,14 @@ import {
   buildProfileSummaryStats,
   buildStatBreakdowns,
   buildTravelProgress,
+  BACKPACK_SLOT_COUNT,
   formatDuration,
   formatPrice,
   getBackpackStacks,
   getEquippedBySlot,
   getItemStatTags,
-  orderBackpackStacks,
+  hasBackpackCapacity,
+  isStandardShopItem,
   readDraggedStackId,
   readDraggedStoreItemId,
   setItemHoverPosition,
@@ -307,16 +309,46 @@ export function StoreWindow({
   onIntent: (intent: GameIntent) => void;
 }) {
   const [tab, setTab] = useState<StoreTab>('shop');
-  const [hoveredItemId, setHoveredItemId] = useState<string | null>(selectedStoreItem?.id ?? state.items[0]?.id ?? null);
-  const hoveredItem = state.items.find((item) => item.id === hoveredItemId) ?? selectedStoreItem ?? state.items[0];
+  const characterClassId = state.character?.classId;
+  const shopItems = useMemo(
+    () => (characterClassId ? state.items.filter((item) => isStandardShopItem(item, characterClassId)) : []),
+    [characterClassId, state.items],
+  );
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(selectedStoreItem?.id ?? shopItems[0]?.id ?? null);
+  const [shopFeedback, setShopFeedback] = useState('Перетащи товар в рюкзак, чтобы купить.');
+  const hoveredItem = shopItems.find((item) => item.id === hoveredItemId) ??
+    (selectedStoreItem && shopItems.some((item) => item.id === selectedStoreItem.id) ? selectedStoreItem : undefined) ??
+    shopItems[0];
   const backpack = useMemo(() => getBackpackStacks(state), [state]);
+  const backpackHasCapacity = hasBackpackCapacity(backpack, BACKPACK_SLOT_COUNT);
+  const visibleBackpackCount = Math.min(backpack.length, BACKPACK_SLOT_COUNT);
+  const requestPurchase = (itemId: string) => {
+    const item = shopItems.find((entry) => entry.id === itemId);
+    if (!item) {
+      setShopFeedback('Этот товар здесь не продаётся.');
+      return;
+    }
+    if (!backpackHasCapacity) {
+      setShopFeedback('Рюкзак полон. Освободи слот перед покупкой.');
+      return;
+    }
+    setShopFeedback(`${item.nameRu}: покупка отправлена.`);
+    onIntent({ type: 'purchaseItem', itemId });
+  };
   const handleStoreDrop = (event: DragEvent<HTMLElement>) => {
     event.preventDefault();
     const itemId = readDraggedStoreItemId(event);
     if (itemId) {
-      onIntent({ type: 'purchaseItem', itemId });
+      requestPurchase(itemId);
     }
   };
+
+  useEffect(() => {
+    if (hoveredItemId && shopItems.some((item) => item.id === hoveredItemId)) {
+      return;
+    }
+    setHoveredItemId(shopItems[0]?.id ?? null);
+  }, [hoveredItemId, shopItems]);
 
   return (
     <WorldWindowShell
@@ -350,15 +382,28 @@ export function StoreWindow({
             onDragOver={(event) => event.preventDefault()}
             onDrop={handleStoreDrop}
           >
-            <h3>Рюкзак</h3>
+            <h3>
+              Рюкзак
+              <span className="lov-bag-capacity" data-testid="store-backpack-capacity">
+                {visibleBackpackCount}/{BACKPACK_SLOT_COUNT}
+              </span>
+            </h3>
             <InventoryGrid
               state={state}
               stacks={backpack}
               selectedStackId={selectedItemStackId}
               onSelect={() => undefined}
+              onDropStoreItem={requestPurchase}
               dataTestId="inventory-panel"
-              fillSlots={24}
+              fillSlots={BACKPACK_SLOT_COUNT}
             />
+            <p
+              className={`lov-store-feedback ${backpackHasCapacity ? '' : 'danger'}`}
+              data-testid="store-feedback"
+              role="status"
+            >
+              {shopFeedback}
+            </p>
           </section>
 
           <section className="lov-merchant-panel">
@@ -383,7 +428,7 @@ export function StoreWindow({
             <div className="lov-store-stock-panel">
               <strong>Товары лавки</strong>
               <div className="lov-merchant-grid">
-                {state.items.map((item) => (
+                {shopItems.map((item) => (
                   <button
                     key={item.id}
                     type="button"
@@ -393,7 +438,10 @@ export function StoreWindow({
                     title={item.descriptionRu}
                     onMouseEnter={() => setHoveredItemId(item.id)}
                     onFocus={() => setHoveredItemId(item.id)}
-                    onClick={() => onIntent({ type: 'purchaseItem', itemId: item.id })}
+                    onClick={() => {
+                      setHoveredItemId(item.id);
+                      setShopFeedback('Покупка только перетаскиванием в рюкзак.');
+                    }}
                     onDragStart={(event) => {
                       event.dataTransfer.effectAllowed = 'copy';
                       event.dataTransfer.setData(DRAG_STORE_ITEM_TYPE, item.id);
@@ -401,9 +449,12 @@ export function StoreWindow({
                   >
                     <ItemChip item={item} compact />
                     <small className="lov-merchant-item-price">{formatPrice(item)}</small>
-                    <span className="lov-merchant-item-action">Перетащи или купи</span>
+                    <span className="lov-merchant-item-action">Перетащи в рюкзак</span>
                   </button>
                 ))}
+                {shopItems.length === 0 ? (
+                  <p className="lov-store-empty-stock">Нет подходящих товаров.</p>
+                ) : null}
               </div>
             </div>
             <button type="button" className="lov-refresh-button secondary" disabled>

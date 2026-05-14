@@ -1,7 +1,10 @@
 import type { FocusEvent, PointerEvent } from 'react';
 import {
+  BACKPACK_SLOT_COUNT,
   armorFromEquipment,
   damageRangeForClass,
+  hasBackpackCapacity,
+  isStandardShopItem,
   itemArmorWithEnhancement,
   itemStatsWithEnhancement,
   maxHealthForStats,
@@ -276,14 +279,15 @@ export function orderBackpackStacks(stacks: InventoryStack[], slotOrder: Record<
   for (const stack of unordered) {
     const availableIndex = findNextOpenInventoryCell(cells, 0);
     if (availableIndex === -1) {
-      cells.push(stack);
-    } else {
-      cells[availableIndex] = stack;
+      continue;
     }
+    cells[availableIndex] = stack;
   }
 
   return cells;
 }
+
+export { BACKPACK_SLOT_COUNT, hasBackpackCapacity, isStandardShopItem };
 
 export function findNextOpenInventoryCell(cells: Array<InventoryStack | null>, startIndex: number) {
   for (let index = startIndex; index < cells.length; index += 1) {
