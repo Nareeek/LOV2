@@ -1454,7 +1454,7 @@
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-stage {
   inset: 96px 34px 20px;
-  align-items: end;
+  align-items: flex-end;
   overflow: hidden;
 }
 
@@ -2718,4 +2718,333 @@
     max-width: calc(100vw - 32px) !important;
     max-height: calc(100vh - 24px) !important;
   }
+}
+
+/* PR18: combat body art and hero info stay inside their playfield windows. */
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-combat-header {
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: start;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-combat-header.enemy {
+  grid-template-columns: minmax(0, 1fr) 84px;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-combat-meta {
+  min-width: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-combat-meta .lov-health-track {
+  width: 100%;
+  min-width: min(100%, 260px);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-stage {
+  inset: clamp(104px, 14%, 126px) clamp(28px, 3%, 44px) clamp(28px, 4%, 46px);
+  box-sizing: border-box;
+  padding: clamp(6px, 1.4%, 14px) clamp(6px, 1.4%, 14px) 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  justify-items: center;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter-slot {
+  position: absolute;
+  top: clamp(6px, 1.4%, 14px);
+  bottom: 10px;
+  width: 50%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter-slot.hero {
+  left: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter-slot.enemy {
+  right: 0;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter {
+  align-self: end;
+  justify-self: center;
+  width: min(70%, 390px);
+  height: 100%;
+  max-width: 390px;
+  max-height: 510px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.hero {
+  height: 100%;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.enemy {
+  height: 100%;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet-wrap {
+  left: 38%;
+  bottom: clamp(12px, 3%, 24px);
+  width: clamp(70px, 8%, 118px);
+  max-height: 32%;
+  display: grid;
+  justify-items: center;
+  transform: translateX(-50%);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet-wrap.pet-wyrmlet {
+  bottom: clamp(10px, 2.6%, 22px);
+  width: clamp(78px, 9%, 130px);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet {
+  width: 100%;
+  max-height: clamp(72px, 24%, 122px);
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-pet-battle-health {
+  width: clamp(112px, 12%, 150px);
+  min-width: 0;
+  justify-items: stretch;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-combat) .stage-main > .shell-reset-modal-layer:has([data-testid="character-info-popup"]) {
+  inset: clamp(10px, 2%, 18px) clamp(16px, 4%, 56px) clamp(16px, 4%, 40px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-combat) .stage-main > .shell-reset-modal-layer:has([data-testid="character-info-popup"]) .shell-reset-modal-card {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 960px !important;
+  max-height: 610px !important;
+}
+
+[data-testid="character-info-popup"].lov-hero-info-shell {
+  width: min(960px, 100%) !important;
+  height: min(610px, 100%) !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+
+  --window-width: min(960px, 100%) !important;
+  --window-height: min(610px, 100%) !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-header {
+  min-height: 48px !important;
+  padding: 6px 16px !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-body {
+  min-height: 0 !important;
+  padding: 6px 8px !important;
+  overflow: auto !important;
+}
+
+[data-testid="character-info-popup"] .lov-window-footer {
+  min-height: 46px !important;
+  padding: 5px 0 7px !important;
+}
+
+[data-testid="character-info-popup"] .lov-close-button {
+  min-width: 176px !important;
+  min-height: 34px !important;
+  font-size: 1.04rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-hero-info-layout {
+  height: 100% !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(280px, 0.52fr) minmax(280px, 0.48fr) !important;
+  gap: 8px !important;
+  padding: 6px !important;
+  overflow: hidden !important;
+}
+
+[data-testid="character-info-popup"] .lov-hero-info-main,
+[data-testid="character-info-popup"] .lov-hero-info-side {
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window {
+  height: 100% !important;
+  grid-template-rows: auto auto auto auto minmax(0, 0.75fr) !important;
+  padding: 8px !important;
+  gap: 5px !important;
+  overflow: hidden !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header {
+  grid-template-columns: 52px minmax(0, 1fr) !important;
+  gap: 8px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header img,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-identity-art {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header strong {
+  font-size: clamp(1.18rem, 1.7%, 1.55rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header span {
+  font-size: clamp(0.76rem, 1.1%, 0.92rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stats {
+  padding-left: 30px !important;
+  column-gap: 18px !important;
+  row-gap: 4px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat {
+  min-height: 31px !important;
+  padding: 4px 8px !important;
+  border-radius: 10px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat::before {
+  left: -29px !important;
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 0.95rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-strength::before,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-intuition::before {
+  left: -28px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-agility::before,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-luck::before {
+  left: -22px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(0.84rem, 1.15%, 1.02rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-quick-slots {
+  grid-template-columns: repeat(4, 34px) !important;
+  gap: 5px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-quick-slot {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-motto-box {
+  min-height: 34px !important;
+  padding: 5px 8px !important;
+  font-size: 0.82rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-motto-box button {
+  width: 28px !important;
+  min-height: 28px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-reward-gallery {
+  gap: 3px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-reward-gallery > strong {
+  font-size: 0.82rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-reward-gallery-grid {
+  gap: 5px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-reward {
+  min-height: 34px !important;
+  border-radius: 9px !important;
+  font-size: 0.58rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll.profile,
+[data-testid="character-info-popup"] .lov-paperdoll {
+  grid-template-rows: auto minmax(0, 1fr) 32px !important;
+  gap: 5px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-header {
+  padding: 5px 9px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-header strong {
+  font-size: 0.98rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-header span {
+  font-size: 0.7rem !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-stage {
+  grid-template-columns: 40px minmax(140px, 0.92fr) 40px !important;
+  gap: 5px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-column {
+  gap: 4px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-slot {
+  min-height: 36px !important;
+  padding: 3px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-slot .item-chip img {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-center {
+  min-height: 0 !important;
+  max-width: 300px !important;
+  justify-self: center !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-hero {
+  width: min(82%, 220px) !important;
+  height: 86% !important;
+  bottom: 0 !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-pet {
+  width: min(18%, 54px) !important;
+  right: 7% !important;
+  bottom: 2% !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-race-sign {
+  top: 8px !important;
+  right: 8px !important;
+  width: 34px !important;
+  height: 34px !important;
+}
+
+[data-testid="character-info-popup"] .lov-prestige-bar {
+  width: min(78%, 270px) !important;
+  min-height: 30px !important;
+  padding: 5px 12px !important;
+  font-size: 0.86rem !important;
 }
