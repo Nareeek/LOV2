@@ -3089,3 +3089,155 @@
   padding: 5px 12px !important;
   font-size: 0.86rem !important;
 }
+
+/* PR20: lighter compact top HUD with XP and currencies grouped together. */
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
+  top: 7px !important;
+  left: 78px !important;
+  right: auto !important;
+  width: fit-content !important;
+  max-width: calc(100% - 148px) !important;
+  min-height: 48px !important;
+  grid-template-columns: 62px minmax(220px, 292px) max-content !important;
+  gap: 6px !important;
+  padding: 4px 7px 4px 6px !important;
+  border: 1px solid rgba(229, 214, 167, 0.28) !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(250, 247, 223, 0.18), rgba(38, 36, 40, 0.42)),
+    rgba(20, 22, 28, 0.46) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 24px rgba(0, 0, 0, 0.18) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.12);
+  backdrop-filter: blur(14px) saturate(1.12);
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-left {
+  width: 62px !important;
+  max-width: 62px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-portrait {
+  width: 58px !important;
+  height: 46px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-portrait {
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  border: 1px solid rgba(239, 219, 164, 0.7) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(14, 13, 17, 0.76),
+    0 4px 10px rgba(0, 0, 0, 0.24) !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .shell-reset-level {
+  top: -4px !important;
+  right: 2px !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  font-size: 0.78rem !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-badge {
+  left: 34px !important;
+  bottom: -3px !important;
+  width: 22px !important;
+  min-height: 22px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-center {
+  max-width: 292px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter {
+  min-width: 220px !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  grid-template-columns: 32px minmax(128px, 1fr) !important;
+  gap: 6px !important;
+  padding: 3px 9px !important;
+  border: 1px solid rgba(239, 219, 164, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(250, 243, 206, 0.14), rgba(17, 17, 20, 0.4)),
+    rgba(18, 18, 22, 0.5) !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter div {
+  height: 18px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter strong {
+  right: 11px !important;
+  min-width: 82px !important;
+  font-size: 0.78rem !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-strip {
+  grid-template-columns: max-content max-content max-content repeat(3, 36px) !important;
+  gap: 5px !important;
+  padding-left: 3px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-pill {
+  grid-template-columns: 24px minmax(38px, 1fr) !important;
+  min-width: 82px !important;
+  min-height: 32px !important;
+  gap: 4px !important;
+  padding: 3px 6px !important;
+  border-color: rgba(239, 219, 164, 0.28) !important;
+  background: rgba(18, 18, 22, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-pill img {
+  width: 23px !important;
+  height: 23px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-pill span {
+  min-height: 22px !important;
+  padding: 0 8px !important;
+  border: 0 !important;
+  background: rgba(5, 6, 8, 0.34) !important;
+  font-size: 0.92rem !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-add-button {
+  min-width: 108px !important;
+  min-height: 32px !important;
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  font-size: 0.9rem !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-gift-button,
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-leaderboard-button,
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-logout-button {
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  border-width: 1px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 239, 190, 0.14), rgba(20, 19, 23, 0.48)),
+    rgba(18, 18, 22, 0.5) !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-gift-button .ui-icon,
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-leaderboard-button .ui-icon,
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-logout-button .ui-icon {
+  width: 19px !important;
+  height: 19px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack {
+  top: 96px !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .stage-right-rail {
+  top: 62px !important;
+}

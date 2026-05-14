@@ -193,13 +193,23 @@ for (const viewport of [
     const logoutButton = page.getByTestId('logout-button');
     const heroCluster = page.getByTestId('character-cluster');
     const xpStrip = page.getByTestId('hud-xp');
+    const resourceStrip = page.getByTestId('hud-resource-strip');
+    const goldPill = page.getByTestId('hud-gold');
+    const gemsPill = page.getByTestId('hud-gems');
+    const addButton = page.getByTestId('add-currency-button');
 
     await expect(topbar).toBeVisible();
     await expect(bottomTray).toBeVisible();
     await expect(exercise).toBeVisible();
     await expect(actionDockButton).toBeVisible();
     await expect(logoutButton).toBeVisible();
+    await expect(goldPill).toBeVisible();
+    await expect(gemsPill).toBeVisible();
+    await expect(addButton).toBeVisible();
     await expectNoDocumentScroll(page);
+    await expectContained(topbar, page.getByTestId('world-stage'));
+    await expectContained(xpStrip, topbar);
+    await expectContained(resourceStrip, topbar);
     await expectAlmostFullWidth(bottomTray, page.getByTestId('world-stage'));
     await expect(page.locator('.lov-topbar-actions')).toHaveCount(0);
 
@@ -213,7 +223,9 @@ for (const viewport of [
 
     await expectBelow(exercise, infoButton, 6);
     await expectNoOverlap(heroCluster, xpStrip);
-    await expectNoOverlap(page.locator('.lov-topbar-left'), page.getByTestId('hud-resource-strip'));
+    await expectNoOverlap(page.locator('.lov-topbar-left'), resourceStrip);
+    await expectNoOverlap(xpStrip, resourceStrip);
+    await expectHorizontalGapLessThan(xpStrip, resourceStrip, 16);
     await expectSameRow(page.locator('.lov-friend-card'));
 
     const fountainWrap = page.locator(".scene-hotspot-wrap[data-hotspot-id='hub-fountain']");
@@ -365,7 +377,18 @@ test('travel screen hides story prompt and placeholder counters', async ({ page 
   await expect.poll(() => startTravelRequests).toBe(1);
 
   const travelScreen = page.getByTestId('travel-screen');
+  const travelMap = page.getByTestId('travel-map-layer');
+  const heroMarker = page.getByTestId('travel-hero-marker');
   await expect(travelScreen).toBeVisible();
+  await expect(travelMap).toBeVisible();
+  await expect(travelMap).toHaveAttribute(
+    'src',
+    '/assets/generated/travel-maps/travel_map_ruined_coast_pan_01.png',
+  );
+  await expect(heroMarker).toBeVisible();
+  await expectContained(travelScreen, page.getByTestId('world-stage'));
+  await expectContained(heroMarker, travelScreen);
+  await expectTravelMapMotion(travelMap);
   await expect(travelScreen.locator('.lov-travel-story')).toBeHidden();
   await expect(travelScreen.locator('.lov-travel-sidecard')).toHaveCount(0);
   await expect(travelScreen.getByTestId('travel-character-image')).toHaveAttribute(
@@ -1199,6 +1222,32 @@ async function expectNoOverlap(first: Locator, second: Locator) {
     firstBox!.y + firstBox!.height > secondBox!.y;
 
   expect(intersects).toBe(false);
+}
+
+async function expectHorizontalGapLessThan(left: Locator, right: Locator, maxGap: number) {
+  const [leftBox, rightBox] = await Promise.all([left.boundingBox(), right.boundingBox()]);
+
+  expect(leftBox).not.toBeNull();
+  expect(rightBox).not.toBeNull();
+
+  const gap = rightBox!.x - (leftBox!.x + leftBox!.width);
+  expect(gap).toBeGreaterThanOrEqual(0);
+  expect(gap).toBeLessThanOrEqual(maxGap);
+}
+
+async function expectTravelMapMotion(locator: Locator) {
+  const style = await locator.evaluate((element) => {
+    const computed = window.getComputedStyle(element);
+    return {
+      animationName: computed.animationName,
+      transform: computed.transform,
+      transitionProperty: computed.transitionProperty,
+    };
+  });
+
+  expect(style.animationName).toContain('lov-travel-map-object-pan');
+  expect(style.transform).not.toBe('none');
+  expect(style.transitionProperty).toContain('transform');
 }
 
 async function expectSameRow(items: Locator) {

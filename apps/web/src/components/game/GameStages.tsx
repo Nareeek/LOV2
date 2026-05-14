@@ -92,22 +92,45 @@ export function TravelStage({
   onIntent: (intent: GameIntent) => void;
 }) {
   const activeQuest = activeTravel?.questId ? state.quests.find((quest) => quest.id === activeTravel.questId) : undefined;
+  const activeLocation = activeTravel?.locationId
+    ? state.locations.find((location) => location.id === activeTravel.locationId)
+    : undefined;
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
   const progressPercent = progress?.percent ?? 0;
   const canRushTravel = Boolean(!busy && activeTravel && !activeTravelReady && (state.character?.gems ?? 0) >= 1);
   const characterImageSrc = state.character ? characterAvatarPath(state.character) : null;
+  const travelMap = selectTravelMap(activeTravel?.locationId, activeQuest?.id, activeLocation?.sceneAssetId);
+  const travelOffset = progressPercent / 100;
+  const travelStyle = {
+    '--travel-progress': progressPercent,
+    '--travel-map-x': `${-6 - travelOffset * 18}%`,
+    '--travel-map-y': `${-3 - travelOffset * 8}%`,
+    '--travel-map-scale': `${1.1 + travelOffset * 0.04}`,
+  } as CSSProperties;
 
   return (
     <section
       className="shell-reset-travel-stage lov-travel-stage"
       data-testid="travel-screen"
-      style={{ '--travel-progress': progressPercent } as CSSProperties}
+      data-travel-location={activeTravel?.locationId ?? activeQuest?.locationId ?? 'unknown'}
+      style={travelStyle}
     >
-      <div className="shell-reset-travel-art">
-        <img src={assetPath('scene-map')} alt="" />
+      <div className="shell-reset-travel-art lov-travel-map-viewport">
+        <img
+          className="lov-travel-map-layer"
+          data-testid="travel-map-layer"
+          src={travelMap.path}
+          alt=""
+        />
+        <img
+          className="lov-travel-map-layer lov-travel-map-ghost"
+          src={travelMap.path}
+          alt=""
+          aria-hidden="true"
+        />
       </div>
 
-      <div className="lov-travel-pin">
+      <div className="lov-travel-pin" data-testid="travel-hero-marker">
         {characterImageSrc ? <img src={characterImageSrc} alt="" data-testid="travel-character-image" /> : null}
       </div>
 
@@ -130,11 +153,38 @@ export function TravelStage({
       {activeQuest ? (
         <div className="lov-travel-quest-tag" data-testid="travel-panel">
           <strong>{activeQuest.titleRu}</strong>
-          <span>{activeQuest.locationId}</span>
+          <span>{activeLocation?.nameRu ?? activeQuest.locationId}</span>
         </div>
       ) : null}
     </section>
   );
+}
+
+type TravelMapChoice = {
+  path: string;
+  match: (locationId?: string, questId?: string, sceneAssetId?: string) => boolean;
+};
+
+const TRAVEL_MAPS: TravelMapChoice[] = [
+  {
+    path: '/assets/generated/travel-maps/travel_map_fog_harbor_pan_01.png',
+    match: (locationId, questId) =>
+      locationId === 'fog-harbor' || questId === 'harbor-lantern' || questId === 'ember-whelp-first-flight',
+  },
+  {
+    path: '/assets/generated/travel-maps/travel_map_mountain_pass_pan_01.png',
+    match: (locationId, questId, sceneAssetId) =>
+      locationId === 'crimson-arena' || questId === 'ash-baron-duel' || sceneAssetId === 'scene-combat',
+  },
+  {
+    path: '/assets/generated/travel-maps/travel_map_ruined_coast_pan_01.png',
+    match: (locationId, questId, sceneAssetId) =>
+      locationId === 'old-tavern' || questId === 'tavern-first-contract' || sceneAssetId === 'scene-tavern',
+  },
+];
+
+function selectTravelMap(locationId?: string, questId?: string, sceneAssetId?: string) {
+  return TRAVEL_MAPS.find((map) => map.match(locationId, questId, sceneAssetId)) ?? TRAVEL_MAPS[0]!;
 }
 
 export function CombatStage({
