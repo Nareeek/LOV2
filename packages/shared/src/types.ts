@@ -225,9 +225,33 @@ export interface TravelTask {
   completesAt: string;
 }
 
+export type EnemyEncounterKind = 'travel' | 'arena';
+
+export type EnemyDifficultyTier = 'minion' | 'standard' | 'elite' | 'boss';
+
+export interface EnemyLevelBand {
+  minLevel: number;
+  maxLevel?: number;
+}
+
+export interface EnemyScalingProfile {
+  levelOffset: number;
+  healthMultiplier: number;
+  statMultiplier: number;
+  armorMultiplier: number;
+  rewardMultiplier: number;
+}
+
 export interface EnemyDefinition {
   id: string;
   nameRu: string;
+  assetId: string;
+  avatarAssetId?: string;
+  encounterKind: EnemyEncounterKind;
+  difficultyTier: EnemyDifficultyTier;
+  locationIds?: string[];
+  arenaBand?: EnemyLevelBand;
+  scaling: EnemyScalingProfile;
   level: number;
   health: number;
   armor: number;

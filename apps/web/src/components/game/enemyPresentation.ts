@@ -5,6 +5,7 @@ import {
   STAT_LUCK,
   STAT_STRENGTH,
 } from './GamePanels.data.js';
+import { hasAsset } from './assets.js';
 
 const ENEMY_ASSETS: Record<string, string> = {
   'mist-bandit': 'enemy-mist-bandit',
@@ -20,16 +21,20 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   'baron-of-ashes': 'Женя',
 };
 
+const FALLBACK_ENEMY_ASSET_ID = 'enemy-ash-baron';
+
 export function enemyDisplayName(enemy: EnemyDefinition) {
   return ENEMY_DISPLAY_NAMES[enemy.id] ?? enemy.nameRu;
 }
 
 export function enemyAssetId(enemy: EnemyDefinition) {
-  return ENEMY_ASSETS[enemy.id] ?? 'enemy-ash-baron';
+  const assetId = enemy.assetId ?? ENEMY_ASSETS[enemy.id] ?? FALLBACK_ENEMY_ASSET_ID;
+  return hasAsset(assetId) ? assetId : FALLBACK_ENEMY_ASSET_ID;
 }
 
 export function enemyAvatarAssetId(enemy: EnemyDefinition) {
-  return ENEMY_AVATAR_ASSETS[enemy.id] ?? null;
+  const assetId = enemy.avatarAssetId ?? ENEMY_AVATAR_ASSETS[enemy.id] ?? null;
+  return assetId && hasAsset(assetId) ? assetId : null;
 }
 
 export function enemyStatRows(enemy: EnemyDefinition) {

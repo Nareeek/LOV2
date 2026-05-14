@@ -25,6 +25,7 @@ import {
   refillEnergy as refillEnergyMeter,
   rebirthStats,
   resolveCombat as resolveCombatLog,
+  scaleEnemyForEncounter,
   shouldResetDailyEnergy,
   spendEnergy,
   statAllocationGoldCost,
@@ -35,6 +36,7 @@ import {
   type CharacterStats,
   type CombatLog,
   type CombatSource,
+  type EnemyDefinition,
   type EquipmentSlot,
   type ItemDefinition,
   type PetCombatStats,
@@ -96,6 +98,53 @@ function petDefinitions() {
 
 function petLevelFromExperience(baseLevel: number, experience: number): number {
   return baseLevel + Math.max(0, levelFromExperience(Math.max(0, experience)) - 1);
+}
+
+function characterBaseStats(character: Pick<DbCharacter, 'stats'>): CharacterStats {
+  return character.stats as unknown as CharacterStats;
+}
+
+function arenaBandOffset(enemy: EnemyDefinition, characterLevel: number): number {
+  if (!enemy.arenaBand) {
+    return 0;
+  }
+
+  if (characterLevel < enemy.arenaBand.minLevel) {
+    return Math.max(0, enemy.arenaBand.minLevel - characterLevel);
+  }
+
+  return Math.max(0, Math.floor((characterLevel - enemy.arenaBand.minLevel) / 10));
+}
+
+function scaledEnemyForCharacter(
+  enemy: EnemyDefinition,
+  character: Pick<DbCharacter, 'level' | 'stats'>,
+  source: CombatSource = enemy.encounterKind,
+): EnemyDefinition {
+  return scaleEnemyForEncounter({
+    template: enemy,
+    playerLevel: character.level,
+    playerStats: characterBaseStats(character),
+    encounterKind: source === 'arena' ? 'arena' : 'travel',
+    bandOffset: source === 'arena' ? arenaBandOffset(enemy, character.level) : 0,
+  });
+}
+
+function enemyRosterForCharacter(character: Pick<DbCharacter, 'level' | 'stats'>): EnemyDefinition[] {
+  return gameData.enemies.map((enemy) => scaledEnemyForCharacter(enemy, character, enemy.encounterKind));
+}
+
+function selectTravelEnemyId(locationId: string, character: Pick<DbCharacter, 'level'>): string {
+  const candidates = gameData.enemies
+    .filter((enemy) => enemy.encounterKind === 'travel' && enemy.locationIds?.includes(locationId))
+    .sort((left, right) => left.id.localeCompare(right.id));
+
+  if (candidates.length === 0) {
+    return 'mist-bandit';
+  }
+
+  const index = Math.abs(character.level + locationId.length) % candidates.length;
+  return candidates[index]?.id ?? candidates[0]!.id;
 }
 
 @Injectable()
@@ -165,7 +214,7 @@ export class GameCommandsService {
       items: gameData.items,
       quests: gameData.quests,
       locations: gameData.locations,
-      enemies: gameData.enemies,
+      enemies: enemyRosterForCharacter(character),
       scenes: gameData.scenes,
       inventory: inventory.map((item) => {
         const mapped = {
@@ -430,7 +479,7 @@ export class GameCommandsService {
       if (currentTravel.questId && !quest) {
         throw new BadRequestException('Quest data is inconsistent');
       }
-      const enemyId = quest?.enemyId ?? 'mist-bandit';
+      const enemyId = quest?.enemyId ?? selectTravelEnemyId(currentTravel.locationId, character);
       const transition = await tx.travelTask.updateMany({
         where: {
           id: currentTravel.id,
@@ -507,8 +556,8 @@ export class GameCommandsService {
       return this.bootstrap(userId);
     }
 
-    const enemy = gameData.enemies.find((entry) => entry.id === combat.enemyId);
-    if (!enemy) {
+    const enemyTemplate = gameData.enemies.find((entry) => entry.id === combat.enemyId);
+    if (!enemyTemplate) {
       throw new NotFoundException('Противник не найден');
     }
 
@@ -518,6 +567,8 @@ export class GameCommandsService {
     if (combat.questId && !questDefinition) {
       throw new NotFoundException('Quest not found');
     }
+    const combatSource = (combat.source as CombatSource | undefined) ?? 'legacy';
+    const enemy = scaledEnemyForCharacter(enemyTemplate, character, combatSource);
 
     const equipped = await this.prisma.inventoryStack.findMany({
       where: { characterId: character.id, equippedSlot: { not: null } },
@@ -672,7 +723,7 @@ export class GameCommandsService {
             won,
             reward: log.reward,
             leveledUp,
-            source: (combat.source as CombatSource | undefined) ?? 'legacy',
+            source: combatSource,
             petFoodSpent: log.petFoodSpent ?? 0,
             petExperienceGained: log.petExperienceGained ?? 0,
           } as unknown as Prisma.InputJsonObject,
@@ -885,7 +936,7 @@ export class GameCommandsService {
     if (!item) {
       throw new NotFoundException('Предмет не найден');
     }
-    if (!isStandardShopItem(item, character.classId)) {
+    if (!isStandardShopItem(item, character.classId as CharacterClassId)) {
       throw new BadRequestException('Этот товар не продаётся в обычном магазине');
     }
 
@@ -997,7 +1048,7 @@ export class GameCommandsService {
   async startArena(userId: string, input: { enemyId: string }) {
     const character = await this.requireCharacter(userId);
     const enemy = gameData.enemies.find((entry) => entry.id === input.enemyId);
-    if (!enemy) {
+    if (!enemy || enemy.encounterKind !== 'arena') {
       throw new NotFoundException('Соперник не найден');
     }
 

@@ -35,7 +35,25 @@ export const gameAssetIds = [
   'scene-pets',
   'scene-journal',
   'hero-nocturne',
+  'hero-nocturne-without-armor',
+  'hero-nocturne-without-armor-with-sword',
+  'hero-nocturne-without-sword',
+  'enemy-mist-bandit',
+  'enemy-harbor-wraith',
   'enemy-ash-baron',
+  'enemy-rock-golem',
+  'enemy-travel-bone-shaman',
+  'enemy-travel-cave-brute',
+  'enemy-travel-corrupted-guardian',
+  'enemy-travel-fog-harbor-wraith',
+  'enemy-travel-frost-stalker',
+  'enemy-travel-swamp-fang-beast',
+  'enemy-arena-female-nocturne-mystic-01',
+  'enemy-arena-female-oracle-ranger-01',
+  'enemy-arena-female-veiled-swordsman-01',
+  'enemy-arena-male-nocturne-swordsman-01',
+  'enemy-arena-male-oracle-mystic-01',
+  'enemy-arena-male-veiled-ranger-01',
   'pet-wyvern',
   'pet-dragon',
   'pet-cat',
@@ -223,33 +241,171 @@ export const locations: LocationDefinition[] = [
 export const enemies: EnemyDefinition[] = [
   {
     id: 'mist-bandit',
+    assetId: 'enemy-mist-bandit',
+    encounterKind: 'travel',
+    difficultyTier: 'standard',
+    locationIds: ['old-tavern'],
+    scaling: {
+      levelOffset: -1,
+      healthMultiplier: 0.86,
+      statMultiplier: 0.88,
+      armorMultiplier: 0.82,
+      rewardMultiplier: 0.82,
+    },
     nameRu: 'Туманный налетчик',
     level: 1,
-    health: 550,
+    health: 95,
     armor: 3,
     boss: false,
     stats: { сила: 6, ловкость: 5, интуиция: 4, удача: 3 },
-    reward: { experience: 70, gold: 35, gems: 0, itemIds: ['duelist-rapier'] },
+    reward: { experience: 45, gold: 24, gems: 0, itemIds: ['duelist-rapier'] },
+  },
+  {
+    id: 'tavern-candle-imp',
+    nameRu: '\u0421\u0432\u0435\u0447\u043d\u043e\u0439 \u0431\u0435\u0441',
+    assetId: 'enemy-travel-bone-shaman',
+    encounterKind: 'travel',
+    difficultyTier: 'minion',
+    locationIds: ['old-tavern'],
+    scaling: {
+      levelOffset: -2,
+      healthMultiplier: 0.74,
+      statMultiplier: 0.78,
+      armorMultiplier: 0.65,
+      rewardMultiplier: 0.68,
+    },
+    level: 1,
+    health: 70,
+    armor: 1,
+    boss: false,
+    stats: { '\u0441\u0438\u043b\u0430': 4, '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 7, '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 4, '\u0443\u0434\u0430\u0447\u0430': 6 },
+    reward: { experience: 32, gold: 18, gems: 0, itemIds: [] },
   },
   {
     id: 'harbor-wraith',
+    assetId: 'enemy-travel-fog-harbor-wraith',
+    encounterKind: 'travel',
+    difficultyTier: 'elite',
+    locationIds: ['fog-harbor'],
+    scaling: {
+      levelOffset: 0,
+      healthMultiplier: 1,
+      statMultiplier: 1,
+      armorMultiplier: 0.92,
+      rewardMultiplier: 0.92,
+    },
     nameRu: 'Причальный призрак',
     level: 3,
-    health: 115,
+    health: 165,
     armor: 7,
     boss: false,
     stats: { сила: 10, ловкость: 7, интуиция: 9, удача: 5 },
-    reward: { experience: 140, gold: 80, gems: 0, itemIds: ['moon-vest'] },
+    reward: { experience: 95, gold: 48, gems: 0, itemIds: ['moon-vest'] },
+  },
+  {
+    id: 'reef-stoneback',
+    nameRu: '\u0420\u0438\u0444\u043e\u0432\u044b\u0439 \u043a\u0430\u043c\u043d\u0435\u0441\u043f\u0438\u043d',
+    assetId: 'enemy-travel-corrupted-guardian',
+    encounterKind: 'travel',
+    difficultyTier: 'standard',
+    locationIds: ['fog-harbor'],
+    scaling: {
+      levelOffset: 1,
+      healthMultiplier: 1.1,
+      statMultiplier: 0.96,
+      armorMultiplier: 1.25,
+      rewardMultiplier: 0.9,
+    },
+    level: 4,
+    health: 240,
+    armor: 14,
+    boss: false,
+    stats: { '\u0441\u0438\u043b\u0430': 13, '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 5, '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 7, '\u0443\u0434\u0430\u0447\u0430': 4 },
+    reward: { experience: 110, gold: 58, gems: 0, itemIds: ['moon-vest'] },
   },
   {
     id: 'baron-of-ashes',
+    assetId: 'enemy-ash-baron',
+    encounterKind: 'travel',
+    difficultyTier: 'boss',
+    locationIds: ['crimson-arena'],
+    scaling: {
+      levelOffset: 2,
+      healthMultiplier: 1.18,
+      statMultiplier: 1.08,
+      armorMultiplier: 1.12,
+      rewardMultiplier: 1,
+    },
     nameRu: 'Барон Пепла',
     level: 5,
-    health: 2100,
-    armor: 140,
+    health: 520,
+    armor: 28,
     boss: true,
     stats: { сила: 16, ловкость: 11, интуиция: 13, удача: 8 },
-    reward: { experience: 320, gold: 180, gems: 0, itemIds: ['lucky-onyx', 'ember-whelp'] },
+    reward: { experience: 260, gold: 140, gems: 0, itemIds: ['lucky-onyx', 'ember-whelp'] },
+  },
+  {
+    id: 'arena-iron-vanguard',
+    nameRu: '\u0416\u0435\u043b\u0435\u0437\u043d\u044b\u0439 \u0430\u0432\u0430\u043d\u0433\u0430\u0440\u0434',
+    assetId: 'enemy-arena-male-nocturne-swordsman-01',
+    encounterKind: 'arena',
+    difficultyTier: 'standard',
+    arenaBand: { minLevel: 1, maxLevel: 9 },
+    scaling: {
+      levelOffset: 0,
+      healthMultiplier: 0.95,
+      statMultiplier: 1,
+      armorMultiplier: 1.05,
+      rewardMultiplier: 0.72,
+    },
+    level: 1,
+    health: 130,
+    armor: 5,
+    boss: false,
+    stats: { '\u0441\u0438\u043b\u0430': 9, '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 7, '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 5, '\u0443\u0434\u0430\u0447\u0430': 5 },
+    reward: { experience: 50, gold: 22, gems: 0, itemIds: [] },
+  },
+  {
+    id: 'arena-moon-duelist',
+    nameRu: '\u041b\u0443\u043d\u043d\u044b\u0439 \u0434\u0443\u044d\u043b\u044f\u043d\u0442',
+    assetId: 'enemy-arena-female-veiled-swordsman-01',
+    encounterKind: 'arena',
+    difficultyTier: 'elite',
+    arenaBand: { minLevel: 10, maxLevel: 24 },
+    scaling: {
+      levelOffset: 1,
+      healthMultiplier: 1,
+      statMultiplier: 1.06,
+      armorMultiplier: 1,
+      rewardMultiplier: 0.78,
+    },
+    level: 10,
+    health: 260,
+    armor: 12,
+    boss: false,
+    stats: { '\u0441\u0438\u043b\u0430': 14, '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 16, '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 12, '\u0443\u0434\u0430\u0447\u0430': 10 },
+    reward: { experience: 90, gold: 42, gems: 0, itemIds: [] },
+  },
+  {
+    id: 'arena-rune-seer',
+    nameRu: '\u0420\u0443\u043d\u043d\u044b\u0439 \u043f\u0440\u043e\u0432\u0438\u0434\u0435\u0446',
+    assetId: 'enemy-arena-male-oracle-mystic-01',
+    encounterKind: 'arena',
+    difficultyTier: 'boss',
+    arenaBand: { minLevel: 25 },
+    scaling: {
+      levelOffset: 2,
+      healthMultiplier: 1.04,
+      statMultiplier: 1.12,
+      armorMultiplier: 1.06,
+      rewardMultiplier: 0.84,
+    },
+    level: 25,
+    health: 480,
+    armor: 20,
+    boss: true,
+    stats: { '\u0441\u0438\u043b\u0430': 18, '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 15, '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 21, '\u0443\u0434\u0430\u0447\u0430': 14 },
+    reward: { experience: 130, gold: 70, gems: 0, itemIds: [] },
   },
 ];
 
@@ -525,6 +681,8 @@ export function validateGameData(): void {
   }
 
   const itemIds = new Set(items.map((item) => item.id));
+  const locationIds = new Set(locations.map((location) => location.id));
+  const knownAssetIds = new Set<string>(gameAssetIds);
   for (const quest of quests) {
     if (quest.reward.gems !== 0) {
       throw new Error(`quest ${quest.id} reward must not grant gems`);
@@ -536,6 +694,38 @@ export function validateGameData(): void {
     }
   }
   for (const enemy of enemies) {
+    if (!knownAssetIds.has(enemy.assetId)) {
+      throw new Error(`enemy ${enemy.id} references missing asset ${enemy.assetId}`);
+    }
+    if (enemy.avatarAssetId && !knownAssetIds.has(enemy.avatarAssetId)) {
+      throw new Error(`enemy ${enemy.id} references missing avatar asset ${enemy.avatarAssetId}`);
+    }
+    if (enemy.encounterKind === 'travel') {
+      if (!enemy.locationIds?.length) {
+        throw new Error(`travel enemy ${enemy.id} must define locationIds`);
+      }
+      for (const locationId of enemy.locationIds) {
+        if (!locationIds.has(locationId)) {
+          throw new Error(`travel enemy ${enemy.id} references missing location ${locationId}`);
+        }
+      }
+    }
+    if (enemy.encounterKind === 'arena') {
+      if (!enemy.arenaBand || enemy.arenaBand.minLevel < 1) {
+        throw new Error(`arena enemy ${enemy.id} must define a positive arena band`);
+      }
+      if (enemy.arenaBand.maxLevel && enemy.arenaBand.maxLevel < enemy.arenaBand.minLevel) {
+        throw new Error(`arena enemy ${enemy.id} has an invalid arena band`);
+      }
+    }
+    if (
+      enemy.scaling.healthMultiplier <= 0 ||
+      enemy.scaling.statMultiplier <= 0 ||
+      enemy.scaling.armorMultiplier < 0 ||
+      enemy.scaling.rewardMultiplier < 0
+    ) {
+      throw new Error(`enemy ${enemy.id} has invalid scaling`);
+    }
     if (enemy.reward.gems !== 0) {
       throw new Error(`enemy ${enemy.id} reward must not grant gems`);
     }
@@ -546,7 +736,6 @@ export function validateGameData(): void {
     }
   }
 
-  const knownAssetIds = new Set<string>(gameAssetIds);
   const knownClassIds = new Set<string>(CHARACTER_CLASS_IDS);
   for (const item of items) {
     if (!knownAssetIds.has(item.iconAssetId)) {

@@ -3,6 +3,8 @@ import type {
   CharacterStats,
   CombatLog,
   EnemyDefinition,
+  EnemyEncounterKind,
+  EnemyDifficultyTier,
   ItemDefinition,
   PetCombatStats,
   Reward,
@@ -201,6 +203,111 @@ export function armorFromEquipment(
     const enhancementLevel = 'definition' in entry ? entry.enhancementLevel ?? 0 : 0;
     return total + itemArmorWithEnhancement(definition, enhancementLevel);
   }, 0);
+}
+
+function clampInteger(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+const ENEMY_TIER_MULTIPLIERS: Record<EnemyDifficultyTier, {
+  level: number;
+  health: number;
+  stat: number;
+  armor: number;
+  reward: number;
+  maxHealthRatio: number;
+}> = {
+  minion: { level: -1, health: 0.78, stat: 0.82, armor: 0.75, reward: 0.72, maxHealthRatio: 0.58 },
+  standard: { level: 0, health: 0.92, stat: 0.92, armor: 0.9, reward: 0.9, maxHealthRatio: 0.76 },
+  elite: { level: 1, health: 1.08, stat: 1.05, armor: 1.05, reward: 1, maxHealthRatio: 0.95 },
+  boss: { level: 2, health: 1.28, stat: 1.15, armor: 1.18, reward: 1.12, maxHealthRatio: 1.35 },
+};
+
+const ENCOUNTER_MULTIPLIERS: Record<EnemyEncounterKind, {
+  health: number;
+  stat: number;
+  armor: number;
+  reward: number;
+}> = {
+  travel: { health: 1, stat: 1, armor: 1, reward: 1 },
+  arena: { health: 0.88, stat: 1.08, armor: 1.02, reward: 0.8 },
+};
+
+export function scaleEnemyForEncounter(params: {
+  template: EnemyDefinition;
+  playerLevel: number;
+  playerStats: CharacterStats;
+  encounterKind?: EnemyEncounterKind;
+  bandOffset?: number;
+}): EnemyDefinition {
+  const template = params.template;
+  const encounterKind = params.encounterKind ?? template.encounterKind;
+  const tier = ENEMY_TIER_MULTIPLIERS[template.difficultyTier];
+  const encounter = ENCOUNTER_MULTIPLIERS[encounterKind];
+  const playerLevel = Math.max(1, Math.floor(params.playerLevel));
+  const bandOffset = Math.max(0, Math.floor(params.bandOffset ?? 0));
+  const level = clampInteger(
+    playerLevel + template.scaling.levelOffset + tier.level + bandOffset,
+    1,
+    Math.max(1, playerLevel + 5 + bandOffset),
+  );
+  const playerMaxStat = Math.max(
+    params.playerStats[STAT_STRENGTH] ?? 1,
+    params.playerStats[STAT_AGILITY] ?? 1,
+    params.playerStats[STAT_INTUITION] ?? 1,
+    params.playerStats[STAT_LUCK] ?? 1,
+  );
+  const statFloor = Math.max(2, Math.floor(level * 0.45));
+  const statCap = Math.max(12, Math.ceil(playerMaxStat * 1.35 + level * 1.5 + bandOffset * 2));
+  const statMultiplier = template.scaling.statMultiplier * tier.stat * encounter.stat;
+  const scaleStat = (key: StatKey) =>
+    clampInteger(
+      (template.stats[key] ?? 1) * statMultiplier +
+        (params.playerStats[key] ?? 1) * (0.38 + statMultiplier * 0.12) +
+        level * (0.2 + statMultiplier * 0.08),
+      statFloor,
+      statCap,
+    );
+  const stats = {
+    [STAT_STRENGTH]: scaleStat(STAT_STRENGTH),
+    [STAT_AGILITY]: scaleStat(STAT_AGILITY),
+    [STAT_INTUITION]: scaleStat(STAT_INTUITION),
+    [STAT_LUCK]: scaleStat(STAT_LUCK),
+  } as unknown as CharacterStats;
+  const expectedPlayerHealth = maxHealthForStats(params.playerStats, playerLevel);
+  const healthFloor = 70 + level * 18 + stats[STAT_STRENGTH] * 4;
+  const healthCeiling = Math.max(healthFloor, Math.floor(expectedPlayerHealth * tier.maxHealthRatio));
+  const health = clampInteger(
+    template.health * template.scaling.healthMultiplier * tier.health * encounter.health +
+      expectedPlayerHealth * (0.12 + tier.health * 0.08) +
+      level * 16,
+    healthFloor,
+    healthCeiling,
+  );
+  const armor = clampInteger(
+    template.armor * template.scaling.armorMultiplier * tier.armor * encounter.armor +
+      level * 1.4 +
+      stats[STAT_STRENGTH] * 0.45,
+    0,
+    Math.max(12, level * 9 + playerLevel * 4),
+  );
+  const rewardMultiplier = template.scaling.rewardMultiplier * tier.reward * encounter.reward;
+  const reward: Reward = {
+    experience: clampInteger(template.reward.experience * rewardMultiplier + level * 8, 1, Math.max(30, level * 45)),
+    gold: clampInteger(template.reward.gold * rewardMultiplier + level * 4, 0, Math.max(20, level * 30)),
+    gems: 0,
+    itemIds: [...template.reward.itemIds],
+  };
+
+  return {
+    ...template,
+    encounterKind,
+    level,
+    health,
+    armor,
+    stats,
+    reward,
+  };
 }
 
 export function resolveCombat(params: {

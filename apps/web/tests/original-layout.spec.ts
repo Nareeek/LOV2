@@ -761,7 +761,7 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await page.getByTestId('combat-enemy-info-button').click();
   const enemyInfoWindow = page.getByTestId('enemy-info-popup');
   await expect(enemyInfoWindow).toBeVisible();
-  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-health')).toContainText('55');
+  await expect(enemyInfoWindow.getByTestId('enemy-info-stat-health')).toContainText('95');
   await expect(enemyInfoWindow.getByTestId('enemy-info-stat-armor')).toContainText('3');
   await expect(enemyInfoWindow.getByTestId('enemy-info-stat-strength')).toContainText('6');
   await expect(enemyInfoWindow.getByTestId('enemy-info-stat-luck')).toContainText('3');
@@ -819,11 +819,11 @@ async function expectTavernAndArenaWindows(page: Page) {
   await expect(arenaWindow).toBeVisible();
   await expectContained(arenaWindow, page.getByTestId('world-stage'));
   await expect(arenaWindow.getByText('1 \u0443\u0440\u043e\u0432\u0435\u043d\u044c')).toBeVisible();
-  await expect(arenaWindow.getByTestId('arena-stat-health')).toContainText('55');
-  await expect(arenaWindow.getByTestId('arena-stat-strength')).toContainText('6');
+  await expect(arenaWindow.getByTestId('arena-stat-health')).toContainText('130');
+  await expect(arenaWindow.getByTestId('arena-stat-strength')).toContainText('9');
   await expect(arenaWindow.locator('.lov-arena-preview img')).toHaveAttribute(
     'src',
-    '/assets/generated/enemies/enemy-mist-bandit.png',
+    '/assets/generated/enemies/arena/enemy_arena_male_nocturne_swordsman_01 (1).png',
   );
   await expect(arenaWindow.getByText('ATK')).toHaveCount(0);
   await expect(arenaWindow.getByText('DEX')).toHaveCount(0);
@@ -1048,8 +1048,8 @@ function createBootstrapState(overrides: Partial<BootstrapState> = {}): Bootstra
   };
 }
 
-function createCombatState(enemyIndex = 2) {
-  const enemy = gameData.enemies[enemyIndex] ?? gameData.enemies[2]!;
+function createCombatState(enemyIndex = 4) {
+  const enemy = gameData.enemies[enemyIndex] ?? gameData.enemies[4]!;
   const reward = gameData.quests[2]!.reward;
   const combatLog: CombatLog = {
     winner: 'character',
@@ -1095,7 +1095,7 @@ function createLostCombatState() {
     {
       id: 'combat-lost',
       characterId: 'character-1',
-      enemyId: gameData.enemies[2]!.id,
+      enemyId: gameData.enemies[4]!.id,
       status: 'lost',
       createdAt: '2026-04-22T11:57:00.000Z',
       log: combatLog,
@@ -1103,7 +1103,7 @@ function createLostCombatState() {
     {
       id: 'combat-pending',
       characterId: 'character-1',
-      enemyId: gameData.enemies[2]!.id,
+      enemyId: gameData.enemies[4]!.id,
       status: 'pending',
       createdAt: NOW,
     },
