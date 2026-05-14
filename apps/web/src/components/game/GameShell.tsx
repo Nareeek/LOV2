@@ -155,17 +155,13 @@ export function GameShell({
   const equippedPetId = equippedPetStack?.itemId && isKnownPetId(equippedPetStack.itemId)
     ? equippedPetStack.itemId
     : null;
-  const equippedPetRoster = equippedPetId
-    ? petRoster.find((pet) => pet.petId === equippedPetId)
-    : undefined;
-  const equippedPetDefinition = equippedPetId
-    ? state.items.find((item) => item.id === equippedPetId && item.slot === 'pet')
-    : undefined;
-  const displayedCombatPetId = equippedPetId ?? selectedPetId;
-  const usableCombatPetId =
-    equippedPetId && equippedPetRoster && equippedPetRoster.food > 0 && equippedPetDefinition?.petCombatStats
-      ? equippedPetId
-      : null;
+  const selectedCombatPetId = isKnownPetId(selectedPetId) ? selectedPetId : equippedPetId;
+  const displayedCombatPetId = selectedCombatPetId ?? equippedPetId ?? selectedPetId;
+  const usableCombatPetId = firstUsableCombatPetId({
+    state,
+    petRoster,
+    preferredPetIds: [selectedCombatPetId, equippedPetId],
+  });
   const activeBattlePetId = resolvedBattlePetId;
   const petAssistAlreadyUsed = Boolean(battlePetId || resolvedBattlePetId || petAssistArmed || activeCombatLog);
   const petAssistAvailable = Boolean(
@@ -416,11 +412,14 @@ export function GameShell({
           return;
         case 'resolveCombat': {
           autoResolvedCombatIdRef.current = intent.combatId;
-          const resolved = await run(() => apiClient.resolveCombat(intent.combatId, {}));
+          const resolved = await run(() => apiClient.resolveCombat(
+            intent.combatId,
+            usableCombatPetId ? { petId: usableCombatPetId } : {},
+          ));
           if (!resolved) {
             return;
           }
-          setBattlePetId(null);
+          setBattlePetId(resolvedPetIdForCombat(resolved, intent.combatId));
           setReplayTurnCount(0);
           setReplayActive(true);
           setRewardVisible(false);
@@ -458,11 +457,14 @@ export function GameShell({
           return;
         case 'showReward': {
           if (pendingCombat) {
-            const resolved = await run(() => apiClient.resolveCombat(pendingCombat.id, {}));
+            const resolved = await run(() => apiClient.resolveCombat(
+              pendingCombat.id,
+              usableCombatPetId ? { petId: usableCombatPetId } : {},
+            ));
             if (!resolved) {
               return;
             }
-            setBattlePetId(null);
+            setBattlePetId(resolvedPetIdForCombat(resolved, pendingCombat.id));
             setPetAssistArmed(false);
           }
           setReplayActive(false);
@@ -799,6 +801,29 @@ function resolvedPetIdForCombat(state: BootstrapState, combatId: string) {
 
 function isKnownPetId(petId: string) {
   return PET_VARIANTS.some((pet) => pet.id === petId);
+}
+
+function firstUsableCombatPetId({
+  state,
+  petRoster,
+  preferredPetIds,
+}: {
+  state: BootstrapState;
+  petRoster: NonNullable<BootstrapState['petRoster']>;
+  preferredPetIds: Array<string | null | undefined>;
+}) {
+  for (const petId of preferredPetIds) {
+    if (!petId || !isKnownPetId(petId)) {
+      continue;
+    }
+    const rosterEntry = petRoster.find((pet) => pet.petId === petId);
+    const definition = state.items.find((item) => item.id === petId && item.slot === 'pet');
+    if (rosterEntry && rosterEntry.food > 0 && definition?.petCombatStats) {
+      return petId;
+    }
+  }
+
+  return null;
 }
 
 function readInitialSelectedPetId() {

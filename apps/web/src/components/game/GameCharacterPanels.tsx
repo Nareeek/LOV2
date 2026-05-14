@@ -366,7 +366,13 @@ export function CharacterSheet({
             <div className="lov-profile-header">
               <div className="lov-profile-identity-art">
                 <img src={characterImageSrc} alt="" data-testid="profile-character-image" />
-                <img className="lov-profile-race-sign" src={raceSignSrc} alt="" data-testid="profile-race-sign" />
+                <img
+                  className="lov-profile-race-sign"
+                  src={raceSignSrc}
+                  alt={raceLabel}
+                  title={raceLabel}
+                  data-testid="profile-race-sign"
+                />
               </div>
               <div>
                 <strong>{character.name}</strong>
@@ -455,6 +461,7 @@ export function CharacterSheet({
           activeTab={activeTab}
           equippedBySlot={equippedBySlot}
           selectedPetAssetId={selectedPet.assetId}
+          raceLabel={raceLabel}
           onIntent={onIntent}
         />
       </section>
@@ -512,6 +519,7 @@ export function HeroInfoWindow({
   const raceLabel = race?.nameRu ?? character.raceId;
   const raceClassLabel = characterRaceClassLabel(raceLabel, character.classId);
   const characterAvatarSrc = characterAvatarPath(character);
+  const characterImageSrc = characterImagePath(character);
   const equippedBySlot = getEquippedBySlot(state);
   const equippedEntries = Object.values(equippedBySlot).filter((entry): entry is EquippedEntry => Boolean(entry));
   const totals = buildCharacterTotals(state, equippedEntries);
@@ -532,6 +540,7 @@ export function HeroInfoWindow({
             <div className="lov-profile-header">
               <div className="lov-profile-identity-art">
                 <img src={characterAvatarSrc} alt="" data-testid="hero-info-character-image" />
+                <img className="lov-profile-standing-preview" src={characterImageSrc} alt="" data-testid="hero-info-standing-image" />
               </div>
               <div>
                 <strong>{character.name}</strong>
@@ -586,6 +595,7 @@ export function HeroInfoWindow({
             character={character}
             activeTab="profile"
             equippedBySlot={equippedBySlot}
+            raceLabel={raceLabel}
             onIntent={onIntent}
           />
         </section>
@@ -724,6 +734,7 @@ function PaperDollPanel({
   activeTab,
   equippedBySlot,
   selectedPetAssetId,
+  raceLabel,
   onIntent,
 }: {
   state: BootstrapState;
@@ -731,10 +742,12 @@ function PaperDollPanel({
   activeTab: SheetTab;
   equippedBySlot: Partial<Record<EquipmentSlot, EquippedEntry>>;
   selectedPetAssetId?: string | undefined;
+  raceLabel?: string | undefined;
   onIntent: (intent: GameIntent) => void;
 }) {
   const heroSrc = characterImagePath(character);
   const raceSignSrc = characterRaceSignPath(character.raceId);
+  const displayedRaceLabel = raceLabel ?? character.raceId;
   const paperDollPetAssetId = selectedPetAssetId ?? 'pet-wyvern';
 
   return (
@@ -760,7 +773,13 @@ function PaperDollPanel({
         <div className="lov-paperdoll-center">
           <img className="lov-paperdoll-hero" src={heroSrc} alt="" data-testid="paperdoll-character-image" />
           {equippedBySlot.pet || selectedPetAssetId ? <img className="lov-paperdoll-pet" src={assetPath(paperDollPetAssetId)} alt="" /> : null}
-          <img className="lov-paperdoll-race-sign" src={raceSignSrc} alt="" data-testid="paperdoll-race-sign" />
+          <img
+            className="lov-paperdoll-race-sign"
+            src={raceSignSrc}
+            alt={displayedRaceLabel}
+            title={displayedRaceLabel}
+            data-testid="paperdoll-race-sign"
+          />
         </div>
 
         <div className="lov-paperdoll-column right">
