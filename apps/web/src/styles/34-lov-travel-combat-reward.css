@@ -646,3 +646,90 @@
 .lov-victory-window.is-defeat .lov-victory-right h2 {
   color: #ffe4d6;
 }
+
+/* Gameplay/UI fix pass. */
+.lov-travel-sidebar,
+.lov-travel-sidecard {
+  display: none !important;
+}
+
+.lov-travel-pin {
+  top: 43%;
+  width: 128px;
+  height: 128px;
+  border: 3px solid rgba(229, 209, 146, 0.88);
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(22, 20, 23, 0.58);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 3px rgba(37, 27, 25, 0.75);
+}
+
+.lov-travel-pin img {
+  object-fit: cover;
+}
+
+.lov-combat-header {
+  grid-template-columns: 84px minmax(0, 1fr);
+}
+
+.lov-combat-header.enemy {
+  grid-template-columns: minmax(0, 1fr) 84px;
+}
+
+.lov-combat-avatar {
+  padding: 0;
+  cursor: pointer;
+}
+
+.lov-combat-avatar:hover,
+.lov-combat-avatar:focus-visible {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.lov-combat-info-button {
+  display: none !important;
+}
+
+.lov-battle-stage {
+  inset: 108px 24px 72px;
+  align-items: end;
+}
+
+.lov-fighter {
+  width: min(82%, 460px);
+  max-height: 100%;
+  object-position: center bottom;
+}
+
+.lov-fighter.hero {
+  transform: translateX(-8%) scale(1.1);
+  transform-origin: center bottom;
+}
+
+.lov-fighter.enemy {
+  transform: translateX(7%) scale(1.12);
+  transform-origin: center bottom;
+}
+
+.lov-battle-pet-wrap {
+  left: clamp(22%, 31%, 36%);
+  bottom: 0;
+  width: min(18%, 190px);
+  transform-origin: center bottom;
+}
+
+.lov-battle-pet-wrap.pet-wyrmlet {
+  bottom: 0;
+  width: min(19%, 205px);
+}
+
+.lov-battle-pet {
+  transform-origin: 58% 100%;
+}
+
+.lov-pet-battle-health {
+  transform: translateY(-6px);
+}

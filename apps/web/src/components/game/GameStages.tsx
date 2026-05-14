@@ -73,7 +73,7 @@ import {
   type EquippedEntry,
   type StatBreakdown,
 } from './GamePanels.logic.js';
-import { ItemChip, Meter, UiIcon } from './ui.js';
+import { ItemChip, Meter } from './ui.js';
 import { WorldWindowShell } from './GameWindowShell.js';
 import { enemyAssetId, enemyAvatarAssetId, enemyDisplayName } from './enemyPresentation.js';
 export function TravelStage({
@@ -95,7 +95,7 @@ export function TravelStage({
   const progress = activeTravel ? buildTravelProgress(activeTravel, clock) : null;
   const progressPercent = progress?.percent ?? 0;
   const canRushTravel = Boolean(!busy && activeTravel && !activeTravelReady && (state.character?.gems ?? 0) >= 1);
-  const characterImageSrc = state.character ? characterImagePath(state.character) : null;
+  const characterImageSrc = state.character ? characterAvatarPath(state.character) : null;
 
   return (
     <section
@@ -106,12 +106,6 @@ export function TravelStage({
       <div className="shell-reset-travel-art">
         <img src={assetPath('scene-map')} alt="" />
       </div>
-
-      <aside className="lov-travel-sidebar">
-        <div className="lov-travel-sidecard">
-          <span>{progress ? formatDuration(progress.secondsLeft) : '00:41:46'}</span>
-        </div>
-      </aside>
 
       <div className="lov-travel-pin">
         {characterImageSrc ? <img src={characterImageSrc} alt="" data-testid="travel-character-image" /> : null}
@@ -213,16 +207,13 @@ export function CombatStage({
         <div className="lov-combat-header ally">
           <button
             type="button"
-            className="lov-combat-info-button"
+            className="lov-combat-avatar hero"
             data-testid="combat-hero-info-button"
             aria-label="Сведения о герое"
             onClick={() => onIntent({ type: 'openInfo', windowId: 'heroInfo' })}
           >
-            <UiIcon name="info" />
-          </button>
-          <div className="lov-combat-avatar hero">
             <img src={heroAvatarSrc} alt="" data-testid="combat-character-avatar" />
-          </div>
+          </button>
           <div className="lov-combat-meta">
             <strong>{character.name}</strong>
             <span>{character.level}</span>
@@ -251,17 +242,14 @@ export function CombatStage({
             </div>
             <small>{enemyHealth}</small>
           </div>
-          <div className="lov-combat-avatar enemy">
-            <img src={assetPath(displayedEnemyAvatarAssetId)} alt="" />
-          </div>
           <button
             type="button"
-            className="lov-combat-info-button"
+            className="lov-combat-avatar enemy"
             data-testid="combat-enemy-info-button"
             aria-label="Сведения о противнике"
             onClick={() => onIntent({ type: 'openInfo', windowId: 'enemyInfo' })}
           >
-            <UiIcon name="info" />
+            <img src={assetPath(displayedEnemyAvatarAssetId)} alt="" />
           </button>
         </div>
       </div>
@@ -388,6 +376,16 @@ function rewardPetForCombat(latestResolvedCombat: CombatEncounter | undefined, b
   return pet && petTookTurn ? pet : null;
 }
 
+function combatSourceLabel(source: CombatEncounter['source'] | undefined) {
+  if (source === 'arena') {
+    return '\u0436\u0435\u043c\u0447\u0443\u0433 \u0441 \u0430\u0440\u0435\u043d\u044b';
+  }
+  if (source === 'travel') {
+    return '\u0436\u0435\u043c\u0447\u0443\u0433 \u0438\u0437 \u0434\u043e\u0440\u043e\u0436\u043d\u043e\u0433\u043e \u0431\u043e\u044f';
+  }
+  return '\u0436\u0435\u043c\u0447\u0443\u0433 \u0437\u0430 \u0431\u043e\u0439';
+}
+
 export function RewardWindow({
   character,
   latestResolvedCombat,
@@ -403,7 +401,7 @@ export function RewardWindow({
   const didWin =
     latestResolvedCombat?.status === 'won'
     || latestResolvedCombat?.log?.winner === 'character';
-  const showRewardValues = didWin && Boolean((reward?.gold ?? 0) > 0 || (reward?.experience ?? 0) > 0);
+  const showRewardValues = didWin && Boolean((reward?.gold ?? 0) > 0 || (reward?.experience ?? 0) > 0 || (reward?.gems ?? 0) > 0);
   const rewardPet = rewardPetForCombat(latestResolvedCombat, battlePetId);
 
   return (
@@ -418,12 +416,13 @@ export function RewardWindow({
         <div className="lov-victory-rewards">
           <strong>{reward?.gold ?? 0} золота</strong>
           <strong>{reward?.experience ?? 0} XP</strong>
+          {(reward?.gems ?? 0) > 0 ? <strong>{reward?.gems ?? 0} {combatSourceLabel(latestResolvedCombat?.source)}</strong> : null}
         </div>
         <div className="lov-reward-drop" aria-hidden="true" />
         {showRewardValues && rewardPet ? (
           <div className="lov-pet-xp">
             <img src={assetPath(rewardPet.assetId)} alt="" />
-            <strong>1 XP</strong>
+            <strong>{latestResolvedCombat?.log?.petExperienceGained ?? 0} XP</strong>
           </div>
         ) : null}
         <button type="button" data-testid="reward-continue-button" onClick={onContinue}>
@@ -449,7 +448,7 @@ export function CombatResultWindow({
   const didWin =
     latestResolvedCombat?.status === 'won'
     || latestResolvedCombat?.log?.winner === 'character';
-  const showRewardValues = didWin && Boolean((reward?.gold ?? 0) > 0 || (reward?.experience ?? 0) > 0);
+  const showRewardValues = didWin && Boolean((reward?.gold ?? 0) > 0 || (reward?.experience ?? 0) > 0 || (reward?.gems ?? 0) > 0);
   const rewardPet = rewardPetForCombat(latestResolvedCombat, battlePetId);
 
   return (
@@ -470,12 +469,13 @@ export function CombatResultWindow({
             <div className="lov-victory-rewards">
               <strong>{reward?.gold ?? 0} {'\u0437\u043e\u043b\u043e\u0442\u0430'}</strong>
               <strong>{reward?.experience ?? 0} XP</strong>
+              {(reward?.gems ?? 0) > 0 ? <strong>{reward?.gems ?? 0} {combatSourceLabel(latestResolvedCombat?.source)}</strong> : null}
             </div>
             <div className="lov-reward-drop" aria-hidden="true" />
             {rewardPet ? (
               <div className="lov-pet-xp">
                 <img src={assetPath(rewardPet.assetId)} alt="" />
-                <strong>1 XP</strong>
+                <strong>{latestResolvedCombat?.log?.petExperienceGained ?? 0} XP</strong>
               </div>
             ) : null}
           </>

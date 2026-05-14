@@ -8,6 +8,8 @@ import {
   hasEnoughEnergy,
   levelFromExperience,
   maxHealthForStats,
+  damageRangeForClass,
+  primaryDamageStatForClass,
   refillEnergy,
   resolveCombat,
   shouldResetDailyEnergy,
@@ -24,6 +26,22 @@ describe('game rules', () => {
 
   it('derives health from stats and level', () => {
     expect(maxHealthForStats({ сила: 12, ловкость: 10, интуиция: 10, удача: 8 }, 3)).toBeGreaterThan(100);
+  });
+
+  it('uses each class primary stat for damage ranges', () => {
+    const stats = {
+      ['\u0441\u0438\u043b\u0430']: 12,
+      ['\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c']: 24,
+      ['\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f']: 18,
+      ['\u0443\u0434\u0430\u0447\u0430']: 10,
+    } as EnemyDefinition['stats'];
+
+    expect(primaryDamageStatForClass('swordsman')).toBe('\u0441\u0438\u043b\u0430');
+    expect(primaryDamageStatForClass('ranger')).toBe('\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c');
+    expect(primaryDamageStatForClass('mage')).toBe('\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f');
+    expect(damageRangeForClass(stats, 'ranger', 1).min).toBeGreaterThan(
+      damageRangeForClass(stats, 'swordsman', 1).min,
+    );
   });
 
   it('prices manual stat allocation from the current stat value', () => {
@@ -103,6 +121,8 @@ describe('game rules', () => {
     const enemyHits = combat.turns.filter((turn) => turn.actor === 'enemy').map((turn) => turn.damage);
 
     expect(combat.petId).toBe('kitten');
+    expect(combat.petFoodSpent).toBeGreaterThan(0);
+    expect(combat.petExperienceGained).toBeGreaterThan(0);
     expect(combat.turns.some((turn) => turn.actor === 'pet')).toBe(true);
     expect(allyHits.length).toBeGreaterThan(1);
     for (let index = 1; index < allyHits.length; index += 1) {

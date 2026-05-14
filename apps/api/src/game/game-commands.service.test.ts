@@ -121,6 +121,7 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       stats: strongStats,
       gold: 0,
       gems: 0,
+      petFood: 10,
       energy: DEFAULT_MAX_ENERGY,
       maxEnergy: DEFAULT_MAX_ENERGY,
       energyUpdatedAt: now,
@@ -132,6 +133,17 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       user,
       character,
       inventory: [] as Array<Record<string, unknown>>,
+      petRoster: gameData.items
+        .filter((item) => item.slot === 'pet')
+        .map((item) => ({
+          id: `pet-roster-${item.id}`,
+          characterId: character.id,
+          petId: item.id,
+          food: item.id === 'ember-whelp' ? 4 : 0,
+          experience: 0,
+          createdAt: now,
+          updatedAt: now,
+        })) as Array<Record<string, unknown>>,
       questProgress: initialQuestStatus
         ? [
             {
@@ -176,6 +188,8 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       state.combats.find((combat) => combat.id === id && combat.characterId === character.id);
     const findInventoryStack = (id: string) =>
       state.inventory.find((item) => item.id === id && item.characterId === character.id);
+    const findPetRoster = (petId: string) =>
+      state.petRoster.find((pet) => pet.characterId === character.id && pet.petId === petId);
     const matchesStatus = (actual: unknown, expected: unknown) => {
       if (expected && typeof expected === 'object' && 'in' in expected) {
         return (expected as { in: unknown[] }).in.includes(actual);
@@ -239,23 +253,14 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
             }) ?? null
           );
         }),
-        upsert: vi.fn(async ({ where, update, create }: { where: { characterId_itemId: { itemId: string } }; update: Record<string, unknown>; create: Record<string, unknown> }) => {
-          const existing = state.inventory.find(
-            (item) => item.itemId === where.characterId_itemId.itemId,
-          );
-          if (existing) {
-            if (update.quantity && typeof update.quantity === 'object' && 'increment' in update.quantity) {
-              existing.quantity = Number(existing.quantity) + (update.quantity as { increment: number }).increment;
-            }
-            return existing;
-          }
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
           const created = {
             id: `inventory-${state.inventory.length + 1}`,
             enhancementLevel: 0,
             equippedSlot: null,
             createdAt: now,
             updatedAt: now,
-            ...create,
+            ...data,
           };
           state.inventory.push(created);
           return created;
@@ -281,6 +286,32 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
           }
           Object.assign(stack, data);
           return stack;
+        }),
+      },
+      characterPet: {
+        findMany: vi.fn(async ({ where }: { where?: Record<string, unknown> } = {}) =>
+          state.petRoster.filter((pet) => !where?.characterId || pet.characterId === where.characterId),
+        ),
+        findUnique: vi.fn(async ({ where }: { where: { characterId_petId: { petId: string } } }) =>
+          findPetRoster(where.characterId_petId.petId) ?? null,
+        ),
+        update: vi.fn(async ({ where, data }: { where: { characterId_petId: { petId: string } }; data: Record<string, unknown> }) => {
+          const pet = findPetRoster(where.characterId_petId.petId);
+          if (!pet) {
+            throw new Error('missing pet roster');
+          }
+          for (const [key, value] of Object.entries(data)) {
+            const currentValue = Number(pet[key] ?? 0);
+            if (value && typeof value === 'object' && 'increment' in value) {
+              pet[key] = currentValue + (value as { increment: number }).increment;
+            } else if (value && typeof value === 'object' && 'decrement' in value) {
+              pet[key] = currentValue - (value as { decrement: number }).decrement;
+            } else {
+              pet[key] = value;
+            }
+          }
+          pet.updatedAt = now;
+          return pet;
         }),
       },
       questProgress: {
@@ -398,21 +429,38 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     return { service, prisma, state, notifications, travelQueue };
   }
 
-  it('keeps acceptQuest idempotent for existing quest progress', async () => {
-    for (const status of ['active', 'completed', 'claimed'] as const) {
-      const { service, prisma, state, notifications } = createVerticalHarness({
+  it('keeps acceptQuest idempotent only for active quest progress', async () => {
+    const { service, prisma, state, notifications } = createVerticalHarness({
+      initialQuestStatus: 'active',
+    });
+
+    await service.acceptQuest(state.user.id, quest.id);
+
+    expect(state.questProgress[0]?.status).toBe('active');
+    expect(prisma.questProgress.create).not.toHaveBeenCalled();
+    expect(prisma.questProgress.update).not.toHaveBeenCalled();
+    expect(prisma.gameEvent.create).not.toHaveBeenCalled();
+    expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
+  });
+
+  it.each(['completed', 'claimed'] as const)(
+    'reactivates %s quest progress so tavern routes can repeat',
+    async (status) => {
+      const { service, prisma, state } = createVerticalHarness({
         initialQuestStatus: status,
       });
 
-      await service.acceptQuest(state.user.id, quest.id);
+      const bootstrap = await service.acceptQuest(state.user.id, quest.id);
 
-      expect(state.questProgress[0]?.status).toBe(status);
-      expect(prisma.questProgress.create).not.toHaveBeenCalled();
-      expect(prisma.questProgress.update).not.toHaveBeenCalled();
-      expect(prisma.gameEvent.create).not.toHaveBeenCalled();
-      expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
-    }
-  });
+      expect(bootstrap.questProgress[0]).toMatchObject({
+        questId: quest.id,
+        status: 'active',
+        progress: 0,
+      });
+      expect(prisma.questProgress.update).toHaveBeenCalledTimes(1);
+      expect(prisma.gameEvent.create).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('activates available quest progress once', async () => {
     const { service, prisma, state, notifications } = createVerticalHarness({
@@ -463,7 +511,7 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       status: 'pending',
     });
     expect(prisma.combatEncounter.create).toHaveBeenCalledWith({
-      data: { characterId: state.character.id, questId: quest.id, enemyId: quest.enemyId },
+      data: { characterId: state.character.id, questId: quest.id, enemyId: quest.enemyId, source: 'travel' },
     });
     expect(state.events.find((event) => event.type === 'travel.completed')?.payload).toMatchObject({
       questId: quest.id,
@@ -680,6 +728,25 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     expect(state.inventory).toHaveLength(0);
   });
 
+  it('feeds a roster pet from hero pet food with server clamping', async () => {
+    const { service, state } = createVerticalHarness();
+    state.character.petFood = 6;
+    const pet = state.petRoster.find((entry) => entry.petId === 'ember-whelp')!;
+    pet.food = 0;
+
+    const fed = await service.feedPet(state.user.id, 'ember-whelp', { amount: 10 });
+
+    expect(fed.character?.petFood).toBe(0);
+    expect(fed.petRoster.find((entry) => entry.petId === 'ember-whelp')).toMatchObject({
+      food: 6,
+      experience: 0,
+    });
+    expect(state.events.find((event) => event.type === 'pet.fed')?.payload).toMatchObject({
+      petId: 'ember-whelp',
+      amount: 6,
+    });
+  });
+
   it('claims unlinked legacy travel as non-quest combat without location quest fallback', async () => {
     const { service, prisma, state } = createVerticalHarness();
     state.travels.push({
@@ -700,7 +767,7 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     });
     expect(bootstrap.combats[0]).not.toHaveProperty('questId');
     expect(prisma.combatEncounter.create).toHaveBeenCalledWith({
-      data: { characterId: state.character.id, questId: null, enemyId: 'mist-bandit' },
+      data: { characterId: state.character.id, questId: null, enemyId: 'mist-bandit', source: 'travel' },
     });
     expect(state.events.find((event) => event.type === 'travel.completed')?.payload).not.toHaveProperty(
       'questId',
@@ -743,6 +810,7 @@ describe('GameCommandsService character creation', () => {
             stats: data.stats,
             gold: 0,
             gems: 0,
+            petFood: data.petFood,
             energy: data.energy,
             maxEnergy: data.maxEnergy,
             energyUpdatedAt: data.energyUpdatedAt,
@@ -757,6 +825,7 @@ describe('GameCommandsService character creation', () => {
         }),
       },
       inventoryStack: { findMany: vi.fn().mockResolvedValue([]) },
+      characterPet: { findMany: vi.fn().mockResolvedValue([]) },
       questProgress: { findMany: vi.fn().mockResolvedValue([]) },
       travelTask: { findMany: vi.fn().mockResolvedValue([]) },
       combatEncounter: { findMany: vi.fn().mockResolvedValue([]) },
@@ -769,7 +838,7 @@ describe('GameCommandsService character creation', () => {
       travelQueue as unknown as ConstructorParameters<typeof GameCommandsService>[2],
     );
 
-    return { service };
+    return { service, prisma };
   }
 
   it.each([
@@ -792,6 +861,37 @@ describe('GameCommandsService character creation', () => {
         expect(primaryValue).toBeGreaterThan(value);
       }
     }
+  });
+
+  it.each([
+    { classId: 'swordsman' as CharacterClassId, starterItemId: 'starter-sword' },
+    { classId: 'ranger' as CharacterClassId, starterItemId: 'starter-bow' },
+    { classId: 'mage' as CharacterClassId, starterItemId: 'starter-staff' },
+  ])('creates the $classId starter weapon and unfed pet roster', async ({ classId, starterItemId }) => {
+    const { service, prisma } = createCreationHarness();
+
+    await service.createCharacter('user-create', {
+      name: 'Starter',
+      raceId: 'oracle',
+      gender: 'male',
+      classId,
+    });
+
+    const createData = prisma.character.create.mock.calls[0]?.[0].data as {
+      petFood: number;
+      inventory: { create: Array<{ itemId: string; quantity: number; equippedSlot: string }> };
+      pets: { create: Array<{ petId: string; food: number; experience: number }> };
+    };
+    expect(createData.petFood).toBe(10);
+    expect(createData.inventory).toEqual({
+      create: [{ itemId: starterItemId, quantity: 1, equippedSlot: 'weapon' }],
+    });
+    expect(createData.pets.create).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ petId: 'ember-whelp', food: 0, experience: 0 }),
+      ]),
+    );
+    expect(createData.pets.create.every((pet: { food: number }) => pet.food === 0)).toBe(true);
   });
 });
 
@@ -819,6 +919,7 @@ describe('GameCommandsService command idempotency', () => {
     stats: baseStats,
     gold: 120,
     gems: 2,
+    petFood: 10,
     energy: DEFAULT_MAX_ENERGY,
     maxEnergy: DEFAULT_MAX_ENERGY,
     energyUpdatedAt: now,
@@ -879,7 +980,7 @@ describe('GameCommandsService command idempotency', () => {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
       currencyLedgerEntry: { create: vi.fn() },
-      inventoryStack: { upsert: vi.fn() },
+      inventoryStack: { create: vi.fn() },
       questProgress: { update: vi.fn() },
       gameEvent: { create: vi.fn() },
     };
@@ -1013,7 +1114,7 @@ describe('GameCommandsService command idempotency', () => {
     expect(transactionClient.combatEncounter.updateMany).toHaveBeenCalledTimes(1);
     expect(transactionClient.character.update).not.toHaveBeenCalled();
     expect(transactionClient.currencyLedgerEntry.create).not.toHaveBeenCalled();
-    expect(transactionClient.inventoryStack.upsert).not.toHaveBeenCalled();
+    expect(transactionClient.inventoryStack.create).not.toHaveBeenCalled();
     expect(transactionClient.questProgress.update).not.toHaveBeenCalled();
     expect(transactionClient.gameEvent.create).not.toHaveBeenCalled();
     expect(notifications.emitCharacterEvent).not.toHaveBeenCalled();
@@ -1059,6 +1160,7 @@ describe('GameCommandsService combat pet authority', () => {
     stats: baseStats,
     gold: 120,
     gems: 0,
+    petFood: 10,
     energy: DEFAULT_MAX_ENERGY,
     maxEnergy: DEFAULT_MAX_ENERGY,
     energyUpdatedAt: now,
@@ -1099,7 +1201,7 @@ describe('GameCommandsService combat pet authority', () => {
       combatEncounter: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       character: { update: vi.fn() },
       currencyLedgerEntry: { create: vi.fn() },
-      inventoryStack: { upsert: vi.fn() },
+      inventoryStack: { create: vi.fn() },
       questProgress: { update: vi.fn() },
       gameEvent: { create: vi.fn() },
     };

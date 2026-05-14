@@ -123,6 +123,18 @@ export function GameShell({
     persistSelectedPetId(selectedPetId);
   }, [selectedPetId]);
 
+  useEffect(() => {
+    const roster = state.petRoster ?? [];
+    const current = roster.find((pet) => pet.petId === selectedPetId);
+    if (current && current.food > 0) {
+      return;
+    }
+    const firstFedPet = roster.find((pet) => pet.food > 0);
+    if (firstFedPet) {
+      setSelectedPetId(firstFedPet.petId);
+    }
+  }, [selectedPetId, state.petRoster]);
+
   const handleSelectPet = useCallback((petId: string) => {
     setSelectedPetId(isKnownPetId(petId) ? petId : 'kitten');
   }, []);
@@ -145,16 +157,11 @@ export function GameShell({
   const selectedItemStack = selectedItemStackId ? state.inventory.find((stack) => stack.id === selectedItemStackId) : undefined;
   const selectedItem = selectedItemStack ? state.items.find((item) => item.id === selectedItemStack.itemId) : undefined;
   const selectedForgeStack = selectedForgeStackId ? state.inventory.find((stack) => stack.id === selectedForgeStackId) : undefined;
-  const equippedPetStack = state.inventory.find((stack) => {
-    if (stack.equippedSlot !== 'pet') {
-      return false;
-    }
-    const item = state.items.find((entry) => entry.id === stack.itemId);
-    return item?.slot === 'pet';
-  });
-  const equippedPetId = equippedPetStack?.itemId ?? null;
-  const displayedCombatPetId = equippedPetId ?? selectedPetId;
-  const activeBattlePetId = resolvedBattlePetId ?? (petAssistArmed ? displayedCombatPetId : null);
+  const petRoster = state.petRoster ?? [];
+  const selectedPetRoster = petRoster.find((pet) => pet.petId === selectedPetId);
+  const displayedCombatPetId = selectedPetRoster && selectedPetRoster.food > 0 ? selectedPetRoster.petId : selectedPetId;
+  const fedCombatPetId = selectedPetRoster && selectedPetRoster.food > 0 ? selectedPetRoster.petId : null;
+  const activeBattlePetId = resolvedBattlePetId ?? (fedCombatPetId ? displayedCombatPetId : null);
   const xpTarget = state.character ? experienceForLevel(state.character.level + 1) : 1;
   const xpPercent = state.character ? Math.min(100, Math.round((state.character.experience / xpTarget) * 100)) : 0;
   const stageMode: StageMode = baseStage;
@@ -396,7 +403,7 @@ export function GameShell({
           return;
         case 'resolveCombat': {
           autoResolvedCombatIdRef.current = intent.combatId;
-          const usedPetId = petAssistArmed ? displayedCombatPetId : null;
+          const usedPetId = fedCombatPetId;
           const resolved = await run(() => apiClient.resolveCombat(intent.combatId, usedPetId ? { petId: usedPetId } : {}));
           if (!resolved) {
             return;
@@ -410,11 +417,11 @@ export function GameShell({
           return;
         }
         case 'togglePetAssist':
-          if (rewardVisible || !displayedCombatPetId) {
+          if (rewardVisible || !fedCombatPetId) {
             return;
           }
           if (pendingCombat && !activeCombatLog && !replayActive && !petAssistArmed) {
-            const usedPetId = displayedCombatPetId;
+            const usedPetId = fedCombatPetId;
             autoResolvedCombatIdRef.current = pendingCombat.id;
             setBattlePetId(usedPetId);
             setPetAssistArmed(true);
@@ -435,7 +442,7 @@ export function GameShell({
           return;
         case 'showReward': {
           if (pendingCombat) {
-            const usedPetId = petAssistArmed ? displayedCombatPetId : null;
+            const usedPetId = fedCombatPetId;
             const resolved = await run(() => apiClient.resolveCombat(pendingCombat.id, usedPetId ? { petId: usedPetId } : {}));
             if (!resolved) {
               return;
@@ -472,6 +479,11 @@ export function GameShell({
           await run(() => apiClient.purchaseItem({ itemId: intent.itemId }));
           setWorldWindow('store');
           return;
+        case 'feedPet':
+          await run(() => apiClient.feedPet(intent.petId, { amount: intent.amount }));
+          setBaseStage('sheet');
+          setSheetTab('pets');
+          return;
         case 'selectForgeItem':
           setSelectedForgeStackId(intent.inventoryStackId);
           return;
@@ -502,7 +514,7 @@ export function GameShell({
       battlePetId,
       busy,
       displayedCombatPetId,
-      equippedPetId,
+      fedCombatPetId,
       openLocation,
       openSheet,
       openWorldWindow,
@@ -704,9 +716,9 @@ export function GameShell({
               combatEnemy={combatEnemy}
               replayFrame={replayFrame}
               petAssistArmed={petAssistArmed}
-              petAssistAvailable={Boolean(displayedCombatPetId)}
+              petAssistAvailable={Boolean(fedCombatPetId)}
               selectedPetId={displayedCombatPetId}
-              battlePetId={resolvedBattlePetId}
+              battlePetId={activeBattlePetId}
               visibleReplayTurns={visibleReplayTurns}
               onIntent={handleIntent}
               worldWindowContent={worldWindowContent}
@@ -747,6 +759,7 @@ function isCommandIntent(intent: GameIntent) {
     case 'purchaseItem':
     case 'upgradeItem':
     case 'allocateStat':
+    case 'feedPet':
     case 'refillEnergy':
       return true;
     default:

@@ -112,6 +112,7 @@ function createState(): BootstrapState {
     ],
     scenes: [],
     inventory: [],
+    petRoster: [],
     questProgress: [],
     travels: [],
     combats: [],

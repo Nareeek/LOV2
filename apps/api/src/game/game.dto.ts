@@ -103,3 +103,9 @@ export class ResolveCombatDto {
   @IsString()
   petId?: string;
 }
+
+export class FeedPetDto {
+  @ApiProperty({ enum: [1, 10], example: 1 })
+  @IsIn([1, 10])
+  amount!: 1 | 10;
+}

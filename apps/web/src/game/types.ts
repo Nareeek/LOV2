@@ -75,4 +75,5 @@ export type GameIntent =
   | { type: 'selectForgeItem'; inventoryStackId: string | null }
   | { type: 'upgradeItem'; inventoryStackId: string }
   | { type: 'allocateStat'; stat: StatKey }
+  | { type: 'feedPet'; petId: string; amount: 1 | 10 }
   | { type: 'refillEnergy'; mode: 'cup' | 'bundle' };

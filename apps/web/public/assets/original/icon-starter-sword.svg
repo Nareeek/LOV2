@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Original starter sword icon">
+  <rect width="96" height="96" rx="8" fill="#211b20"/>
+  <path d="M48 10 L57 54 L48 67 L39 54 Z" fill="#dfe9ef" stroke="#90a6b6" stroke-width="2"/>
+  <path d="M31 62 H65" stroke="#c79a55" stroke-width="8" stroke-linecap="round"/>
+  <path d="M48 64 V84" stroke="#6f3b31" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="48" cy="86" r="6" fill="#d7b56a"/>
+</svg>

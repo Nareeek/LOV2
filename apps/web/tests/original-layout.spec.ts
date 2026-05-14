@@ -349,7 +349,11 @@ test('travel screen hides story prompt and placeholder counters', async ({ page 
   const travelScreen = page.getByTestId('travel-screen');
   await expect(travelScreen).toBeVisible();
   await expect(travelScreen.locator('.lov-travel-story')).toBeHidden();
-  await expect(travelScreen.locator('.lov-travel-sidecard')).toHaveCount(1);
+  await expect(travelScreen.locator('.lov-travel-sidecard')).toHaveCount(0);
+  await expect(travelScreen.getByTestId('travel-character-image')).toHaveAttribute(
+    'src',
+    CHARACTER_AVATAR_ASSET_PATHS.male_nocturne_swordsman,
+  );
   await expect(travelScreen.getByText('0/5')).toHaveCount(0);
   await expect(travelScreen.getByText('0/1')).toHaveCount(0);
 });
@@ -524,6 +528,47 @@ test('failed arena start keeps the arena window open', async ({ page }) => {
   await expect(page.getByTestId('game-message')).toHaveCount(0);
 });
 
+test('store purchase adds a duplicate item as a separate inventory cell', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  const baseState = createBootstrapState();
+  const purchasedState = createBootstrapState({
+    inventory: [
+      ...baseState.inventory,
+      {
+        id: 'stack-weapon-purchased',
+        characterId: baseState.character!.id,
+        itemId: 'duelist-rapier',
+        quantity: 1,
+      },
+    ],
+  });
+  let purchaseRequests = 0;
+  await openGame(page, baseState, {
+    onApiRequest: async (pathname, route) => {
+      if (pathname === '/shop/purchase' && route.request().method() === 'POST') {
+        purchaseRequests += 1;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(purchasedState),
+        });
+        return true;
+      }
+      return false;
+    },
+  });
+
+  await page.getByTestId('hotspot-hub-store').click();
+  const storeWindow = page.getByTestId('store-sheet');
+  await storeWindow.getByTestId('store-item-duelist-rapier').click();
+
+  await expect.poll(() => purchaseRequests).toBe(1);
+  const rapierName = gameData.items.find((item) => item.id === 'duelist-rapier')!.nameRu;
+  const rapierCells = storeWindow.locator('[data-testid="inventory-panel"] .lov-grid-item').filter({ hasText: rapierName });
+  await expect(rapierCells).toHaveCount(2);
+  await expect(rapierCells.locator('.lov-item-quantity')).toHaveCount(0);
+});
+
 test('sheet close control and bag slot count stay reachable on a narrow desktop viewport', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 576 });
   await openGame(page, createBootstrapState());
@@ -557,7 +602,7 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   await expect(page.getByTestId('combat-screen')).toBeVisible();
   await expect(page.getByTestId('combat-skip-button')).toBeVisible();
   await expect(page.getByTestId('pet-assist-button')).toBeVisible();
-  await expect(page.getByTestId('combat-summoned-pet')).toHaveCount(0);
+  await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
   await expect(page.locator('.lov-fighter.hero')).toBeVisible();
   await expect(page.locator('.lov-fighter.enemy')).toBeVisible();
   await expect(page.locator('.lov-combat-header.enemy')).toContainText('Роман');
@@ -584,7 +629,6 @@ test('combat and reward stay inside the battlefield shell', async ({ page }) => 
   );
   await enemyInfoWindow.getByTestId('world-window-bottom-close').click();
 
-  await page.getByTestId('pet-assist-button').click();
   await expect(page.getByTestId('combat-summoned-pet')).toBeVisible();
 
   await page.getByTestId('combat-skip-button').click();
@@ -771,6 +815,7 @@ function createBootstrapState(overrides: Partial<BootstrapState> = {}): Bootstra
       stats: { сила: 24, ловкость: 19, интуиция: 15, удача: 13 },
       gold: 6152,
       gems: 5,
+      petFood: 10,
       energy: 25,
       maxEnergy: 25,
       energyUpdatedAt: NOW,
@@ -833,6 +878,17 @@ function createBootstrapState(overrides: Partial<BootstrapState> = {}): Bootstra
         quantity: 2,
       },
     ],
+    petRoster: gameData.items
+      .filter((item) => item.slot === 'pet')
+      .map((item, index) => ({
+        id: `pet-roster-${item.id}`,
+        characterId,
+        petId: item.id,
+        food: index === 3 ? 16 : 0,
+        experience: 0,
+        createdAt: NOW,
+        updatedAt: NOW,
+      })),
     questProgress: [
       {
         id: 'quest-progress-1',

@@ -154,6 +154,27 @@ export const artManifest: ArtAssetRecord[] = [
     promptOrSource: generatedSource('_incoming_assets_transparent/items/icon-rapier.png'),
   },
   {
+    id: 'icon-starter-sword',
+    path: '/assets/original/icon-starter-sword.svg',
+    kind: 'item',
+    license: GENERATED_LICENSE,
+    promptOrSource: 'Original LOV2 vector placeholder drawn in-repo for the starter sword item.',
+  },
+  {
+    id: 'icon-starter-bow',
+    path: '/assets/original/icon-starter-bow.svg',
+    kind: 'item',
+    license: GENERATED_LICENSE,
+    promptOrSource: 'Original LOV2 vector placeholder drawn in-repo for the starter bow item.',
+  },
+  {
+    id: 'icon-starter-staff',
+    path: '/assets/original/icon-starter-staff.svg',
+    kind: 'item',
+    license: GENERATED_LICENSE,
+    promptOrSource: 'Original LOV2 vector placeholder drawn in-repo for the starter staff item.',
+  },
+  {
     id: 'icon-vest',
     path: '/assets/generated/items/icon-vest.png',
     kind: 'item',
