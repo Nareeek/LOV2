@@ -11,6 +11,7 @@ import {
   hasEnoughEnergy,
   refillEnergy,
   resolveCombat,
+  scaleEnemyForEncounter,
   spendEnergy,
   statsWithEquipment,
   type CharacterClassId,
@@ -90,6 +91,23 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 1,
     '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 1,
     '\u0443\u0434\u0430\u0447\u0430': 1,
+  };
+  const scaledTestEnemy = (
+    enemyId: string,
+    character: { level: number; stats: unknown },
+    source: 'travel' | 'arena' | 'legacy' = 'travel',
+  ) => {
+    const template = gameData.enemies.find((enemy) => enemy.id === enemyId)!;
+
+    return scaleEnemyForEncounter({
+      template,
+      playerLevel: character.level,
+      playerStats: character.stats as typeof strongStats,
+      encounterKind: source === 'arena' ? 'arena' : 'travel',
+      bandOffset: source === 'arena' && template.arenaBand
+        ? Math.max(0, Math.floor((character.level - template.arenaBand.minLevel) / 10))
+        : 0,
+    });
   };
 
   function createVerticalHarness({
@@ -641,7 +659,7 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     const followUpCombatId = String(state.combats[1]!.id);
     const petDefinition = gameData.items.find((item) => item.id === 'ember-whelp')!;
     const onyxDefinition = gameData.items.find((item) => item.id === 'lucky-onyx')!;
-    const followUpEnemy = gameData.enemies.find((enemy) => enemy.id === emberWhelpQuest.enemyId)!;
+    const followUpEnemy = scaledTestEnemy(emberWhelpQuest.enemyId, state.character);
     const expectedPetStats = petDefinition.petCombatStats!;
     const expectedLog = resolveCombat({
       characterStats: statsWithEquipment(state.character.stats, [onyxDefinition, petDefinition]),
@@ -758,7 +776,7 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       id: 'combat-pet-win',
       characterId: state.character.id,
       questId: null,
-      enemyId: 'mist-bandit',
+      enemyId: 'arena-moon-duelist',
       source: 'arena',
       status: 'pending',
       log: null,
@@ -808,7 +826,7 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       id: 'combat-pet-loss',
       characterId: state.character.id,
       questId: null,
-      enemyId: 'baron-of-ashes',
+      enemyId: 'arena-rune-seer',
       source: 'arena',
       status: 'pending',
       log: null,
@@ -924,16 +942,85 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     const bootstrap = await service.claimTravel(state.user.id, 'legacy-travel');
 
     expect(bootstrap.combats[0]).toMatchObject({
-      enemyId: 'mist-bandit',
+      enemyId: 'harbor-wraith',
       status: 'pending',
     });
     expect(bootstrap.combats[0]).not.toHaveProperty('questId');
     expect(prisma.combatEncounter.create).toHaveBeenCalledWith({
-      data: { characterId: state.character.id, questId: null, enemyId: 'mist-bandit', source: 'travel' },
+      data: { characterId: state.character.id, questId: null, enemyId: 'harbor-wraith', source: 'travel' },
     });
     expect(state.events.find((event) => event.type === 'travel.completed')?.payload).not.toHaveProperty(
       'questId',
     );
+  });
+
+  it('bootstraps scaled travel enemies from location-themed data', async () => {
+    const { service, state } = createVerticalHarness({
+      characterOverride: {
+        level: 18,
+        stats: {
+          '\u0441\u0438\u043b\u0430': 42,
+          '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 34,
+          '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 30,
+          '\u0443\u0434\u0430\u0447\u0430': 22,
+        },
+      },
+    });
+
+    const bootstrap = await service.bootstrap(state.user.id);
+    const harborEnemy = bootstrap.enemies.find((enemy) => enemy.id === 'harbor-wraith');
+    const tavernEnemy = bootstrap.enemies.find((enemy) => enemy.id === 'mist-bandit');
+
+    expect(harborEnemy).toMatchObject({
+      encounterKind: 'travel',
+      assetId: 'enemy-travel-fog-harbor-wraith',
+      locationIds: ['fog-harbor'],
+    });
+    expect(harborEnemy?.level).toBeGreaterThanOrEqual(state.character.level);
+    expect(harborEnemy?.health).toBeGreaterThan(tavernEnemy?.health ?? 0);
+  });
+
+  it('starts arena combat only with hero-like arena opponents', async () => {
+    const { service, prisma, state } = createVerticalHarness();
+
+    const started = await service.startArena(state.user.id, { enemyId: 'arena-moon-duelist' });
+
+    expect(started.combats[0]).toMatchObject({
+      enemyId: 'arena-moon-duelist',
+      source: 'arena',
+      status: 'pending',
+    });
+    expect(started.enemies.find((enemy) => enemy.id === 'arena-moon-duelist')).toMatchObject({
+      encounterKind: 'arena',
+      assetId: 'enemy-arena-female-veiled-swordsman-01',
+    });
+    expect(prisma.combatEncounter.create).toHaveBeenCalledWith({
+      data: { characterId: state.character.id, enemyId: 'arena-moon-duelist', source: 'arena' },
+    });
+  });
+
+  it('keeps generated enemy scaling within sane combat bounds', async () => {
+    const low = createVerticalHarness({ characterOverride: { level: 3, stats: weakStats } });
+    const high = createVerticalHarness({
+      characterOverride: {
+        level: 28,
+        stats: {
+          '\u0441\u0438\u043b\u0430': 90,
+          '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c': 76,
+          '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f': 72,
+          '\u0443\u0434\u0430\u0447\u0430': 58,
+        },
+      },
+    });
+
+    const lowEnemy = (await low.service.bootstrap(low.state.user.id)).enemies.find((enemy) => enemy.id === 'arena-rune-seer')!;
+    const highEnemy = (await high.service.bootstrap(high.state.user.id)).enemies.find((enemy) => enemy.id === 'arena-rune-seer')!;
+
+    expect(highEnemy.level).toBeGreaterThan(lowEnemy.level);
+    expect(highEnemy.health).toBeGreaterThan(lowEnemy.health);
+    expect(highEnemy.reward.gems).toBe(0);
+    expect(highEnemy.health).toBeLessThanOrEqual(high.state.character.maxHealth * 2);
+    expect(Math.max(...Object.values(highEnemy.stats))).toBeLessThanOrEqual(140);
   });
 });
 
@@ -1347,6 +1434,17 @@ describe('GameCommandsService combat pet authority', () => {
     createdAt: now,
   };
 
+  function scaledCombatEnemy() {
+    const template = gameData.enemies.find((entry) => entry.id === combat.enemyId)!;
+
+    return scaleEnemyForEncounter({
+      template,
+      playerLevel: character.level,
+      playerStats: baseStats,
+      encounterKind: 'travel',
+    });
+  }
+
   function createHarness(
     inventory: Array<{
       id: string;
@@ -1615,7 +1713,7 @@ describe('GameCommandsService combat pet authority', () => {
 
     const log = resolvedLog(transactionClient);
     const petDefinition = gameData.items.find((item) => item.id === 'ember-whelp')!;
-    const enemy = gameData.enemies.find((entry) => entry.id === combat.enemyId)!;
+    const enemy = scaledCombatEnemy();
     const expectedLog = resolveCombat({
       characterStats: statsWithEquipment(baseStats, [petDefinition]),
       characterLevel: character.level,

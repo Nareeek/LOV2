@@ -101,6 +101,17 @@ function createState(): BootstrapState {
     enemies: [
       {
         id: 'enemy-1',
+        assetId: 'enemy-mist-bandit',
+        encounterKind: 'travel',
+        difficultyTier: 'standard',
+        locationIds: ['loc-1'],
+        scaling: {
+          levelOffset: 0,
+          healthMultiplier: 1,
+          statMultiplier: 1,
+          armorMultiplier: 1,
+          rewardMultiplier: 1,
+        },
         nameRu: 'Враг',
         level: 1,
         health: 80,

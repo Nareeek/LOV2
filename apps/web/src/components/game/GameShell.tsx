@@ -98,12 +98,17 @@ export function GameShell({
     setSelectedExerciseId(exerciseDefinitions[0]?.id ?? null);
   }, [selectedExerciseId]);
 
+  const arenaEnemies = useMemo(
+    () => state.enemies.filter((enemy) => enemy.encounterKind === 'arena'),
+    [state.enemies],
+  );
+
   useEffect(() => {
-    if (selectedArenaEnemyId && state.enemies.some((enemy) => enemy.id === selectedArenaEnemyId)) {
+    if (selectedArenaEnemyId && arenaEnemies.some((enemy) => enemy.id === selectedArenaEnemyId)) {
       return;
     }
-    setSelectedArenaEnemyId(state.enemies[0]?.id ?? null);
-  }, [selectedArenaEnemyId, state.enemies]);
+    setSelectedArenaEnemyId(arenaEnemies[0]?.id ?? null);
+  }, [arenaEnemies, selectedArenaEnemyId]);
 
   useEffect(() => {
     if (selectedItemStackId && state.inventory.some((stack) => stack.id === selectedItemStackId)) {
@@ -137,7 +142,7 @@ export function GameShell({
   const latestResolvedCombat = getLatestResolvedCombat(state);
   const activeCombatLog = pendingCombat ? undefined : latestResolvedCombat?.log;
   const resolvedBattlePetId = battlePetId ?? activeCombatLog?.petId ?? null;
-  const arenaEnemy = state.enemies.find((enemy) => enemy.id === selectedArenaEnemyId) ?? state.enemies[0];
+  const arenaEnemy = arenaEnemies.find((enemy) => enemy.id === selectedArenaEnemyId) ?? arenaEnemies[0];
   const combatEnemyId = pendingCombat?.enemyId ?? latestResolvedCombat?.enemyId ?? arenaEnemy?.id;
   const combatEnemy = state.enemies.find((enemy) => enemy.id === combatEnemyId) ?? arenaEnemy;
   const selectedQuest = selectedQuestId ? getQuestDefinition(state, selectedQuestId) : state.quests[0];
@@ -344,8 +349,8 @@ export function GameShell({
           setWorldWindow('exerciseDetail');
           return;
         case 'selectArenaEnemy': {
-          const currentIndex = state.enemies.findIndex((enemy) => enemy.id === (intent.enemyId || selectedArenaEnemyId));
-          const nextEnemy = state.enemies[(currentIndex + 1 + state.enemies.length) % state.enemies.length] ?? state.enemies[0];
+          const currentIndex = arenaEnemies.findIndex((enemy) => enemy.id === (intent.enemyId || selectedArenaEnemyId));
+          const nextEnemy = arenaEnemies[(currentIndex + 1 + arenaEnemies.length) % arenaEnemies.length] ?? arenaEnemies[0];
           setSelectedArenaEnemyId(nextEnemy?.id ?? null);
           setWorldWindow('arenaPreview');
           return;
@@ -535,7 +540,7 @@ export function GameShell({
       rewardVisible,
       selectedArenaEnemyId,
       selectedPetId,
-      state.enemies,
+      arenaEnemies,
       usableCombatPetId,
       state.questProgress,
       worldLocation,

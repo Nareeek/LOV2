@@ -92,7 +92,7 @@ export class ForgeUpgradeDto {
 }
 
 export class StartArenaDto {
-  @ApiProperty({ example: 'mist-bandit' })
+  @ApiProperty({ example: 'arena-moon-duelist' })
   @IsString()
   enemyId!: string;
 }

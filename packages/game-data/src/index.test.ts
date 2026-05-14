@@ -82,6 +82,16 @@ describe('game data', () => {
     expect(gameData.enemies.some((enemy) => enemy.boss)).toBe(true);
   });
 
+  it('defines data-driven travel and arena enemy rosters', () => {
+    const travelEnemies = gameData.enemies.filter((enemy) => enemy.encounterKind === 'travel');
+    const arenaEnemies = gameData.enemies.filter((enemy) => enemy.encounterKind === 'arena');
+
+    expect(travelEnemies.length).toBeGreaterThanOrEqual(4);
+    expect(arenaEnemies.length).toBeGreaterThanOrEqual(3);
+    expect(travelEnemies.some((enemy) => enemy.locationIds?.includes('fog-harbor'))).toBe(true);
+    expect(arenaEnemies.every((enemy) => enemy.arenaBand && enemy.assetId.startsWith('enemy-arena-'))).toBe(true);
+  });
+
   it('defines the PR16 follow-up quest with valid reward content', () => {
     const quest = gameData.quests.find((entry) => entry.id === 'ember-whelp-first-flight');
 
@@ -122,6 +132,8 @@ describe('game data', () => {
     const knownAssets = new Set<string>(gameAssetIds);
     expect(sceneDefinitions.every((scene) => knownAssets.has(scene.sceneAssetId))).toBe(true);
     expect(gameData.items.every((item) => knownAssets.has(item.iconAssetId))).toBe(true);
+    expect(gameData.enemies.every((enemy) => knownAssets.has(enemy.assetId))).toBe(true);
+    expect(gameData.enemies.every((enemy) => !enemy.avatarAssetId || knownAssets.has(enemy.avatarAssetId))).toBe(true);
   });
 
   it('defines positive combat stats for pet items', () => {

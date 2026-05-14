@@ -23,6 +23,26 @@ import {
 } from './rules.js';
 import type { EnemyDefinition, InventoryStack, ItemDefinition } from './types.js';
 
+function testEnemyMeta(id: string): Pick<
+  EnemyDefinition,
+  'id' | 'assetId' | 'encounterKind' | 'difficultyTier' | 'locationIds' | 'scaling'
+> {
+  return {
+    id,
+    assetId: 'enemy-test',
+    encounterKind: 'travel',
+    difficultyTier: 'standard',
+    locationIds: ['test-location'],
+    scaling: {
+      levelOffset: 0,
+      healthMultiplier: 1,
+      statMultiplier: 1,
+      armorMultiplier: 1,
+      rewardMultiplier: 1,
+    },
+  };
+}
+
 describe('game rules', () => {
   it('uses monotonic experience levels', () => {
     expect(experienceForLevel(2)).toBeGreaterThan(experienceForLevel(1));
@@ -110,7 +130,7 @@ describe('game rules', () => {
 
   it('resolves combat server-side from intent and game data', () => {
     const enemy: EnemyDefinition = {
-      id: 'mist-bandit',
+      ...testEnemyMeta('mist-bandit'),
       nameRu: 'Туманный налетчик',
       level: 1,
       health: 50,
@@ -136,7 +156,7 @@ describe('game rules', () => {
 
   it('keeps combat hit values deterministic and rising for the replay', () => {
     const enemy: EnemyDefinition = {
-      id: 'training-knight',
+      ...testEnemyMeta('training-knight'),
       nameRu: 'Тренировочный рыцарь',
       level: 8,
       health: 1800,
@@ -180,7 +200,7 @@ describe('game rules', () => {
       ['\u0443\u0434\u0430\u0447\u0430']: 2,
     } as EnemyDefinition['stats'];
     const enemy: EnemyDefinition = {
-      id: 'quick-pet-target',
+      ...testEnemyMeta('quick-pet-target'),
       nameRu: 'Pet target',
       level: 1,
       health: 20,
@@ -217,7 +237,7 @@ describe('game rules', () => {
       ['\u0443\u0434\u0430\u0447\u0430']: 1,
     } as EnemyDefinition['stats'];
     const enemy: EnemyDefinition = {
-      id: 'pet-loss-target',
+      ...testEnemyMeta('pet-loss-target'),
       nameRu: 'Pet loss target',
       level: 1,
       health: 5000,
