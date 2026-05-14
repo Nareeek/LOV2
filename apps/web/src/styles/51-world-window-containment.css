@@ -3057,6 +3057,7 @@
 }
 
 [data-testid="character-info-popup"] .lov-paperdoll-center {
+  width: 100% !important;
   min-height: 0 !important;
   max-width: 300px !important;
   justify-self: center !important;
@@ -3064,10 +3065,26 @@
 
 [data-testid="character-info-popup"] .lov-paperdoll-hero {
   width: min(82%, 220px) !important;
-  height: 86% !important;
+  min-height: 240px !important;
+  height: 100% !important;
   bottom: 0 !important;
   object-fit: contain !important;
   object-position: center bottom !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-identity-art {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-testid="character-info-popup"] .lov-profile-standing-preview {
+  position: absolute;
+  right: -8px;
+  bottom: -16px;
+  width: 72px;
+  height: 108px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 [data-testid="character-info-popup"] .lov-paperdoll-pet {

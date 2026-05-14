@@ -583,14 +583,6 @@ export class GameCommandsService {
 
         return [{ definition, enhancementLevel: entry.enhancementLevel }];
       });
-    const requestedEquippedPet = input.petId
-      ? equipped.find(
-          (entry) =>
-            entry.characterId === character.id &&
-            entry.itemId === input.petId &&
-            entry.equippedSlot === 'pet',
-        )
-      : undefined;
     const verifiedPetRoster = input.petId && 'characterPet' in this.prisma
       ? await this.prisma.characterPet.findUnique({
           where: { characterId_petId: { characterId: character.id, petId: input.petId } },
@@ -604,7 +596,7 @@ export class GameCommandsService {
             entry.equippedSlot === 'pet',
         )
       : undefined;
-    const verifiedPetDefinition = verifiedPetRoster && verifiedPetRoster.food > 0 && requestedEquippedPet
+    const verifiedPetDefinition = verifiedPetRoster && verifiedPetRoster.food > 0
       ? gameData.items.find((item) => item.id === verifiedPetRoster.petId && item.slot === 'pet')
       : fallbackEquippedPet
         ? gameData.items.find((item) => item.id === fallbackEquippedPet.itemId && item.slot === 'pet')
@@ -694,7 +686,19 @@ export class GameCommandsService {
           },
         });
       }
-      for (const itemId of log.reward.itemIds) {
+      const rewardItemIds = [...new Set(log.reward.itemIds)];
+      const existingRewardStacks = rewardItemIds.length > 0
+        ? await tx.inventoryStack.findMany({
+            where: { characterId: character.id, itemId: { in: rewardItemIds } },
+            select: { itemId: true },
+          })
+        : [];
+      const ownedRewardItemIds = new Set(existingRewardStacks.map((stack) => stack.itemId));
+
+      for (const itemId of rewardItemIds) {
+        if (ownedRewardItemIds.has(itemId)) {
+          continue;
+        }
         await tx.inventoryStack.create({
           data: { characterId: character.id, itemId, quantity: 1 },
         });

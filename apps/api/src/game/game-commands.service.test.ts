@@ -242,6 +242,20 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
             if (where?.characterId && item.characterId !== where.characterId) {
               return false;
             }
+            if (where?.itemId) {
+              const itemId = where.itemId;
+              if (
+                itemId &&
+                typeof itemId === 'object' &&
+                'in' in itemId &&
+                !(itemId as { in: unknown[] }).in.includes(item.itemId)
+              ) {
+                return false;
+              }
+              if (typeof itemId === 'string' && item.itemId !== itemId) {
+                return false;
+              }
+            }
             if (where?.equippedSlot) {
               const equippedSlot = where.equippedSlot;
               if (
@@ -757,6 +771,28 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
     expect(state.inventory).toHaveLength(0);
   });
 
+  it('does not add another copy of an owned equipment reward on repeated quest wins', async () => {
+    const { service, state } = createVerticalHarness();
+
+    for (let runIndex = 0; runIndex < 2; runIndex += 1) {
+      await service.acceptQuest(state.user.id, quest.id);
+      await service.startTravel(state.user.id, {
+        locationId: quest.locationId,
+        questId: quest.id,
+      });
+      const travel = state.travels[state.travels.length - 1]!;
+      Object.assign(travel, {
+        status: 'arrived',
+        completesAt: new Date(now.getTime() - 1000),
+      });
+      await service.claimTravel(state.user.id, String(travel.id));
+      const combat = state.combats[state.combats.length - 1]!;
+      await service.resolveCombat(state.user.id, String(combat.id));
+    }
+
+    expect(state.inventory.filter((stack) => stack.itemId === 'duelist-rapier')).toHaveLength(1);
+  });
+
   it('spends one active pet food and grants one pet XP on a pet-assisted win', async () => {
     const { service, state } = createVerticalHarness();
     state.inventory.push({
@@ -1229,7 +1265,10 @@ describe('GameCommandsService command idempotency', () => {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
       currencyLedgerEntry: { create: vi.fn() },
-      inventoryStack: { create: vi.fn() },
+      inventoryStack: {
+        findMany: vi.fn().mockResolvedValue([]),
+        create: vi.fn(),
+      },
       questProgress: { update: vi.fn() },
       gameEvent: { create: vi.fn() },
     };
@@ -1470,7 +1509,7 @@ describe('GameCommandsService combat pet authority', () => {
       combatEncounter: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       character: { update: vi.fn() },
       currencyLedgerEntry: { create: vi.fn() },
-      inventoryStack: { create: vi.fn() },
+      inventoryStack: { findMany: vi.fn().mockResolvedValue([]), create: vi.fn() },
       characterPet: { update: vi.fn() },
       questProgress: { update: vi.fn() },
       gameEvent: { create: vi.fn() },
@@ -1633,7 +1672,7 @@ describe('GameCommandsService combat pet authority', () => {
     expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
   });
 
-  it('does not grant pet assist for an owned but unequipped pet', async () => {
+  it('grants pet assist for the selected roster pet even when it is not equipped', async () => {
     const petCombatStats = { level: 7, health: 2345 };
     const { service, transactionClient } = createHarness([
       { ...equippedEmberWhelp(), equippedSlot: null },
@@ -1644,8 +1683,8 @@ describe('GameCommandsService combat pet authority', () => {
     });
 
     const log = resolvedLog(transactionClient);
-    expect(log.petId).toBeUndefined();
-    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(false);
+    expect(log.petId).toBe('ember-whelp');
+    expect(log.turns.some((turn) => turn.actor === 'pet')).toBe(true);
   });
 
   it('does not grant pet assist for an equipped non-pet item', async () => {

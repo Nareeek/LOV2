@@ -263,7 +263,8 @@ function CharacterCreationPreview({
           className="lov-creation-race-sign"
           data-testid="creation-preview-race-sign"
           src={raceSignSrc}
-          alt=""
+          alt={race?.nameRu ?? 'Раса'}
+          title={race?.nameRu ?? 'Раса'}
         />
         <div className="lov-creation-avatar-card">
           <img
