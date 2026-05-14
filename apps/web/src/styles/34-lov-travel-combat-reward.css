@@ -733,3 +733,109 @@
 .lov-pet-battle-health {
   transform: translateY(-6px);
 }
+
+/* PR20: travel map motion. The hero marker stays fixed while the map layer pans underneath. */
+.lov-travel-stage {
+  overflow: hidden;
+  background: #151a22;
+}
+
+.lov-travel-stage .lov-travel-map-viewport,
+.lov-travel-stage .shell-reset-travel-art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.lov-travel-stage .lov-travel-map-viewport::before,
+.lov-travel-stage .lov-travel-map-viewport::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.lov-travel-stage .lov-travel-map-viewport::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 43%, rgba(226, 242, 222, 0.18), transparent 12%),
+    radial-gradient(circle at 50% 43%, transparent 0 12%, rgba(5, 8, 12, 0.1) 22%, rgba(5, 8, 12, 0.46) 82%),
+    linear-gradient(90deg, rgba(4, 8, 12, 0.24), transparent 28% 72%, rgba(4, 8, 12, 0.26));
+}
+
+.lov-travel-stage .lov-travel-map-viewport::after {
+  left: 50%;
+  top: 43%;
+  width: min(42%, 460px);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(241, 229, 165, 0.82), rgba(130, 220, 184, 0.16), transparent);
+  box-shadow: 0 0 16px rgba(202, 240, 184, 0.32);
+  transform: translate(-2%, -50%) rotate(-10deg);
+}
+
+.lov-travel-map-layer {
+  position: absolute;
+  inset: -12% -18%;
+  width: 136%;
+  height: 124%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+  opacity: 0.98;
+  transform: translate3d(var(--travel-map-x, -6%), var(--travel-map-y, -3%), 0) scale(var(--travel-map-scale, 1.1));
+  transition: transform 960ms linear;
+  animation: lov-travel-map-object-pan 20s ease-in-out infinite alternate;
+  will-change: transform, object-position;
+}
+
+.lov-travel-map-ghost {
+  z-index: 1;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  filter: blur(2px) saturate(1.08);
+  transform: translate3d(
+    calc(var(--travel-map-x, -6%) - 3%),
+    calc(var(--travel-map-y, -3%) + 2%),
+    0
+  ) scale(calc(var(--travel-map-scale, 1.1) + 0.03));
+}
+
+.lov-travel-pin {
+  z-index: 5;
+}
+
+.lov-travel-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  width: 74px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.42), transparent 68%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+@keyframes lov-travel-map-object-pan {
+  from {
+    object-position: 44% 48%;
+  }
+
+  to {
+    object-position: 58% 52%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lov-travel-map-layer {
+    animation: none;
+    transition: none;
+    transform: translate3d(-11%, -6%, 0) scale(1.12);
+  }
+
+  .lov-travel-map-ghost {
+    display: none;
+  }
+}
