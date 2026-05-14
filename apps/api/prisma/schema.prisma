@@ -69,6 +69,7 @@ model Character {
   stats             Json
   gold              Int                   @default(120)
   gems              Int                   @default(0)
+  petFood           Int                   @default(10)
   energy            Int                   @default(30)
   maxEnergy         Int                   @default(30)
   energyUpdatedAt   DateTime              @default(now())
@@ -76,6 +77,7 @@ model Character {
   updatedAt         DateTime              @updatedAt
   user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   inventory         InventoryStack[]
+  pets              CharacterPet[]
   quests            QuestProgress[]
   travels           TravelTask[]
   combats           CombatEncounter[]
@@ -96,7 +98,20 @@ model InventoryStack {
   updatedAt    DateTime @updatedAt
   character    Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 
-  @@unique([characterId, itemId])
+  @@index([characterId, itemId])
+}
+
+model CharacterPet {
+  id          String    @id @default(cuid())
+  characterId String
+  petId       String
+  food        Int       @default(0)
+  experience  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, petId])
 }
 
 model QuestProgress {
@@ -129,6 +144,7 @@ model CombatEncounter {
   characterId String
   enemyId     String
   questId     String?
+  source      String       @default("legacy")
   status      CombatStatus @default(pending)
   log         Json?
   createdAt   DateTime     @default(now())

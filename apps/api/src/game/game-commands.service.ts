@@ -31,6 +31,7 @@ import {
   type CharacterGender,
   type CharacterStats,
   type CombatLog,
+  type CombatSource,
   type EquipmentSlot,
   type ItemDefinition,
   type PetCombatStats,
@@ -44,6 +45,17 @@ const CLASS_STAT_BONUSES: Record<CharacterClassId, Partial<CharacterStats>> = {
   ranger: { ловкость: 7 },
   mage: { интуиция: 7 },
 };
+
+const STARTER_WEAPON_BY_CLASS: Record<CharacterClassId, string> = {
+  swordsman: 'starter-sword',
+  ranger: 'starter-bow',
+  mage: 'starter-staff',
+};
+
+const PET_MAX_FOOD = 99;
+const PET_FOOD_TRAVEL_GAIN = 1;
+const PET_FOOD_TRAVEL_COMBAT_WIN_GAIN = 1;
+const PET_FOOD_ARENA_WIN_GAIN = 2;
 
 const ENERGY_REFILL_OPTIONS = {
   cup: { amount: ENERGY_REFILL_SMALL, gems: ENERGY_REFILL_SMALL_GEMS_COST },
@@ -78,6 +90,14 @@ function applyClassBonus(stats: CharacterStats, classId: CharacterClassId): Char
   };
 }
 
+function petDefinitions() {
+  return gameData.items.filter((item) => item.slot === 'pet' && validPetCombatStats(item));
+}
+
+function petLevelFromExperience(baseLevel: number, experience: number): number {
+  return baseLevel + Math.max(0, levelFromExperience(Math.max(0, experience)) - 1);
+}
+
 @Injectable()
 export class GameCommandsService {
   constructor(
@@ -108,14 +128,18 @@ export class GameCommandsService {
         enemies: gameData.enemies,
         scenes: gameData.scenes,
         inventory: [],
+        petRoster: [],
         questProgress: [],
         travels: [],
         combats: [],
       };
     }
 
-    const [inventory, questProgress, travels, combats] = await Promise.all([
+    const [inventory, petRoster, questProgress, travels, combats] = await Promise.all([
       this.prisma.inventoryStack.findMany({ where: { characterId: character.id } }),
+      'characterPet' in this.prisma
+        ? this.prisma.characterPet.findMany({ where: { characterId: character.id } })
+        : Promise.resolve([]),
       this.prisma.questProgress.findMany({ where: { characterId: character.id } }),
       this.prisma.travelTask.findMany({
         where: { characterId: character.id },
@@ -155,6 +179,15 @@ export class GameCommandsService {
           ? { ...mapped, equippedSlot: item.equippedSlot as EquipmentSlot }
           : mapped;
       }),
+      petRoster: petRoster.map((pet) => ({
+        id: pet.id,
+        characterId: pet.characterId,
+        petId: pet.petId,
+        food: pet.food,
+        experience: pet.experience,
+        createdAt: pet.createdAt.toISOString(),
+        updatedAt: pet.updatedAt.toISOString(),
+      })),
       questProgress: questProgress.map((quest) => ({
         id: quest.id,
         characterId: quest.characterId,
@@ -179,6 +212,7 @@ export class GameCommandsService {
           id: combat.id,
           characterId: combat.characterId,
           enemyId: combat.enemyId,
+          source: (combat.source as CombatSource | undefined) ?? 'legacy',
           status: combat.status,
           createdAt: combat.createdAt.toISOString(),
         };
@@ -209,6 +243,7 @@ export class GameCommandsService {
 
     const classedStats = applyClassBonus(race.baseStats, input.classId);
     const maxHealth = maxHealthForStats(classedStats, 1);
+    const starterWeaponId = STARTER_WEAPON_BY_CLASS[input.classId];
     await this.prisma.character.create({
       data: {
         userId,
@@ -219,11 +254,15 @@ export class GameCommandsService {
         stats: classedStats as unknown as Prisma.InputJsonObject,
         health: maxHealth,
         maxHealth,
+        petFood: 10,
         energy: DEFAULT_MAX_ENERGY,
         maxEnergy: DEFAULT_MAX_ENERGY,
         energyUpdatedAt: new Date(),
         inventory: {
-          create: [{ itemId: 'duelist-rapier', quantity: 1, equippedSlot: 'weapon' }],
+          create: [{ itemId: starterWeaponId, quantity: 1, equippedSlot: 'weapon' }],
+        },
+        pets: {
+          create: petDefinitions().map((pet) => ({ petId: pet.id, food: 0, experience: 0 })),
         },
         events: {
           create: {
@@ -251,7 +290,7 @@ export class GameCommandsService {
     const existingProgress = await this.prisma.questProgress.findUnique({
       where: { characterId_questId: { characterId: character.id, questId } },
     });
-    if (existingProgress && existingProgress.status !== 'available') {
+    if (existingProgress?.status === 'active') {
       return this.bootstrap(userId);
     }
 
@@ -427,13 +466,19 @@ export class GameCommandsService {
           characterId: character.id,
           questId: quest ? currentTravel.questId : null,
           enemyId,
+          source: 'travel',
         },
+      });
+      await tx.character.update({
+        where: { id: character.id },
+        data: { petFood: { increment: PET_FOOD_TRAVEL_GAIN } },
       });
       const payload = {
         travelId,
         enemyId,
         rushed: rushCostGems > 0,
         gemsSpent: rushCostGems,
+        petFoodGained: PET_FOOD_TRAVEL_GAIN,
         ...(currentTravel.questId ? { questId: currentTravel.questId } : {}),
       };
       await tx.gameEvent.create({
@@ -483,16 +528,21 @@ export class GameCommandsService {
       where: { characterId: character.id, equippedSlot: { not: null } },
     });
     const equippedDefinitions: Array<{ definition: ItemDefinition; enhancementLevel: number }> =
-  equipped.flatMap((entry) => {
-    const definition = gameData.items.find((item) => item.id === entry.itemId);
+      equipped.flatMap((entry) => {
+        const definition = gameData.items.find((item) => item.id === entry.itemId);
 
-    if (!definition) {
-      return [];
-    }
+        if (!definition) {
+          return [];
+        }
 
-    return [{ definition, enhancementLevel: entry.enhancementLevel }];
-  });
-    const verifiedPetStack = input.petId
+        return [{ definition, enhancementLevel: entry.enhancementLevel }];
+      });
+    const verifiedPetRoster = input.petId && 'characterPet' in this.prisma
+      ? await this.prisma.characterPet.findUnique({
+          where: { characterId_petId: { characterId: character.id, petId: input.petId } },
+        })
+      : undefined;
+    const fallbackEquippedPet = !('characterPet' in this.prisma) && input.petId
       ? equipped.find(
           (entry) =>
             entry.characterId === character.id &&
@@ -500,9 +550,11 @@ export class GameCommandsService {
             entry.equippedSlot === 'pet',
         )
       : undefined;
-    const verifiedPetDefinition = verifiedPetStack
-      ? gameData.items.find((item) => item.id === verifiedPetStack.itemId && item.slot === 'pet')
-      : undefined;
+    const verifiedPetDefinition = verifiedPetRoster && verifiedPetRoster.food > 0
+      ? gameData.items.find((item) => item.id === verifiedPetRoster.petId && item.slot === 'pet')
+      : fallbackEquippedPet
+        ? gameData.items.find((item) => item.id === fallbackEquippedPet.itemId && item.slot === 'pet')
+        : undefined;
     const verifiedPetCombatStats = verifiedPetDefinition
       ? validPetCombatStats(verifiedPetDefinition)
       : undefined;
@@ -513,6 +565,7 @@ export class GameCommandsService {
     const effectiveArmor = armorFromEquipment(equippedDefinitions);
     const log = resolveCombatLog({
       characterStats: effectiveStats,
+      characterClassId: character.classId as CharacterClassId,
       characterLevel: character.level,
       characterHealth: character.health,
       characterArmor: effectiveArmor,
@@ -522,13 +575,20 @@ export class GameCommandsService {
         ? {
             pet: {
               id: verifiedPetDefinition.id,
-              level: verifiedPetCombatStats.level,
+              level: petLevelFromExperience(verifiedPetCombatStats.level, verifiedPetRoster?.experience ?? 0),
               health: verifiedPetCombatStats.health,
+              food: verifiedPetRoster?.food ?? 1,
+              experience: verifiedPetRoster?.experience ?? 0,
             },
           }
         : {}),
     });
     const won = log.winner === 'character';
+    const petFoodGain = won
+      ? ((combat.source as CombatSource | undefined) ?? 'legacy') === 'arena'
+        ? PET_FOOD_ARENA_WIN_GAIN
+        : PET_FOOD_TRAVEL_COMBAT_WIN_GAIN
+      : 0;
     const now = new Date();
     const nextExperience = character.experience + log.reward.experience;
     const nextLevel = levelFromExperience(nextExperience);
@@ -554,6 +614,7 @@ export class GameCommandsService {
           unspentStatPoints: { increment: levelGain * 4 },
           gold: { increment: log.reward.gold },
           gems: { increment: log.reward.gems },
+          ...(petFoodGain > 0 ? { petFood: { increment: petFoodGain } } : {}),
           health: won ? nextMaxHealth : Math.max(1, Math.floor(nextMaxHealth * 0.35)),
           maxHealth: nextMaxHealth,
           maxEnergy: DEFAULT_MAX_ENERGY,
@@ -586,10 +647,17 @@ export class GameCommandsService {
         });
       }
       for (const itemId of log.reward.itemIds) {
-        await tx.inventoryStack.upsert({
-          where: { characterId_itemId: { characterId: character.id, itemId } },
-          update: { quantity: { increment: 1 } },
-          create: { characterId: character.id, itemId, quantity: 1 },
+        await tx.inventoryStack.create({
+          data: { characterId: character.id, itemId, quantity: 1 },
+        });
+      }
+      if (verifiedPetRoster && (log.petFoodSpent ?? 0) > 0) {
+        await tx.characterPet.update({
+          where: { characterId_petId: { characterId: character.id, petId: verifiedPetRoster.petId } },
+          data: {
+            food: { decrement: log.petFoodSpent ?? 0 },
+            experience: { increment: log.petExperienceGained ?? 0 },
+          },
         });
       }
       if (won && combat.questId) {
@@ -607,6 +675,10 @@ export class GameCommandsService {
             won,
             reward: log.reward,
             leveledUp,
+            source: (combat.source as CombatSource | undefined) ?? 'legacy',
+            petFoodGained: petFoodGain,
+            petFoodSpent: log.petFoodSpent ?? 0,
+            petExperienceGained: log.petExperienceGained ?? 0,
           } as unknown as Prisma.InputJsonObject,
         },
       });
@@ -771,6 +843,46 @@ export class GameCommandsService {
     return this.bootstrap(userId);
   }
 
+  async feedPet(userId: string, petId: string, input: { amount: 1 | 10 }) {
+    const character = await this.requireCharacter(userId);
+    const requestedAmount = input.amount === 10 ? 10 : 1;
+    const pet = await this.prisma.characterPet.findUnique({
+      where: { characterId_petId: { characterId: character.id, petId } },
+    });
+    if (!pet || !gameData.items.some((item) => item.id === petId && item.slot === 'pet')) {
+      throw new NotFoundException('Питомец не найден');
+    }
+
+    const room = Math.max(0, PET_MAX_FOOD - pet.food);
+    const amount = Math.min(requestedAmount, room, character.petFood);
+    if (amount < 1) {
+      return this.bootstrap(userId);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const spent = await tx.character.updateMany({
+        where: { id: character.id, petFood: { gte: amount } },
+        data: { petFood: { decrement: amount } },
+      });
+      if (spent.count === 0) {
+        throw new BadRequestException('Недостаточно еды для питомца');
+      }
+      await tx.characterPet.update({
+        where: { characterId_petId: { characterId: character.id, petId } },
+        data: { food: { increment: amount } },
+      });
+      await tx.gameEvent.create({
+        data: {
+          characterId: character.id,
+          type: 'pet.fed',
+          payload: { petId, amount } as Prisma.InputJsonObject,
+        },
+      });
+    });
+
+    return this.bootstrap(userId);
+  }
+
   async purchaseItem(userId: string, input: { itemId: string }) {
     const character = await this.requireCharacter(userId);
     const item = gameData.items.find((entry) => entry.id === input.itemId);
@@ -794,10 +906,8 @@ export class GameCommandsService {
         where: { id: character.id },
         data: currency === 'gems' ? { gems: { decrement: amount } } : { gold: { decrement: amount } },
       });
-      await tx.inventoryStack.upsert({
-        where: { characterId_itemId: { characterId: character.id, itemId: item.id } },
-        update: { quantity: { increment: 1 } },
-        create: { characterId: character.id, itemId: item.id, quantity: 1 },
+      await tx.inventoryStack.create({
+        data: { characterId: character.id, itemId: item.id, quantity: 1 },
       });
       await tx.currencyLedgerEntry.create({
         data: {
@@ -904,6 +1014,7 @@ export class GameCommandsService {
         data: {
           characterId: character.id,
           enemyId: enemy.id,
+          source: 'arena',
         },
       });
       await tx.gameEvent.create({
@@ -1005,6 +1116,7 @@ export class GameCommandsService {
       stats: character.stats as unknown as CharacterStats,
       gold: character.gold,
       gems: character.gems,
+      petFood: character.petFood,
       energy: character.energy,
       maxEnergy: character.maxEnergy,
       energyUpdatedAt: character.energyUpdatedAt.toISOString(),

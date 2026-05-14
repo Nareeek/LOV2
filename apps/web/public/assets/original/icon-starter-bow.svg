@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Original starter bow icon">
+  <rect width="96" height="96" rx="8" fill="#211b20"/>
+  <path d="M62 10 C28 30 28 66 62 86" fill="none" stroke="#b77a43" stroke-width="9" stroke-linecap="round"/>
+  <path d="M62 11 C76 34 76 62 62 85" fill="none" stroke="#ead9aa" stroke-width="2"/>
+  <path d="M24 47 H74" stroke="#dfe9ef" stroke-width="4" stroke-linecap="round"/>
+  <path d="M70 47 L58 40 M70 47 L58 54" stroke="#dfe9ef" stroke-width="4" stroke-linecap="round"/>
+  <path d="M34 38 L34 78" stroke="#6f3b31" stroke-width="5" stroke-linecap="round"/>
+</svg>

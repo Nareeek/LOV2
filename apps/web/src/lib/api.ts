@@ -90,6 +90,8 @@ export const apiClient = {
   startRebirth: () => api<BootstrapState>('/rebirth/start', { method: 'POST' }),
   refillEnergy: (input: { mode: 'cup' | 'bundle' }) =>
     api<BootstrapState>('/energy/refill', { method: 'POST', body: JSON.stringify(input) }),
+  feedPet: (petId: string, input: { amount: 1 | 10 }) =>
+    api<BootstrapState>(`/pets/${petId}/feed`, { method: 'POST', body: JSON.stringify(input) }),
   purchaseItem: (input: { itemId: string }) =>
     api<BootstrapState>('/shop/purchase', { method: 'POST', body: JSON.stringify(input) }),
   upgradeItem: (input: { inventoryStackId: string }) =>

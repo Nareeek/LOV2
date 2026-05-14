@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Original starter staff icon">
+  <rect width="96" height="96" rx="8" fill="#211b20"/>
+  <path d="M31 84 L60 18" stroke="#8b5b3f" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="62" cy="16" r="11" fill="#9fd5e4" stroke="#ead9aa" stroke-width="4"/>
+  <path d="M55 29 C66 35 70 44 68 56" fill="none" stroke="#d7b56a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M27 76 L38 82" stroke="#c79a55" stroke-width="4" stroke-linecap="round"/>
+</svg>

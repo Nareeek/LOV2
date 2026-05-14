@@ -1,4 +1,13 @@
-import type { CharacterStats, CombatLog, EnemyDefinition, ItemDefinition, PetCombatStats, Reward } from './types.js';
+import type {
+  CharacterClassId,
+  CharacterStats,
+  CombatLog,
+  EnemyDefinition,
+  ItemDefinition,
+  PetCombatStats,
+  Reward,
+  StatKey,
+} from './types.js';
 
 export const DEFAULT_MAX_ENERGY = 30;
 export const ENERGY_RESET_HOUR = 4;
@@ -7,12 +16,43 @@ export const ENERGY_REFILL_LARGE = 25;
 export const ENERGY_REFILL_SMALL_GEMS_COST = 1;
 export const ENERGY_REFILL_LARGE_GEMS_COST = 5;
 
+export const STAT_STRENGTH = '\u0441\u0438\u043b\u0430' as StatKey;
+export const STAT_AGILITY = '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c' as StatKey;
+export const STAT_INTUITION = '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f' as StatKey;
+export const STAT_LUCK = '\u0443\u0434\u0430\u0447\u0430' as StatKey;
+
 export const ZERO_REWARD: Reward = {
   experience: 0,
   gold: 0,
   gems: 0,
   itemIds: [],
 };
+
+export function primaryDamageStatForClass(classId: CharacterClassId): StatKey {
+  switch (classId) {
+    case 'ranger':
+      return STAT_AGILITY;
+    case 'mage':
+      return STAT_INTUITION;
+    case 'swordsman':
+    default:
+      return STAT_STRENGTH;
+  }
+}
+
+export function damageRangeForClass(
+  stats: CharacterStats,
+  classId: CharacterClassId,
+  level = 1,
+): { min: number; max: number; primaryStat: StatKey } {
+  const primaryStat = primaryDamageStatForClass(classId);
+  const primary = stats[primaryStat] ?? 0;
+  const luck = stats[STAT_LUCK] ?? 0;
+  const min = Math.max(1, Math.round(primary * 2.2 + level * 1.2 + luck * 0.25));
+  const max = Math.max(min + 1, Math.round(primary * 3.2 + level * 1.6 + luck * 0.38));
+
+  return { min, max, primaryStat };
+}
 
 export function hasEnoughEnergy(currentEnergy: number, energyCost: number): boolean {
   return currentEnergy >= Math.max(0, energyCost);
@@ -75,16 +115,16 @@ export function levelFromExperience(experience: number): number {
 }
 
 export function maxHealthForStats(stats: CharacterStats, level: number, rebirths = 0): number {
-  return 80 + level * 14 + stats.сила * 6 + rebirths * 25;
+  return 80 + level * 14 + stats[STAT_STRENGTH] * 6 + rebirths * 25;
 }
 
 export function mergeStats(base: CharacterStats, bonus: Partial<CharacterStats>): CharacterStats {
   return {
-    сила: base.сила + (bonus.сила ?? 0),
-    ловкость: base.ловкость + (bonus.ловкость ?? 0),
-    интуиция: base.интуиция + (bonus.интуиция ?? 0),
-    удача: base.удача + (bonus.удача ?? 0),
-  };
+    [STAT_STRENGTH]: base[STAT_STRENGTH] + (bonus[STAT_STRENGTH] ?? 0),
+    [STAT_AGILITY]: base[STAT_AGILITY] + (bonus[STAT_AGILITY] ?? 0),
+    [STAT_INTUITION]: base[STAT_INTUITION] + (bonus[STAT_INTUITION] ?? 0),
+    [STAT_LUCK]: base[STAT_LUCK] + (bonus[STAT_LUCK] ?? 0),
+  } as unknown as CharacterStats;
 }
 
 export function itemStatsWithEnhancement(
@@ -93,10 +133,10 @@ export function itemStatsWithEnhancement(
 ): Partial<CharacterStats> {
   const factor = Math.max(0, enhancementLevel);
   return {
-    сила: (item.statBonus.сила ?? 0) + (item.statBonus.сила ? factor : 0),
-    ловкость: (item.statBonus.ловкость ?? 0) + (item.statBonus.ловкость ? factor : 0),
-    интуиция: (item.statBonus.интуиция ?? 0) + (item.statBonus.интуиция ? factor : 0),
-    удача: (item.statBonus.удача ?? 0) + (item.statBonus.удача ? factor : 0),
+    [STAT_STRENGTH]: (item.statBonus[STAT_STRENGTH] ?? 0) + (item.statBonus[STAT_STRENGTH] ? factor : 0),
+    [STAT_AGILITY]: (item.statBonus[STAT_AGILITY] ?? 0) + (item.statBonus[STAT_AGILITY] ? factor : 0),
+    [STAT_INTUITION]: (item.statBonus[STAT_INTUITION] ?? 0) + (item.statBonus[STAT_INTUITION] ? factor : 0),
+    [STAT_LUCK]: (item.statBonus[STAT_LUCK] ?? 0) + (item.statBonus[STAT_LUCK] ? factor : 0),
   };
 }
 
@@ -139,6 +179,7 @@ export function armorFromEquipment(
 
 export function resolveCombat(params: {
   characterStats: CharacterStats;
+  characterClassId?: CharacterClassId;
   characterLevel: number;
   characterHealth: number;
   characterArmor?: number;
@@ -146,47 +187,58 @@ export function resolveCombat(params: {
   reward: Reward;
   pet?: PetCombatStats & {
     id?: string;
+    food?: number;
+    experience?: number;
   };
 }): CombatLog {
   const turns = [];
   let characterHealth = params.characterHealth;
   let enemyHealth = params.enemy.health;
   let petHealth = params.pet?.health ?? 0;
+  let petFood = Math.max(0, Math.floor(params.pet?.food ?? (params.pet ? 1 : 0)));
+  let petFoodSpent = 0;
+  let petTurns = 0;
   let turn = 1;
-  let allyTurn: 'character' | 'pet' = params.pet ? 'pet' : 'character';
+  let allyTurn: 'character' | 'pet' = params.pet && petFood > 0 ? 'pet' : 'character';
   let allyHitCount = 0;
   let enemyHitCount = 0;
   let lastAllyDamage = 0;
   let lastEnemyDamage = 0;
-  const strength = '\u0441\u0438\u043b\u0430' as keyof CharacterStats;
-  const agility = '\u043b\u043e\u0432\u043a\u043e\u0441\u0442\u044c' as keyof CharacterStats;
-  const intuition = '\u0438\u043d\u0442\u0443\u0438\u0446\u0438\u044f' as keyof CharacterStats;
-  const luck = '\u0443\u0434\u0430\u0447\u0430' as keyof CharacterStats;
+  const primaryDamageStat = primaryDamageStatForClass(params.characterClassId ?? 'swordsman');
+  const offDamageStats = [STAT_STRENGTH, STAT_AGILITY, STAT_INTUITION].filter(
+    (statKey) => statKey !== primaryDamageStat,
+  );
   const stat = (stats: CharacterStats, key: keyof CharacterStats) => stats[key] ?? 0;
   const characterInitiative =
-    (stat(params.characterStats, luck) * 7 + stat(params.characterStats, agility) * 3 + params.characterLevel * 5 + 17) % 100;
-  const enemyInitiative = (stat(params.enemy.stats, luck) * 7 + stat(params.enemy.stats, agility) * 3 + params.enemy.level * 5) % 100;
+    (stat(params.characterStats, STAT_LUCK) * 7 + stat(params.characterStats, STAT_AGILITY) * 3 + params.characterLevel * 5 + 17) % 100;
+  const enemyInitiative =
+    (stat(params.enemy.stats, STAT_LUCK) * 7 + stat(params.enemy.stats, STAT_AGILITY) * 3 + params.enemy.level * 5) % 100;
   let nextSide: 'character' | 'enemy' = characterInitiative >= enemyInitiative ? 'character' : 'enemy';
 
   while (characterHealth > 0 && enemyHealth > 0 && turn <= 30) {
     if (nextSide === 'character') {
-      const isPetTurn: boolean = allyTurn === 'pet' && petHealth > 0;
+      const isPetTurn: boolean = allyTurn === 'pet' && petHealth > 0 && petFood > 0;
       const critical = isPetTurn
-        ? (stat(params.characterStats, luck) + (params.pet?.level ?? 1) + turn * 2) % 12 === 0
-        : (stat(params.characterStats, luck) + turn * 3) % 11 === 0;
+        ? (stat(params.characterStats, STAT_LUCK) + (params.pet?.level ?? 1) + turn * 2) % 12 === 0
+        : (stat(params.characterStats, STAT_LUCK) + turn * 3) % 11 === 0;
       const baseDamage = isPetTurn
-        ? (params.pet?.level ?? 1) * 2.1 + stat(params.characterStats, intuition) * 0.45
-        : stat(params.characterStats, strength) * 1.8 +
-          stat(params.characterStats, agility) * 0.9 +
-          stat(params.characterStats, intuition) * 0.6 +
+        ? (params.pet?.level ?? 1) * 2.1 + stat(params.characterStats, STAT_INTUITION) * 0.45
+        : stat(params.characterStats, primaryDamageStat) * 1.8 +
+          stat(params.characterStats, offDamageStats[0]!) * 0.9 +
+          stat(params.characterStats, offDamageStats[1]!) * 0.6 +
           params.characterLevel * 4 -
           params.enemy.armor * 0.35;
       allyHitCount += 1;
-      const luckySurge = critical ? 1.65 + stat(params.characterStats, luck) / 100 : 1;
-      const ramp = 1 + allyHitCount * 0.08 + stat(params.characterStats, luck) / 280;
+      const luckySurge = critical ? 1.65 + stat(params.characterStats, STAT_LUCK) / 100 : 1;
+      const ramp = 1 + allyHitCount * 0.08 + stat(params.characterStats, STAT_LUCK) / 280;
       const damage = Math.max(lastAllyDamage, Math.max(1, Math.floor(baseDamage * ramp * luckySurge)));
       lastAllyDamage = damage;
       enemyHealth = Math.max(0, enemyHealth - damage);
+      if (isPetTurn) {
+        petFood = Math.max(0, petFood - 1);
+        petFoodSpent += 1;
+        petTurns += 1;
+      }
       turns.push({
         turn,
         actor: isPetTurn ? 'pet' as const : 'character' as const,
@@ -195,27 +247,27 @@ export function resolveCombat(params: {
         critical,
         targetHealth: enemyHealth,
       });
-      allyTurn = !isPetTurn && params.pet && petHealth > 0 ? 'pet' : 'character';
+      allyTurn = !isPetTurn && params.pet && petHealth > 0 && petFood > 0 ? 'pet' : 'character';
       nextSide = 'enemy';
       continue;
     }
 
     const target = params.pet && allyTurn === 'character' && petHealth > 0 ? 'pet' as const : 'character' as const;
-    const enemyCrit = (stat(params.enemy.stats, luck) + turn * 5) % 13 === 0;
+    const enemyCrit = (stat(params.enemy.stats, STAT_LUCK) + turn * 5) % 13 === 0;
     const dodgeReduction =
-      target === 'character' && stat(params.characterStats, agility) > stat(params.enemy.stats, intuition)
-        ? stat(params.characterStats, agility) / 6
+      target === 'character' && stat(params.characterStats, STAT_AGILITY) > stat(params.enemy.stats, STAT_INTUITION)
+        ? stat(params.characterStats, STAT_AGILITY) / 6
         : 0;
     const armorReduction = target === 'character' ? (params.characterArmor ?? 0) * 0.32 : 0;
     enemyHitCount += 1;
     const enemyBaseDamage =
-      stat(params.enemy.stats, strength) * 1.5 +
-      stat(params.enemy.stats, intuition) * 0.7 +
+      stat(params.enemy.stats, STAT_STRENGTH) * 1.5 +
+      stat(params.enemy.stats, STAT_INTUITION) * 0.7 +
       params.enemy.level * 3 -
       dodgeReduction -
       armorReduction;
-    const enemyLuckySurge = enemyCrit ? 1.65 + stat(params.enemy.stats, luck) / 100 : 1;
-    const enemyRamp = 1 + enemyHitCount * 0.08 + stat(params.enemy.stats, luck) / 280;
+    const enemyLuckySurge = enemyCrit ? 1.65 + stat(params.enemy.stats, STAT_LUCK) / 100 : 1;
+    const enemyRamp = 1 + enemyHitCount * 0.08 + stat(params.enemy.stats, STAT_LUCK) / 280;
     const enemyDamage = Math.max(lastEnemyDamage, Math.max(1, Math.floor(enemyBaseDamage * enemyRamp * enemyLuckySurge)));
     lastEnemyDamage = enemyDamage;
     if (target === 'pet') {
@@ -230,14 +282,18 @@ export function resolveCombat(params: {
   }
 
   const won = enemyHealth <= 0 || characterHealth >= enemyHealth;
+  const petExperienceGained = petTurns > 0 ? petTurns * (won ? 3 : 1) : 0;
 
   return {
     winner: won ? 'character' : 'enemy',
     turns,
     reward: won ? params.reward : ZERO_REWARD,
     ...(params.pet?.id ? { petId: params.pet.id } : {}),
+    ...(petFoodSpent > 0 ? { petFoodSpent } : {}),
+    ...(petExperienceGained > 0 ? { petExperienceGained, petTurns } : {}),
   };
 }
+
 export function canRebirth(level: number): boolean {
   return level >= 30;
 }
@@ -245,9 +301,9 @@ export function canRebirth(level: number): boolean {
 export function rebirthStats(stats: CharacterStats, rebirths: number): CharacterStats {
   const bonus = 3 + rebirths;
   return {
-    сила: 10 + bonus,
-    ловкость: 10 + bonus,
-    интуиция: 10 + bonus,
-    удача: 10 + bonus,
-  };
+    [STAT_STRENGTH]: 10 + bonus,
+    [STAT_AGILITY]: 10 + bonus,
+    [STAT_INTUITION]: 10 + bonus,
+    [STAT_LUCK]: 10 + bonus,
+  } as unknown as CharacterStats;
 }

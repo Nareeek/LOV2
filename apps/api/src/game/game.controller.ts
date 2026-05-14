@@ -8,6 +8,7 @@ import {
   ClaimTravelDto,
   CreateCharacterDto,
   EquipItemDto,
+  FeedPetDto,
   ForgeUpgradeDto,
   PurchaseItemDto,
   RefillEnergyDto,
@@ -93,6 +94,11 @@ export class GameController {
   @Post('energy/refill')
   refillEnergy(@CurrentUser() user: RequestWithUser['user'], @Body() dto: RefillEnergyDto) {
     return this.commands.refillEnergy(user.id, dto);
+  }
+
+  @Post('pets/:id/feed')
+  feedPet(@CurrentUser() user: RequestWithUser['user'], @Param('id') petId: string, @Body() dto: FeedPetDto) {
+    return this.commands.feedPet(user.id, petId, dto);
   }
 
   @Post('shop/purchase')

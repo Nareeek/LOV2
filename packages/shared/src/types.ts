@@ -58,6 +58,8 @@ export type CharacterGender = 'male' | 'female';
 
 export type CharacterClassId = 'swordsman' | 'ranger' | 'mage';
 
+export type CombatSource = 'travel' | 'arena' | 'legacy';
+
 export interface Character {
   id: string;
   userId: string;
@@ -74,6 +76,7 @@ export interface Character {
   stats: CharacterStats;
   gold: number;
   gems: number;
+  petFood: number;
   energy: number;
   maxEnergy: number;
   energyUpdatedAt: string;
@@ -119,6 +122,16 @@ export interface InventoryStack {
   quantity: number;
   enhancementLevel?: number;
   equippedSlot?: EquipmentSlot;
+}
+
+export interface CharacterPetState {
+  id: string;
+  characterId: string;
+  petId: string;
+  food: number;
+  experience: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface QuestDefinition {
@@ -227,6 +240,7 @@ export interface CombatEncounter {
   characterId: string;
   enemyId: string;
   questId?: string;
+  source?: CombatSource;
   status: 'pending' | 'won' | 'lost';
   log?: CombatLog;
   createdAt: string;
@@ -237,6 +251,9 @@ export interface CombatLog {
   turns: CombatTurn[];
   reward: Reward;
   petId?: string;
+  petFoodSpent?: number;
+  petExperienceGained?: number;
+  petTurns?: number;
 }
 
 export interface CombatTurn {
@@ -285,6 +302,7 @@ export interface BootstrapState {
   enemies: EnemyDefinition[];
   scenes: SceneDefinition[];
   inventory: InventoryStack[];
+  petRoster: CharacterPetState[];
   questProgress: QuestProgress[];
   travels: TravelTask[];
   combats: CombatEncounter[];

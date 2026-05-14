@@ -8,6 +8,8 @@ import {
 import { exerciseDefinitions } from '@lov2/game-data';
 import {
   forgeUpgradeCost,
+  levelFromExperience,
+  primaryDamageStatForClass,
   statAllocationGoldCost,
   type BootstrapState,
   type CombatEncounter,
@@ -100,8 +102,6 @@ export function CharacterSheet({
   const character = state.character;
   const [hoveredStat, setHoveredStat] = useState<BreakdownKey | null>(null);
   const [statTooltipPosition, setStatTooltipPosition] = useState({ x: 0, y: 0 });
-  const [petSatiety, setPetSatiety] = useState(16);
-  const [petFood, setPetFood] = useState(16);
   const [inventorySlotOrder, setInventorySlotOrder] = useState<Record<string, number>>({});
   const [appearance, setAppearance] = useState<Record<AppearanceKey, string>>({
     face: APPEARANCE_OPTIONS.face[1]!.id,
@@ -126,6 +126,16 @@ export function CharacterSheet({
   const healthBreakdown = buildHealthBreakdown(state, race, equippedEntries);
   const armorBreakdown = buildArmorBreakdown(equippedEntries, totals.armor);
   const selectedPet = PET_VARIANTS.find((entry) => entry.id === selectedPetId) ?? PET_VARIANTS[2]!;
+  const selectedPetRoster = (state.petRoster ?? []).find((entry) => entry.petId === selectedPet.id);
+  const selectedPetDefinition = state.items.find((entry) => entry.id === selectedPet.id && entry.slot === 'pet');
+  const selectedPetCombatStats = selectedPetDefinition?.petCombatStats;
+  const selectedPetLevel = selectedPetCombatStats
+    ? selectedPetCombatStats.level + Math.max(0, levelFromExperience(selectedPetRoster?.experience ?? 0) - 1)
+    : selectedPet.level;
+  const selectedPetFood = selectedPetRoster?.food ?? 0;
+  const selectedPetExperience = selectedPetRoster?.experience ?? 0;
+  const selectedPetMaxExperience = 360;
+  const primaryDamageStat = primaryDamageStatForClass(character.classId);
   const profileSummaryStats = buildProfileSummaryStats(character, totals);
   const hoveredBreakdown =
     hoveredStat === 'health'
@@ -138,14 +148,8 @@ export function CharacterSheet({
   const updateStatTooltipPosition = (event: { clientX: number; clientY: number }) => {
     setStatTooltipPosition({ x: event.clientX, y: event.clientY });
   };
-  const feedPet = (requestedAmount: number) => {
-    const satietyRoom = Math.max(0, 99 - petSatiety);
-    const amount = Math.min(requestedAmount, petFood, satietyRoom);
-    if (amount < 1) {
-      return;
-    }
-    setPetFood((value) => Math.max(0, value - amount));
-    setPetSatiety((value) => Math.min(99, value + amount));
+  const feedPet = (requestedAmount: 1 | 10) => {
+    onIntent({ type: 'feedPet', petId: selectedPet.id, amount: requestedAmount });
   };
 
   return (
@@ -250,10 +254,10 @@ export function CharacterSheet({
                   </div>
                   <div className="lov-secondary-stat">{row.derivedLabel}</div>
                   <div className="lov-secondary-stat value">{row.derivedValue}</div>
-                  {stat === STAT_STRENGTH ? (
+                  {stat === primaryDamageStat ? (
                     <div className="lov-damage-row lov-damage-row-inline">
                       <span>Урон</span>
-                      <strong>{buildDamageRange(totals.stats)}</strong>
+                      <strong>{buildDamageRange(totals.stats, character.classId, character.level)}</strong>
                     </div>
                   ) : null}
                 </div>
@@ -317,35 +321,41 @@ export function CharacterSheet({
               ))}
             </div>
             <div className="lov-pet-progress-head">
-              <div className="lov-pet-level">{selectedPet.level}</div>
+              <div className="lov-pet-level">{selectedPetLevel}</div>
               <div className="lov-pet-name">
-                <strong>{selectedPet.name}</strong>
-                <Meter label="XP" value={30} max={360} tone="xp" displayValue="30/360" />
+                <strong>{selectedPetDefinition?.nameRu ?? selectedPet.name}</strong>
+                <Meter
+                  label="XP"
+                  value={selectedPetExperience % selectedPetMaxExperience}
+                  max={selectedPetMaxExperience}
+                  tone="xp"
+                  displayValue={`${selectedPetExperience}/${selectedPetMaxExperience}`}
+                />
               </div>
             </div>
             <div className="lov-pet-preview">
               <img src={assetPath(selectedPet.assetId)} alt="" />
             </div>
             <div className="lov-pet-core-stats">
-              <span>❤ {selectedPet.hp}</span>
+              <span>❤ {selectedPetCombatStats?.health ?? selectedPet.hp}</span>
               <span>🐾 {selectedPet.damage}</span>
             </div>
             <div className="lov-pet-feeding">
               <div className="lov-pet-satiety">
                 <strong>Сытость</strong>
-                <span>{petSatiety}</span>
+                <span>{selectedPetFood}</span>
               </div>
               <div className="lov-pet-feed-buttons">
-                <button type="button" onClick={() => feedPet(1)} disabled={petFood < 1 || petSatiety >= 99}>
+                <button type="button" onClick={() => feedPet(1)} disabled={(character.petFood ?? 0) < 1 || selectedPetFood >= 99}>
                   +1
                 </button>
-                <button type="button" onClick={() => feedPet(10)} disabled={petFood < 1 || petSatiety >= 99}>
+                <button type="button" onClick={() => feedPet(10)} disabled={(character.petFood ?? 0) < 1 || selectedPetFood >= 99}>
                   +10
                 </button>
               </div>
               <div className="lov-pet-food">
                 <strong>Еда</strong>
-                <span>{petFood}</span>
+                <span>{character.petFood ?? 0}</span>
               </div>
             </div>
           </div>
@@ -957,7 +967,7 @@ export function InventoryGrid({
             }}
           >
             <ItemChip item={item} compact />
-            <small>x{stack.quantity}</small>
+            {stack.quantity > 1 ? <small className="lov-item-quantity">x{stack.quantity}</small> : null}
             {item ? <ItemHoverCard stack={stack} item={item} /> : null}
           </button>
         );

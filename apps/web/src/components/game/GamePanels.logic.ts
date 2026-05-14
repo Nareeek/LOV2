@@ -1,11 +1,13 @@
 import type { FocusEvent, PointerEvent } from 'react';
 import {
   armorFromEquipment,
+  damageRangeForClass,
   itemArmorWithEnhancement,
   itemStatsWithEnhancement,
   maxHealthForStats,
   statsWithEquipment,
   type BootstrapState,
+  type CharacterClassId,
   type CharacterStats,
   type EquipmentSlot,
   type InventoryStack,
@@ -242,9 +244,8 @@ export function buildStatBreakdowns(
   return breakdowns;
 }
 
-export function buildDamageRange(stats: CharacterStats) {
-  const min = Math.max(1, Math.round(stats[STAT_STRENGTH] * 2.2));
-  const max = Math.max(min + 1, Math.round(stats[STAT_STRENGTH] * 3.2));
+export function buildDamageRange(stats: CharacterStats, classId: CharacterClassId, level = 1) {
+  const { min, max } = damageRangeForClass(stats, classId, level);
   return `${min}-${max}`;
 }
 
@@ -410,4 +411,3 @@ export function appearanceTitle(group: AppearanceKey) {
       return group;
   }
 }
-

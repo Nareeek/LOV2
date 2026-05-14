@@ -2642,3 +2642,80 @@
   min-height: 0 !important;
   overflow: auto !important;
 }
+
+/* Gameplay/UI fix pass: windows may use the friends-tray space instead of being clipped by stage-main. */
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-combat) .stage-main:has(> .shell-reset-modal-layer) {
+  overflow: visible !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-combat) .stage-main > .shell-reset-modal-layer:not(.reward) {
+  top: 12px !important;
+  right: calc(-1 * clamp(56px, 5.4vw, 96px)) !important;
+  bottom: calc(-1 * var(--stage-bottom-height, 0px) + 14px) !important;
+  left: calc(-1 * clamp(56px, 5.4vw, 96px)) !important;
+  z-index: 80 !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-combat) .stage-main > .shell-reset-modal-layer:not(.reward) .lov-window-shell {
+  max-height: 100% !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-store-shell),
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell),
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+  align-items: center !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell {
+  width: min(1240px, calc(100vw - 72px)) !important;
+  height: min(760px, calc(100vh - 54px)) !important;
+  max-width: calc(100vw - 72px) !important;
+  max-height: calc(100vh - 54px) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-stock-panel {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-store-bag-panel .lov-inventory-grid,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell .lov-merchant-grid {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-hero-info-layout {
+  grid-template-columns: minmax(300px, 0.46fr) minmax(340px, 0.54fr) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-hero-info-side .lov-paperdoll-stage,
+[data-testid="character-info-popup"] .lov-paperdoll-stage {
+  grid-template-columns: 48px minmax(180px, 1fr) 48px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell {
+  width: min(900px, calc(100vw - 96px)) !important;
+  height: min(700px, calc(100vh - 70px)) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-layout {
+  min-height: 0 !important;
+}
+
+@media (max-width: 1100px), (max-height: 650px) {
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-combat) .stage-main > .shell-reset-modal-layer:not(.reward) {
+    inset: 10px 16px 12px !important;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-store-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-forge-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-hero-info-shell {
+    width: min(100%, calc(100vw - 32px)) !important;
+    height: min(100%, calc(100vh - 24px)) !important;
+    max-width: calc(100vw - 32px) !important;
+    max-height: calc(100vh - 24px) !important;
+  }
+}
