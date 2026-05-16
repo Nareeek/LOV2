@@ -220,17 +220,6 @@ export function GameShell({
     replayActive ? replayTurnCount : visibleReplayTurns.length,
   );
 
-  const hotspotBadges = useMemo(() => {
-    const badges: Record<string, string> = {};
-    if (sceneId === 'hub') {
-      const activeCount = state.questProgress.filter((quest) => quest.status === 'active').length;
-      if (activeCount > 0) {
-        badges['hub-tavern'] = `${activeCount}`;
-      }
-    }
-    return badges;
-  }, [sceneId, state.questProgress]);
-
   const hotspotToneById = useMemo(() => {
     const tones: Record<string, 'neutral' | 'available' | 'traveling' | 'ready' | 'locked' | 'active'> = {};
     for (const hotspot of activeScene.hotspots) {
@@ -694,7 +683,6 @@ export function GameShell({
               selectedExerciseId={selectedExerciseId}
               onIntent={handleIntent}
               activeScene={activeScene}
-              hotspotBadges={hotspotBadges}
               hotspotToneById={hotspotToneById}
               onHotspotClick={handleHotspotClick}
               state={state}
