@@ -296,6 +296,36 @@ for (const viewport of [
   });
 }
 
+test('world stage keeps the zoomed-out reference composition in the compact browser viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 781, height: 551 });
+  await openGame(page, createBootstrapState());
+
+  const stage = page.getByTestId('world-stage');
+  const topbar = page.getByTestId('game-topbar');
+  const bottomTray = page.getByTestId('bottom-tray');
+
+  await expect(stage).toBeVisible();
+  await expect(topbar).toBeVisible();
+  await expect(bottomTray).toBeVisible();
+  await expectNoDocumentScroll(page);
+  await expectContained(topbar, stage);
+  await expectContained(bottomTray, stage);
+
+  const stageBox = await stage.boundingBox();
+  expect(stageBox).not.toBeNull();
+  expect(stageBox!.width).toBeLessThanOrEqual(781);
+  expect(stageBox!.height).toBeLessThanOrEqual(551);
+  expect(stageBox!.width / stageBox!.height).toBeGreaterThan(1.28);
+  expect(stageBox!.width / stageBox!.height).toBeLessThan(1.38);
+
+  await page.getByTestId('character-info-button').click();
+  const heroInfoWindow = page.getByTestId('character-info-popup');
+  await expect(heroInfoWindow).toBeVisible();
+  await expect(heroInfoWindow.getByTestId('hero-info-stat-health')).toBeVisible();
+  await expect(heroInfoWindow.getByTestId('paperdoll-character-image')).toBeVisible();
+  await expectContained(heroInfoWindow, stage);
+});
+
 test('world windows stay inside the playfield on a narrow desktop viewport', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 576 });
   await openGame(page, createBootstrapState());
@@ -403,7 +433,7 @@ test('tavern quests and arena actions stay visible on a wide desktop viewport', 
   await page.setViewportSize({ width: 1366, height: 768 });
   await openGame(page, createBootstrapState());
 
-  await expectTavernAndArenaWindows(page);
+  await expectTavernAndArenaWindows(page, { expectCompactFrame: true });
 });
 
 test('failed travel start keeps the player in world', async ({ page }) => {
@@ -820,7 +850,7 @@ test('lost combat shows a defeat result without zero rewards', async ({ page }) 
   await expect(page.getByTestId('reward-continue-button')).toBeVisible();
 });
 
-async function expectTavernAndArenaWindows(page: Page) {
+async function expectTavernAndArenaWindows(page: Page, options: { expectCompactFrame?: boolean } = {}) {
   await page.getByTestId('hotspot-hub-tavern').click();
   const tavernWindow = page.getByTestId('tavern-window');
   const tavernTasks = tavernWindow.locator('[data-testid^="task-ribbon-"]');
@@ -829,6 +859,11 @@ async function expectTavernAndArenaWindows(page: Page) {
   await expect(stage).toHaveClass(/(?:^| )stage-mode-world(?: |$)/);
   await expect(stage).not.toHaveClass(/stage-mode-worldWindow/);
   await expectContained(tavernWindow, stage);
+  await expectVisibleFrame(tavernWindow);
+  if (options.expectCompactFrame) {
+    await expectMaxWidthRatio(tavernWindow, stage, 0.88);
+    await expectMaxHeightRatio(tavernWindow, stage, 0.92);
+  }
   await expect(tavernTasks).toHaveCount(4);
   for (let index = 0; index < 4; index += 1) {
     await expect(tavernTasks.nth(index)).toBeVisible();
@@ -842,6 +877,11 @@ async function expectTavernAndArenaWindows(page: Page) {
   const arenaStartButton = arenaWindow.getByTestId('arena-start-button');
   await expect(arenaWindow).toBeVisible();
   await expectContained(arenaWindow, page.getByTestId('world-stage'));
+  await expectVisibleFrame(arenaWindow);
+  if (options.expectCompactFrame) {
+    await expectMaxWidthRatio(arenaWindow, stage, 0.84);
+    await expectMaxHeightRatio(arenaWindow, stage, 0.86);
+  }
   await expect(arenaWindow.getByText('1 \u0443\u0440\u043e\u0432\u0435\u043d\u044c')).toBeVisible();
   await expect(arenaWindow.getByTestId('arena-stat-health')).toContainText('130');
   await expect(arenaWindow.getByTestId('arena-stat-strength')).toContainText('9');
@@ -1222,6 +1262,21 @@ async function expectAlmostFullWidth(locator: Locator, container: Locator) {
   expect(box).not.toBeNull();
   expect(containerBox).not.toBeNull();
   expect(box!.width).toBeGreaterThan(containerBox!.width * 0.9);
+}
+
+async function expectVisibleFrame(locator: Locator) {
+  const frame = await locator.evaluate((element) => {
+    const computed = window.getComputedStyle(element);
+    return {
+      borderLeftWidth: Number.parseFloat(computed.borderLeftWidth),
+      borderTopWidth: Number.parseFloat(computed.borderTopWidth),
+      outlineWidth: Number.parseFloat(computed.outlineWidth),
+    };
+  });
+
+  expect(frame.borderLeftWidth).toBeGreaterThanOrEqual(2);
+  expect(frame.borderTopWidth).toBeGreaterThanOrEqual(2);
+  expect(frame.outlineWidth).toBeGreaterThanOrEqual(2);
 }
 
 async function expectLayerAbove(top: Locator, bottom: Locator) {

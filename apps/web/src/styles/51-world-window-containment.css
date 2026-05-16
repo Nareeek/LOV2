@@ -2781,9 +2781,14 @@
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-stage {
+  --battle-ground-baseline: clamp(12px, 3%, 24px);
+  --battle-player-height: min(88%, 570px);
+  --battle-enemy-height: min(88%, 570px);
+  --battle-pet-height: clamp(136px, 28%, 190px);
+  --battle-pet-ground-offset: 0px;
   inset: clamp(104px, 14%, 126px) clamp(28px, 3%, 44px) clamp(28px, 4%, 46px);
   box-sizing: border-box;
-  padding: clamp(6px, 1.4%, 14px) clamp(6px, 1.4%, 14px) 10px;
+  padding: clamp(6px, 1.4%, 14px) clamp(6px, 1.4%, 14px) 0;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
   justify-items: center;
@@ -2791,13 +2796,14 @@
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter-slot {
   position: absolute;
-  top: clamp(6px, 1.4%, 14px);
-  bottom: 10px;
+  top: auto;
+  bottom: var(--battle-ground-baseline);
   width: 50%;
+  height: var(--battle-player-height);
   min-width: 0;
   min-height: 0;
   display: flex;
-  align-items: end;
+  align-items: flex-end;
   justify-content: center;
   overflow: hidden;
 }
@@ -2808,17 +2814,19 @@
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter-slot.enemy {
   right: 0;
+  height: var(--battle-enemy-height);
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter {
   align-self: end;
   justify-self: center;
-  width: min(70%, 390px);
+  width: auto;
   height: 100%;
-  max-width: 390px;
-  max-height: 510px;
+  max-width: min(74%, 440px);
+  max-height: 100%;
   object-fit: contain;
   object-position: center bottom;
+  transform-origin: bottom center;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-fighter.hero {
@@ -2831,24 +2839,29 @@
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet-wrap {
   left: 38%;
-  bottom: clamp(12px, 3%, 24px);
-  width: clamp(70px, 8%, 118px);
-  max-height: 32%;
+  bottom: calc(var(--battle-ground-baseline) + var(--battle-pet-ground-offset));
+  width: auto;
+  height: var(--battle-pet-height);
+  max-height: 34%;
   display: grid;
   justify-items: center;
   transform: translateX(-50%);
+  transform-origin: bottom center;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet-wrap.pet-wyrmlet {
-  bottom: clamp(10px, 2.6%, 22px);
-  width: clamp(78px, 9%, 130px);
+  --battle-pet-height: clamp(148px, 31%, 210px);
+  --battle-pet-ground-offset: -2px;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet {
-  width: 100%;
-  max-height: clamp(72px, 24%, 122px);
+  width: auto;
+  height: 100%;
+  max-width: clamp(136px, 16vw, 230px);
+  max-height: 100%;
   object-fit: contain;
   object-position: center bottom;
+  transform-origin: bottom center;
 }
 
 .stage-frame.shell-reset-stage.stage-mode-combat .lov-pet-battle-health {
@@ -3107,6 +3120,133 @@
   font-size: 0.86rem !important;
 }
 
+/* Hero info responsive polish: clean avatar, readable stats, visible paperdoll. */
+.stage-frame.shell-reset-stage .stage-main > .shell-reset-modal-layer:has([data-testid="character-info-popup"]) {
+  inset: clamp(10px, 1.8vh, 20px) clamp(20px, 5vw, 80px) clamp(24px, 4vh, 48px) !important;
+}
+
+[data-testid="character-info-popup"].lov-hero-info-shell {
+  width: min(1060px, calc(100vw - clamp(40px, 10vw, 96px))) !important;
+  height: min(710px, calc(100vh - clamp(112px, 18vh, 160px))) !important;
+
+  --window-width: min(1060px, calc(100vw - clamp(40px, 10vw, 96px))) !important;
+  --window-height: min(710px, calc(100vh - clamp(112px, 18vh, 160px))) !important;
+}
+
+[data-testid="character-info-popup"] .lov-hero-info-layout {
+  grid-template-columns: minmax(300px, 0.45fr) minmax(350px, 0.55fr) !important;
+  gap: 10px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window {
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header {
+  grid-template-columns: 58px minmax(0, 1fr) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-header img,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-identity-art {
+  width: 58px !important;
+  height: 58px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-identity-art {
+  border-radius: 12px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-standing-preview {
+  display: none !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  padding-left: 0 !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-health,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-armor {
+  grid-column: auto !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  justify-items: stretch !important;
+  min-height: 34px !important;
+  padding: 6px 9px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat::before {
+  display: none !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat span {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  clip: auto !important;
+  overflow: hidden !important;
+  color: rgba(74, 45, 28, 0.76) !important;
+  font-size: clamp(0.62rem, 1vw, 0.76rem) !important;
+  font-weight: 700 !important;
+  line-height: 1.05 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat strong {
+  justify-self: end !important;
+  min-width: 2ch !important;
+  font-size: clamp(0.9rem, 1.25vw, 1.12rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-stage {
+  grid-template-columns: clamp(38px, 15%, 54px) minmax(190px, 1fr) clamp(38px, 15%, 54px) !important;
+  gap: 7px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-center {
+  max-width: 100% !important;
+  min-height: clamp(240px, 44vh, 430px) !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-hero {
+  width: min(92%, 300px) !important;
+  min-height: 0 !important;
+  height: 96% !important;
+  object-position: center bottom !important;
+}
+
+@media (max-width: 720px) {
+  [data-testid="character-info-popup"].lov-hero-info-shell {
+    width: calc(100vw - 24px) !important;
+    height: calc(100vh - 88px) !important;
+
+    --window-width: calc(100vw - 24px) !important;
+    --window-height: calc(100vh - 88px) !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-window-body {
+    overflow: auto !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-hero-info-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-auto-rows: minmax(min-content, max-content) !important;
+    overflow: visible !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-hero-info-main,
+  [data-testid="character-info-popup"] .lov-hero-info-side {
+    overflow: visible !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-paperdoll-center {
+    min-height: 280px !important;
+  }
+}
+
 /* PR20: lighter compact top HUD with XP and currencies grouped together. */
 .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
   top: 7px !important;
@@ -3251,10 +3391,387 @@
   height: 19px !important;
 }
 
+/* Spread the compact HUD across the available screen instead of clustering it. */
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
+  left: clamp(10px, 2vw, 22px) !important;
+  right: clamp(10px, 2vw, 22px) !important;
+  width: auto !important;
+  max-width: none !important;
+  grid-template-columns: clamp(54px, 7vw, 62px) minmax(170px, 1fr) max-content !important;
+  align-items: center !important;
+  gap: clamp(8px, 1.4vw, 16px) !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-left {
+  width: auto !important;
+  max-width: none !important;
+  justify-self: start !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar-center {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip,
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-xp-strip .meter {
+  grid-template-columns: 32px minmax(0, 1fr) !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-strip {
+  justify-self: end !important;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  transform: none !important;
+  align-self: center !important;
+}
+
+@media (max-width: 900px) {
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-topbar {
+    grid-template-columns: 52px minmax(130px, 1fr) max-content !important;
+    gap: 6px !important;
+    padding-right: 5px !important;
+  }
+
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-strip {
+    grid-template-columns: max-content max-content 34px 34px 34px !important;
+    gap: 4px !important;
+  }
+
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-resource-pill {
+    grid-template-columns: 22px minmax(30px, 1fr) !important;
+    min-width: 66px !important;
+    padding-inline: 4px !important;
+  }
+
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .lov-add-button {
+    display: none !important;
+  }
+}
+
 .stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack {
   top: 96px !important;
 }
 
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack {
+  top: clamp(108px, 17vh, 124px) !important;
+  left: 14px !important;
+  width: 50px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-feed {
+  width: 50px !important;
+  gap: 6px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-card {
+  width: 46px !important;
+  min-height: 48px !important;
+  aspect-ratio: auto !important;
+  gap: 1px !important;
+  padding: 4px !important;
+  border-color: rgba(238, 220, 168, 0.46) !important;
+  border-radius: 14px !important;
+  background: rgba(18, 18, 22, 0.18) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 246, 212, 0.08),
+    0 5px 12px rgba(0, 0, 0, 0.12) !important;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-card.active {
+  background: rgba(132, 220, 199, 0.2) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 255, 239, 0.22),
+    0 6px 14px rgba(0, 0, 0, 0.14) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-glyph {
+  width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  border-width: 1px !important;
+  background: rgba(18, 18, 22, 0.1) !important;
+  font-size: 0.78rem !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-left-stack .shell-reset-exercise-card small {
+  font-size: 0.66rem !important;
+  line-height: 1 !important;
+}
+
 .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) .stage-right-rail {
   top: 62px !important;
+}
+
+/* Viewport fit: keep the world composition looking like the 50%-zoom reference. */
+.game-shell.unified-shell {
+  --lov-world-fit-width: min(calc(100svw - 20px), calc((100svh - 20px) * 4 / 3), 1440px);
+}
+
+.stage-frame-wrap:has(> .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel)) {
+  width: var(--lov-world-fit-width) !important;
+  height: calc(var(--lov-world-fit-width) * 3 / 4) !important;
+  max-width: calc(100svw - 20px) !important;
+  max-height: calc(100svh - 20px) !important;
+  aspect-ratio: 4 / 3 !important;
+}
+
+.stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) {
+  --stage-fit-edge: clamp(8px, 1.6%, 16px);
+
+  padding: var(--stage-fit-edge) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+  inset:
+    calc(var(--stage-topbar-height) + 22px)
+    clamp(56px, 8%, 96px)
+    calc(var(--stage-bottom-height) + 12px)
+    clamp(56px, 8%, 96px) !important;
+}
+
+[data-testid="character-info-popup"].lov-hero-info-shell {
+  width: min(100%, 960px) !important;
+  height: min(100%, 610px) !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+
+  --window-width: min(100%, 960px) !important;
+  --window-height: min(100%, 610px) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat {
+  min-height: 24px !important;
+  padding: 3px 7px !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-health,
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat.stat-armor {
+  grid-column: span 2 !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat:not(.stat-health):not(.stat-armor) {
+  grid-column: span 1 !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat span {
+  font-size: clamp(0.54rem, 0.82vw, 0.68rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-profile-screen-window .lov-profile-stat strong {
+  font-size: clamp(0.82rem, 1.05vw, 1rem) !important;
+}
+
+[data-testid="character-info-popup"] .lov-hero-info-side,
+[data-testid="character-info-popup"] .lov-paperdoll,
+[data-testid="character-info-popup"] .lov-paperdoll-stage {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll {
+  grid-template-rows: auto minmax(0, 1fr) 30px !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-stage {
+  height: 100% !important;
+  grid-template-columns: clamp(34px, 13%, 48px) minmax(128px, 1fr) clamp(34px, 13%, 48px) !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-center {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  aspect-ratio: auto !important;
+}
+
+[data-testid="character-info-popup"] .lov-paperdoll-hero {
+  width: min(88%, 260px) !important;
+  max-height: 100% !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-battle-pet {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: clamp(108px, 19svh, 164px) !important;
+  max-height: clamp(108px, 19svh, 164px) !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-victory-window {
+  width: min(720px, 100%) !important;
+  height: min(460px, 100%) !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  grid-template-columns: minmax(180px, 0.45fr) minmax(0, 0.55fr) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-victory-left {
+  min-height: 0 !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-victory-right {
+  gap: 12px !important;
+  padding: 18px !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-victory-right h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-victory-right p,
+.stage-frame.shell-reset-stage.stage-mode-combat .lov-victory-right span {
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem) !important;
+}
+
+@media (max-width: 900px), (max-height: 640px) {
+  .game-shell.unified-shell {
+    padding: 6px !important;
+
+    --lov-world-fit-width: min(calc(100svw - 12px), calc((100svh - 12px) * 4 / 3));
+  }
+
+  .stage-frame.shell-reset-stage:is(.stage-mode-world, .stage-mode-travel) {
+    --stage-topbar-height: 54px;
+    --stage-bottom-height: 100px;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-hero-info-shell) {
+    inset: 64px 14px 108px !important;
+  }
+
+  [data-testid="character-info-popup"].lov-hero-info-shell {
+    width: 100% !important;
+    height: 100% !important;
+
+    --window-width: 100% !important;
+    --window-height: 100% !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-hero-info-layout {
+    grid-template-columns: minmax(250px, 0.48fr) minmax(220px, 0.52fr) !important;
+    gap: 7px !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-hero-info-side {
+    display: grid !important;
+    min-height: clamp(176px, 38svh, 250px) !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-paperdoll {
+    height: 100% !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-paperdoll-header {
+    padding: 4px 7px !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-paperdoll-slot {
+    min-height: 30px !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-paperdoll-center {
+    min-height: clamp(148px, 30svh, 220px) !important;
+  }
+
+  [data-testid="character-info-popup"] .lov-prestige-bar {
+    display: none !important;
+  }
+}
+
+/* Tavern / arena framed-window polish: visible rails and a quieter footprint. */
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-tavern-shell),
+.stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+  inset:
+    calc(var(--stage-topbar-height) + 18px)
+    clamp(76px, 10vw, 146px)
+    calc(var(--stage-bottom-height) + 24px)
+    clamp(76px, 10vw, 146px) !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell {
+  border: 3px solid rgba(238, 225, 190, 0.94) !important;
+  border-radius: 5px !important;
+  outline: 3px solid rgba(34, 31, 30, 0.92) !important;
+  outline-offset: -7px !important;
+  box-shadow:
+    0 0 0 1px rgba(41, 34, 29, 0.98),
+    0 0 0 6px rgba(198, 176, 132, 0.58),
+    0 22px 52px rgba(0, 0, 0, 0.48) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell {
+  width: min(820px, 100%) !important;
+  height: min(680px, 100%) !important;
+
+  --window-width: min(820px, 100%) !important;
+  --window-height: min(680px, 100%) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell {
+  width: min(790px, 100%) !important;
+  height: min(610px, 100%) !important;
+
+  --window-width: min(790px, 100%) !important;
+  --window-height: min(610px, 100%) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell .lov-window-header,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell .lov-window-header,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell .lov-window-body,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell .lov-window-body,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell .lov-window-footer,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell .lov-window-footer {
+  border-left: 2px solid rgba(242, 231, 203, 0.86) !important;
+  border-right: 2px solid rgba(43, 38, 35, 0.92) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell .lov-window-body,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell .lov-window-body {
+  border-top: 2px solid rgba(242, 231, 203, 0.86) !important;
+}
+
+.stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-layout,
+.stage-frame.shell-reset-stage.stage-mode-world .lov-arena-layout {
+  border: 3px solid rgba(244, 235, 206, 0.92) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(52, 46, 40, 0.72),
+    0 0 0 1px rgba(24, 21, 20, 0.5) !important;
+}
+
+@media (max-width: 900px), (max-height: 640px) {
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-tavern-shell),
+  .stage-frame.shell-reset-stage.stage-mode-world .stage-main > .shell-reset-modal-layer:has(.lov-arena-shell) {
+    inset: 60px 18px 108px !important;
+  }
+
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-tavern-shell,
+  .stage-frame.shell-reset-stage.stage-mode-world .lov-arena-shell {
+    width: 100% !important;
+    height: 100% !important;
+
+    --window-width: 100% !important;
+    --window-height: 100% !important;
+  }
 }

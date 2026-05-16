@@ -22,7 +22,6 @@ export function GameShellWorldStage({
   selectedExerciseId,
   onIntent,
   activeScene,
-  hotspotBadges,
   hotspotToneById,
   onHotspotClick,
   state,
@@ -42,7 +41,6 @@ export function GameShellWorldStage({
   selectedExerciseId: string | null;
   onIntent: (intent: GameIntent) => void;
   activeScene: SceneDefinition;
-  hotspotBadges: Record<string, string>;
   hotspotToneById: Record<string, HotspotTone>;
   onHotspotClick: (action: SceneAction, hotspot: SceneHotspot) => void | Promise<void>;
   state: BootstrapState;
@@ -70,7 +68,6 @@ export function GameShellWorldStage({
         {baseStage === 'world' ? (
           <SceneViewport
             scene={activeScene}
-            hotspotBadges={hotspotBadges}
             hotspotToneById={hotspotToneById}
             onHotspotClick={onHotspotClick}
           />

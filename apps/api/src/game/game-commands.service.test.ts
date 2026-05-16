@@ -8,6 +8,7 @@ import {
   ENERGY_REFILL_LARGE_GEMS_COST,
   ENERGY_REFILL_SMALL,
   ENERGY_REFILL_SMALL_GEMS_COST,
+  experienceForLevel,
   hasEnoughEnergy,
   refillEnergy,
   resolveCombat,
@@ -582,6 +583,69 @@ describe('GameCommandsService quest travel combat vertical slice', () => {
       combatEventCount,
     );
     expect(prisma.questProgress.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('grants one pearl per gained level and does not duplicate it on repeat resolves', async () => {
+    const originalReward = quest.reward;
+    const levelUpReward: typeof originalReward = {
+      ...originalReward,
+      experience: experienceForLevel(4),
+      gold: 0,
+      gems: 0,
+      itemIds: [],
+    };
+    const mutableQuest = quest as typeof quest & { reward: typeof originalReward };
+    mutableQuest.reward = levelUpReward;
+
+    try {
+      const { service, state } = createVerticalHarness({
+        initialQuestStatus: 'active',
+        characterOverride: {
+          level: 1,
+          experience: 0,
+          gems: 0,
+          health: 6000,
+          maxHealth: 6000,
+          stats: strongStats,
+        },
+      });
+      const combatId = 'combat-level-pearls';
+      state.combats.push({
+        id: combatId,
+        characterId: state.character.id,
+        questId: quest.id,
+        enemyId: quest.enemyId,
+        source: 'travel',
+        status: 'pending',
+        log: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      const resolved = await service.resolveCombat(state.user.id, combatId);
+
+      expect(resolved.character?.level).toBe(4);
+      expect(resolved.character?.gems).toBe(3);
+      expect(state.ledgers).toContainEqual({
+        characterId: state.character.id,
+        currency: 'gems',
+        amount: 3,
+        reason: `level-up:${combatId}`,
+      });
+      expect(state.events.find((event) => event.type === 'combat.resolved')?.payload).toMatchObject({
+        leveledUp: true,
+        levelGain: 3,
+        levelPearlsGained: 3,
+      });
+
+      const ledgerCount = state.ledgers.length;
+      await service.resolveCombat(state.user.id, combatId);
+
+      expect(state.ledgers).toHaveLength(ledgerCount);
+      expect(state.ledgers.filter((entry) => entry.reason === `level-up:${combatId}`)).toHaveLength(1);
+    } finally {
+      mutableQuest.reward = originalReward;
+    }
   });
 
   it('runs the PR16 reward, equip, and pet-assisted follow-up combat slice', async () => {

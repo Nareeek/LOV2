@@ -634,6 +634,7 @@ export class GameCommandsService {
     const nextExperience = character.experience + log.reward.experience;
     const nextLevel = levelFromExperience(nextExperience);
     const levelGain = Math.max(0, nextLevel - character.level);
+    const levelPearlsGained = levelGain;
     const leveledUp = levelGain > 0;
     const nextBaseStats = character.stats as unknown as CharacterStats;
     const nextMaxHealth = maxHealthForStats(nextBaseStats, nextLevel, character.rebirths);
@@ -654,7 +655,7 @@ export class GameCommandsService {
           level: nextLevel,
           unspentStatPoints: { increment: levelGain * 4 },
           gold: { increment: log.reward.gold },
-          gems: { increment: log.reward.gems },
+          gems: { increment: log.reward.gems + levelPearlsGained },
           health: won ? nextMaxHealth : Math.max(1, Math.floor(nextMaxHealth * 0.35)),
           maxHealth: nextMaxHealth,
           maxEnergy: DEFAULT_MAX_ENERGY,
@@ -683,6 +684,16 @@ export class GameCommandsService {
             currency: 'gems',
             amount: log.reward.gems,
             reason: `combat:${combat.id}`,
+          },
+        });
+      }
+      if (levelPearlsGained !== 0) {
+        await tx.currencyLedgerEntry.create({
+          data: {
+            characterId: character.id,
+            currency: 'gems',
+            amount: levelPearlsGained,
+            reason: `level-up:${combat.id}`,
           },
         });
       }
@@ -727,6 +738,8 @@ export class GameCommandsService {
             won,
             reward: log.reward,
             leveledUp,
+            levelGain,
+            levelPearlsGained,
             source: combatSource,
             petFoodSpent: log.petFoodSpent ?? 0,
             petExperienceGained: log.petExperienceGained ?? 0,

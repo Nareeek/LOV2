@@ -5,7 +5,6 @@ import { assetPath } from './game/assets.js';
 
 interface SceneViewportProps {
   scene: SceneDefinition;
-  hotspotBadges?: Record<string, string> | undefined;
   hotspotToneById?: Record<string, HotspotTone> | undefined;
   disabledHotspotIds?: string[] | undefined;
   onHotspotClick: (action: SceneAction, hotspot: SceneHotspot) => void;
@@ -29,7 +28,6 @@ const HOTSPOT_ASSET_BY_ID: Record<string, string> = {
 
 export function SceneViewport({
   scene,
-  hotspotBadges,
   hotspotToneById,
   disabledHotspotIds,
   onHotspotClick,
@@ -166,7 +164,6 @@ export function SceneViewport({
                   <strong>{hotspot.labelRu}</strong>
                   <small>{hotspot.descriptionRu}</small>
                 </span>
-                {hotspotBadges?.[hotspot.id] ? <strong className="hotspot-badge">{hotspotBadges[hotspot.id]}</strong> : null}
               </button>
             </span>
           );
