@@ -40,8 +40,8 @@ import { renderInfoWindow, renderWorldWindow, windowForPanel } from './GameWindo
 import { HudFrame } from './HudFrame.js';
 
 const fallbackHub = sceneDefinitions.find((scene) => scene.id === 'hub') ?? sceneDefinitions[0]!;
-const COMBAT_AUTO_RESOLVE_DELAY_MS = 450;
-const COMBAT_REPLAY_TURN_MS = 650;
+const COMBAT_AUTO_RESOLVE_DELAY_MS = 1200;
+const COMBAT_REPLAY_TURN_MS = 1000;
 const COMBAT_REPLAY_REWARD_DELAY_MS = 650;
 const SELECTED_PET_STORAGE_KEY = 'lov2.selectedPetId';
 

@@ -8,7 +8,7 @@ import { GameErrorBoundary } from './components/game/GameErrorBoundary.js';
 import { AuthScreen } from './screens/AuthScreen.js';
 import { CharacterCreationScreen } from './screens/CharacterCreationScreen.js';
 
-export function App() {
+export function App({ initialMockState }: { initialMockState?: BootstrapState | undefined }) {
   const [state, setState] = useState<BootstrapState | null>(null);
   const [bootstrapped, setBootstrapped] = useState(false);
   const [email, setEmail] = useState('');
@@ -22,11 +22,16 @@ export function App() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (initialMockState) {
+      setState(initialMockState);
+      setBootstrapped(true);
+      return;
+    }
     apiClient.bootstrap()
       .then(setState)
       .catch(() => setState(null))
       .finally(() => setBootstrapped(true));
-  }, []);
+  }, [initialMockState]);
 
   const run = useCallback(async <T,>(action: () => Promise<T>, success: string) => {
     setBusy(true);
