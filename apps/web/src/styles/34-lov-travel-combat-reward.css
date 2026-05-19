@@ -694,8 +694,22 @@
 }
 
 .lov-battle-stage {
-  inset: 108px 24px 72px;
+  inset: 108px 24px 36px;
   align-items: end;
+}
+
+.lov-battle-stage::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 40px;
+  background:
+    radial-gradient(ellipse at 22% 50%, rgba(0, 0, 0, 0.45) 0%, transparent 60%),
+    radial-gradient(ellipse at 78% 50%, rgba(0, 0, 0, 0.45) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .lov-fighter {
